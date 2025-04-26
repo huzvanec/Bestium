@@ -32,7 +32,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly("io.github.toxicity188:BetterModel:1.4.2")
+        compileOnly("io.github.toxicity188:BetterModel:1.5.1")
     }
 }
 
