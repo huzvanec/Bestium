@@ -2,9 +2,9 @@ package cz.jeme.bestium
 
 import com.mojang.datafixers.DataFixUtils
 import com.mojang.datafixers.types.Type
-import cz.jeme.bestium.api.inject.Injectable
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
+import cz.jeme.bestium.api.inject.Injectable
 import cz.jeme.bestium.craft.CraftCustomEntity
 import cz.jeme.bestium.craft.CraftCustomLivingEntity
 import cz.jeme.bestium.util.setStaticFinal
@@ -54,6 +54,10 @@ internal object EntityInjectorImpl : EntityInjector {
 
     private val types = mutableMapOf<Class<out Entity>, EntityType<*>>()
 
+    override fun <T> types(): Map<Class<T>, EntityType<T>> where T : Entity, T : Injectable {
+        @Suppress("UNCHECKED_CAST")
+        return types as Map<Class<T>, EntityType<T>>
+    }
 
     var frozen: Boolean = false
         private set
