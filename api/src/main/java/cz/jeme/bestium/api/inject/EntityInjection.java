@@ -102,9 +102,11 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
      * For example, an entity with the key {@code example_plugin:custom_entity}
      * would have the model name {@code bestium.example_plugin.custom_entity}.
      *
-     * @return the generated model name
+     * @return the generated model name, or {@code null} if no model URL was set
      * @see #key()
+     * @see #modelUrl() 
      */
+    @Nullable
     String modelName();
 
     /**

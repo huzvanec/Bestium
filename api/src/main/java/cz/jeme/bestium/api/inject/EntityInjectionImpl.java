@@ -23,7 +23,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
     private final EntityType<?> backingType;
     private final MobCategory category;
     private final Consumer<EntityType.Builder<T>> typeBuilder;
-    private final String modelName;
+    private final @Nullable String modelName;
     private final @Nullable AttributeSupplier attributes;
     private final @Nullable URL modelUrl;
 
@@ -36,7 +36,9 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         typeBuilder = builder.typeBuilder;
         attributes = builder.attributes;
         modelUrl = builder.modelUrl;
-        modelName = "bestium" + '.' + key.namespace() + '.' + key.value();
+        modelName = modelUrl == null
+                ? null
+                : "bestium" + '.' + key.namespace() + '.' + key.value();
     }
 
     @Override
@@ -80,7 +82,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
     }
 
     @Override
-    public String modelName() {
+    public @Nullable String modelName() {
         return modelName;
     }
 
