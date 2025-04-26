@@ -55,7 +55,7 @@ tasks {
             exclude(dependency("org.jetbrains:annotations:.*"))
         }
 
-        fun shade(pattern: String) = relocate(pattern, "${project.group}.shaded.$pattern")
+        fun shade(pattern: String) = relocate(pattern, "${project.group}.${project.name.lowercase()}.shaded.$pattern")
 
         shade("kotlin")
     }
