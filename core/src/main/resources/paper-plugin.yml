@@ -10,5 +10,8 @@ dependencies:
   server:
     BetterModel:
       load: BEFORE
-      required: true
+      required: false
       join-classpath: true
+    Nova:
+      required: false
+      join-classpath: false
