@@ -1,0 +1,66 @@
+plugins {
+    `java-library`
+    kotlin("jvm") version "2.1.20"
+    id("com.gradleup.shadow") version "9.0.0-beta12"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.16" apply false
+}
+
+val targetJavaVersion = (project.properties["targetJavaVersion"] as String).toInt()
+
+allprojects {
+    group = "cz.jeme"
+    version = "1.0.0"
+
+
+    apply {
+        plugin("kotlin")
+        plugin("java")
+    }
+
+    kotlin {
+        jvmToolchain(targetJavaVersion)
+    }
+
+    java {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+
+    repositories {
+        mavenCentral()
+        maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://oss.sonatype.org/content/groups/public/")
+    }
+
+    dependencies {
+        compileOnly("io.github.toxicity188:BetterModel:1.4.2")
+    }
+}
+
+subprojects {
+    apply {
+        plugin("io.papermc.paperweight.userdev")
+    }
+}
+
+dependencies {
+    implementation(project(":api"))
+    implementation(project(":core"))
+}
+
+tasks {
+    shadowJar {
+        archiveClassifier = ""
+
+        dependencies {
+            exclude(dependency("org.jetbrains:annotations:.*"))
+        }
+
+        fun shade(pattern: String) = relocate(pattern, "${project.group}.shaded.$pattern")
+
+        shade("kotlin")
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+}
