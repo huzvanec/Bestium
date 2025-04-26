@@ -1,4 +1,4 @@
-package cz.jeme.bestium.core
+package cz.jeme.bestium
 
 import com.mojang.datafixers.DataFixUtils
 import com.mojang.datafixers.types.Type
@@ -32,6 +32,7 @@ import org.bukkit.craftbukkit.entity.CraftEntityTypes.EntityTypeData
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Consumer
@@ -226,8 +227,19 @@ internal object EntityInjectorImpl : EntityInjector {
         return true
     }
 
-
+    /**
+     * Copies the models from registered model URLs in entity injections to the BetterModel models folder.
+     *
+     * This method checks if the entities have been injected and the system is in a "frozen" state,
+     * and verifies that BetterModel is loaded. It then copies each registered model URL to the models
+     * directory within the BetterModel folder.
+     *
+     * @throws IllegalStateException if called before the injection is frozen or if BetterModel is not loaded
+     * @throws IOException if an I/O exception occurs during model file copying
+     */
     fun copyModels() {
+        if (!frozen)
+            throw IllegalStateException("Models can be copied only after all entities are injected and injection is frozen")
         if (!(BestiumImpl.pluginSupport().betterModel()))
             throw IllegalStateException("Models can be copied only when BetterModel is loaded")
 
@@ -236,9 +248,12 @@ internal object EntityInjectorImpl : EntityInjector {
 
         for (inj in injections.values) {
             val modelUrl = inj.modelUrl() ?: continue
-            val out = File(modelsDir, inj.modelName() + ".bbmodel")
+            val outputFile = File(modelsDir, inj.modelName()!! + ".bbmodel")
             val inputStream = modelUrl.openStream()
-            inputStream.copyTo(FileOutputStream(out))
+            val outputStream = FileOutputStream(outputFile)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
         }
     }
 }

@@ -1,7 +1,7 @@
 name: Bestium
 version: '${version}'
-main: cz.jeme.bestium.core.BestiumImpl
-bootstrapper: cz.jeme.bestium.core.BestiumBootstrapper
+main: cz.jeme.bestium.BestiumImpl
+bootstrapper: cz.jeme.bestium.BestiumBootstrapper
 api-version: '${minecraftVersion}'
 author: Hužva
 description: A powerful library plugin for creating Minecraft entities with custom behavior.

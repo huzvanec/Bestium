@@ -1,4 +1,4 @@
-package cz.jeme.bestium.core
+package cz.jeme.bestium
 
 import cz.jeme.bestium.api.PluginSupport
 import org.bukkit.Bukkit

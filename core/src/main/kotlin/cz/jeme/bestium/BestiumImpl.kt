@@ -1,4 +1,4 @@
-package cz.jeme.bestium.core
+package cz.jeme.bestium
 
 import cz.jeme.bestium.api.Bestium
 import org.bukkit.plugin.java.JavaPlugin
@@ -15,13 +15,12 @@ internal object BestiumImpl : JavaPlugin(), Bestium {
         val start = System.currentTimeMillis()
         saveDefaultConfig()
 
-        injector().inject()
-        logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
-
-        if (pluginSupport().betterModel()) {
+        val injected = injector().inject()
+        if (injected && pluginSupport().betterModel()) {
             logger.info("BetterModel detected, updating models...")
             injector().copyModels()
         }
+        logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
     }
 
     override fun injector() = EntityInjectorImpl

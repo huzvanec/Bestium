@@ -1,4 +1,4 @@
-package cz.jeme.bestium.core
+package cz.jeme.bestium
 
 import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
