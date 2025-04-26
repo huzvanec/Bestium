@@ -1,4 +1,4 @@
-package cz.jeme.bestium.api.entity;
+package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
 import kr.toxicity.model.api.tracker.Tracker;
@@ -18,7 +18,7 @@ import java.util.Objects;
 public interface Injectable {
     @SuppressWarnings("unchecked")
     @ApiStatus.NonExtendable
-    default <T extends Entity & Injectable> @NotNull T bestium$asEntity() {
+    default <T extends Entity & Injectable> @NotNull T bestium_asEntity() {
         if (!(this instanceof final Entity entity))
             throw new IllegalStateException("Classes implementing '" + Injectable.class.getName() + "' must extend '" + Entity.class.getName() + "'");
         return (T) entity;
@@ -26,28 +26,28 @@ public interface Injectable {
 
     @SuppressWarnings("SuspiciousMethodCalls")
     @ApiStatus.NonExtendable
-    default Key bestium$key() {
-        return Objects.requireNonNull(Bestium.instance().injector().injections().get(bestium$asEntity().getClass()).key());
+    default Key bestium_key() {
+        return Objects.requireNonNull(Bestium.instance().injector().injections().get(bestium_asEntity().getClass()).key());
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
     @ApiStatus.NonExtendable
-    default EntityType<?> bestium$getType() {
-        return Objects.requireNonNull(Bestium.instance().injector().injections().get(bestium$asEntity().getClass()).backingType());
+    default EntityType<?> bestium_getType() {
+        return Objects.requireNonNull(Bestium.instance().injector().injections().get(bestium_asEntity().getClass()).backingType());
     }
 
     @ApiStatus.NonExtendable
-    default void bestium$addAdditionalSaveData(final CompoundTag compound) {
-        compound.putString(Entity.ID_TAG, bestium$key().asString());
+    default void bestium_addAdditionalSaveData(final CompoundTag compound) {
+        compound.putString(Entity.ID_TAG, bestium_key().asString());
     }
 
     @ApiStatus.NonExtendable
-    default void bestium$init() {
+    default void bestium_init() {
         if (
                 Bestium.instance().pluginSupport().betterModel() &&
                 this instanceof final LivingEntity thisEntity
         ) {
-            final Key key = bestium$key();
+            final Key key = bestium_key();
             thisEntity.getBukkitEntity().getPersistentDataContainer().set(
                     Tracker.TRACKING_ID,
                     PersistentDataType.STRING,

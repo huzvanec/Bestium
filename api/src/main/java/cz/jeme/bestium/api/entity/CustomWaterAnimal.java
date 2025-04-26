@@ -1,5 +1,6 @@
 package cz.jeme.bestium.api.entity;
 
+import cz.jeme.bestium.api.inject.Injectable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.WaterAnimal;
@@ -11,17 +12,17 @@ public abstract class CustomWaterAnimal extends WaterAnimal implements Injectabl
     protected CustomWaterAnimal(final EntityType<? extends CustomWaterAnimal> entityType,
                                 final Level level) {
         super(entityType, level);
-        bestium$init();
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return bestium$getType();
+        return bestium_getType();
     }
 
     @Override
     public void addAdditionalSaveData(final CompoundTag compound) {
         super.addAdditionalSaveData(compound);
-        bestium$addAdditionalSaveData(compound);
+        bestium_addAdditionalSaveData(compound);
     }
 }

@@ -1,6 +1,5 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.entity.Injectable;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;

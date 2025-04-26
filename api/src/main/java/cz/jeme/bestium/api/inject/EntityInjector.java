@@ -1,6 +1,5 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.entity.Injectable;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;

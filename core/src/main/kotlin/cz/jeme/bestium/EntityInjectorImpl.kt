@@ -2,7 +2,7 @@ package cz.jeme.bestium
 
 import com.mojang.datafixers.DataFixUtils
 import com.mojang.datafixers.types.Type
-import cz.jeme.bestium.api.entity.Injectable
+import cz.jeme.bestium.api.inject.Injectable
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
 import cz.jeme.bestium.craft.CraftCustomEntity
