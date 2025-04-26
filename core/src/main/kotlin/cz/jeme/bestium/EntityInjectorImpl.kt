@@ -52,6 +52,9 @@ internal object EntityInjectorImpl : EntityInjector {
         return injections as Map<Class<T>, EntityInjection<T>>
     }
 
+    private val types = mutableMapOf<Class<out Entity>, EntityType<*>>()
+
+
     var frozen: Boolean = false
         private set
 
@@ -101,7 +104,7 @@ internal object EntityInjectorImpl : EntityInjector {
                 attributeSuppliers.get(null) as Map<EntityType<out Entity>, AttributeSupplier>
                 ).toMutableMap()
 
-        // obtain entity type data
+        // obtain bukkit entity type data
         val entityTypeData = CraftEntityTypes::class.java.getDeclaredField("ENTITY_TYPE_DATA")
             .apply { isAccessible = true }
 
@@ -110,6 +113,7 @@ internal object EntityInjectorImpl : EntityInjector {
                 entityTypeData.get(null) as Map<BukkitEntityType, EntityTypeData<*, *>>
                 ).toMutableMap()
 
+        // map of backing entity type -> list of custom entity classes
         val bukkitTypeDataContainer = mutableMapOf<EntityType<out Entity>, MutableList<Class<out Entity>>>()
 
         for (inj in injections.values) {
@@ -120,7 +124,7 @@ internal object EntityInjectorImpl : EntityInjector {
 
             // copy data fixer from backing type
             dataFixer[keyStr] = dataFixer[ENTITY_TYPE_REGISTRY.getKey(backingType).toString()]
-                ?: throw IllegalArgumentException("No data fixer registered for backing type '$backingType'")
+                ?: throw IllegalStateException("No data fixer registered for backing type: '$backingType'")
 
             // create main entity type
             val nmsType = EntityType.Builder.of(
@@ -133,7 +137,8 @@ internal object EntityInjectorImpl : EntityInjector {
                 .apply {
                     @Suppress("UNCHECKED_CAST")
                     (inj.typeCustomizer() as Consumer<EntityType.Builder<out Entity>>).accept(this)
-                }.build(
+                }
+                .build(
                     ResourceKey.create(
                         ENTITY_TYPE_REGISTRY.key(),
                         key.toResourceLocation()
@@ -145,8 +150,9 @@ internal object EntityInjectorImpl : EntityInjector {
             Registry.register(ENTITY_TYPE_REGISTRY, keyStr, nmsType)
 
             // register default attributes
-            val attributes = inj.attributes()
-            if (attributes != null) attributeSupplierMap[nmsType] = attributes
+            inj.attributes()?.let {
+                attributeSupplierMap[nmsType] = it
+            }
 
             // copy registry holder from backing type 
             val registryHolder = EntityType::class.java.getDeclaredField("builtInRegistryHolder")
@@ -155,15 +161,18 @@ internal object EntityInjectorImpl : EntityInjector {
 
             // add class to bukkit type container
             val classes = bukkitTypeDataContainer.computeIfAbsent(backingType) { mutableListOf() }
-            var index = 0
-            while (index < classes.size && !classes[index].isAssignableFrom(entityClass)) index++
+            val index = classes.indexOfFirst { it.isAssignableFrom(entityClass) }
+                .let { if (it == -1) classes.size else it }
             classes.add(index, entityClass)
+
+            // store entity type for later use
+            types[entityClass] = nmsType
         }
 
         // set default attributes
         attributeSuppliers.setStaticFinal(attributeSupplierMap)
 
-        // inject into bukkit entity type data
+        // inject into backing bukkit entity type data
         bukkitTypeDataContainer.forEach { (type, classes) ->
             val craftType = CraftEntityType.minecraftToBukkit(type)
             val originalData = entityTypeDataMap[craftType]!!
@@ -198,7 +207,8 @@ internal object EntityInjectorImpl : EntityInjector {
      *
      * If any exceptions occur during the injection phase, the JVM is immediately terminated to prevent further data corruption.
      * @return `true` if all entities were successfully injected, `false` if there were no entities to inject
-     * @throws IllegalStateException if the injector is already frozen
+     * @throws IllegalStateException if the injector is already frozen or
+     * if the backing type of an injection does not have a registered data fixer
      */
     fun inject(): Boolean {
         if (frozen) throw IllegalStateException("Entities already injected")
