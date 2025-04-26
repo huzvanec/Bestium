@@ -60,7 +60,7 @@ tasks {
         shade("kotlin")
     }
 
-    build {
+    assemble {
         dependsOn(shadowJar)
     }
 }
