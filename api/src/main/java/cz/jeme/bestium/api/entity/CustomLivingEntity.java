@@ -7,7 +7,7 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public abstract class CustomLivingEntity extends LivingEntity implements InjectableEntity {
+public abstract class CustomLivingEntity extends LivingEntity implements Injectable {
     protected CustomLivingEntity(final EntityType<? extends CustomLivingEntity> entityType,
                                  final Level level) {
         super(entityType, level);

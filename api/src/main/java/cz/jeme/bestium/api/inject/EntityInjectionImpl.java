@@ -1,6 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.entity.InjectableEntity;
+import cz.jeme.bestium.api.entity.Injectable;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @NullMarked
-final class EntityInjectionImpl<T extends Entity & InjectableEntity> implements EntityInjection<T> {
+final class EntityInjectionImpl<T extends Entity & Injectable> implements EntityInjection<T> {
     private final Key key;
     private final Class<T> entityClass;
     private final EntityType.EntityFactory<T> entityFactory;
@@ -84,7 +84,7 @@ final class EntityInjectionImpl<T extends Entity & InjectableEntity> implements 
         return modelName;
     }
 
-    static final class BuilderImpl<T extends Entity & InjectableEntity> implements Builder<T> {
+    static final class BuilderImpl<T extends Entity & Injectable> implements Builder<T> {
         private final Key key;
         private final Class<T> entityClass;
         private final EntityType.EntityFactory<T> entityFactory;

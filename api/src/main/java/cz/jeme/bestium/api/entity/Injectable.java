@@ -15,12 +15,12 @@ import org.jspecify.annotations.NullMarked;
 import java.util.Objects;
 
 @NullMarked
-public interface InjectableEntity {
+public interface Injectable {
     @SuppressWarnings("unchecked")
     @ApiStatus.NonExtendable
-    default <T extends Entity & InjectableEntity> @NotNull T bestium$asEntity() {
+    default <T extends Entity & Injectable> @NotNull T bestium$asEntity() {
         if (!(this instanceof final Entity entity))
-            throw new IllegalStateException("Classes implementing '" + InjectableEntity.class.getName() + "' must extend '" + Entity.class.getName() + "'");
+            throw new IllegalStateException("Classes implementing '" + Injectable.class.getName() + "' must extend '" + Entity.class.getName() + "'");
         return (T) entity;
     }
 

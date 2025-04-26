@@ -7,7 +7,7 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public abstract class CustomEntity extends Entity implements InjectableEntity {
+public abstract class CustomEntity extends Entity implements Injectable {
     public CustomEntity(final EntityType<? extends CustomEntity> entityType, final Level level) {
         super(entityType, level);
         bestium$init();

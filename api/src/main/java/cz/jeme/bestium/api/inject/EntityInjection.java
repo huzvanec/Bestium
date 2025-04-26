@@ -1,6 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.entity.InjectableEntity;
+import cz.jeme.bestium.api.entity.Injectable;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  * @see EntityInjector
  */
 @NullMarked
-public sealed interface EntityInjection<T extends Entity & InjectableEntity> permits EntityInjectionImpl {
+public sealed interface EntityInjection<T extends Entity & Injectable> permits EntityInjectionImpl {
 
     /**
      * Gets the unique key representing this entity type.
@@ -117,9 +117,9 @@ public sealed interface EntityInjection<T extends Entity & InjectableEntity> per
      * @return a new builder instance
      * @see NamespacedKey#NamespacedKey(Plugin, String)
      */
-    static <T extends Entity & InjectableEntity> Builder<T> builder(final Key key,
-                                                                    final Class<T> entityClass,
-                                                                    final EntityType.EntityFactory<T> entityFactory) {
+    static <T extends Entity & Injectable> Builder<T> builder(final Key key,
+                                                              final Class<T> entityClass,
+                                                              final EntityType.EntityFactory<T> entityFactory) {
         return new EntityInjectionImpl.BuilderImpl<>(key, entityClass, entityFactory);
     }
 
@@ -128,7 +128,7 @@ public sealed interface EntityInjection<T extends Entity & InjectableEntity> per
      *
      * @param <T> the entity type
      */
-    sealed interface Builder<T extends Entity & InjectableEntity> extends AbstractBuilder<EntityInjection<T>> permits EntityInjectionImpl.BuilderImpl {
+    sealed interface Builder<T extends Entity & Injectable> extends AbstractBuilder<EntityInjection<T>> permits EntityInjectionImpl.BuilderImpl {
 
         /**
          * Gets the entity key.

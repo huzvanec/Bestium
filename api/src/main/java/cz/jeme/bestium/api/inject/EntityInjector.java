@@ -1,6 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.entity.InjectableEntity;
+import cz.jeme.bestium.api.entity.Injectable;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
@@ -72,5 +72,5 @@ public interface EntityInjector {
      * @param <T> the entity type
      * @return an unmodifiable map of entity classes to their registered injections
      */
-    <T extends Entity & InjectableEntity> @Unmodifiable Map<Class<T>, EntityInjection<T>> injections();
+    <T extends Entity & Injectable> @Unmodifiable Map<Class<T>, EntityInjection<T>> injections();
 }
