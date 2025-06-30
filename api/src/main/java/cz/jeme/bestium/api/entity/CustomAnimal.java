@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -21,8 +22,8 @@ public abstract class CustomAnimal extends Animal implements Injectable {
     }
 
     @Override
-    public void addAdditionalSaveData(final CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
-        bestium_addAdditionalSaveData(compound);
+    public void addAdditionalSaveData(final ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

@@ -1,10 +1,10 @@
 package cz.jeme.bestium.api.entity;
 
 import cz.jeme.bestium.api.inject.Injectable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -20,7 +20,7 @@ public abstract class CustomEntity extends Entity implements Injectable {
     }
 
     @Override
-    protected void addAdditionalSaveData(final CompoundTag compound) {
-        bestium_addAdditionalSaveData(compound);
+    protected void addAdditionalSaveData(final ValueOutput output) {
+        bestium_addAdditionalSaveData(output);
     }
 }

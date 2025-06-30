@@ -44,7 +44,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
         logger.info("[Phase 1/2] Fetching DataFixer entity types")
         @Suppress("UNCHECKED_CAST")
         val dataFixerTypes = DataFixers.getDataFixer()
-            .getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion.version))
+            .getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion().version()))
             .findChoiceType(References.ENTITY)
             .types() as MutableMap<String, DataFixerType<*>>
 

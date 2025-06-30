@@ -95,8 +95,11 @@ internal object EntityInjectorImpl : EntityInjector {
 
     fun injectBukkit(): Boolean {
         if (phase != EntityInjector.Phase.INJECTION_PHASE_1) throw IllegalStateException("Invalid phase for phase 2 injection: $phase")
+        if (injections.isEmpty()) {
+            phase = EntityInjector.Phase.INJECTED
+            return false
+        }
         phase = EntityInjector.Phase.INJECTION_PHASE_2
-        if (injections.isEmpty()) return false
         return tryInject {
             unit.bukkitInjection()
             phase = EntityInjector.Phase.INJECTED

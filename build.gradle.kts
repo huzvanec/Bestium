@@ -70,7 +70,7 @@ tasks {
                 .first { it.group == "io.github.toxicity188" && it.name == "BetterModel" }
                 .version!!
 
-            modrinth("bettermodel", bmVer)
+            modrinth("bettermodel", /* bmVer */"1.7.1-SNAPSHOT-196")
         }
         minecraftVersion(project.properties["minecraftVersion"] as String)
     }

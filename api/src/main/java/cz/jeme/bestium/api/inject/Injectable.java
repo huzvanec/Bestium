@@ -4,9 +4,9 @@ import cz.jeme.bestium.api.Bestium;
 import cz.jeme.bestium.api.util.KeyUtils;
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
 import net.kyori.adventure.key.Key;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -41,8 +41,8 @@ public interface Injectable {
     }
 
     @ApiStatus.NonExtendable
-    default void bestium_addAdditionalSaveData(final CompoundTag compound) {
-        compound.putString(Entity.ID_TAG, bestium_key().asString());
+    default void bestium_addAdditionalSaveData(final ValueOutput output) {
+        output.putString(Entity.TAG_ID, bestium_key().asString());
     }
 
     @ApiStatus.NonExtendable

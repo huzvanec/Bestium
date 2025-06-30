@@ -1,6 +1,3 @@
 rootProject.name = "Bestium"
 
-include(
-    "core",
-    "api"
-)
+include("core", "api")
