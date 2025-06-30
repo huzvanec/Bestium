@@ -12,7 +12,6 @@ allprojects {
     group = "cz.jeme"
     version = "1.0.0"
 
-
     apply {
         plugin("kotlin")
         plugin("java")
@@ -67,8 +66,12 @@ tasks {
 
     runServer {
         downloadPlugins {
-            modrinth("bettermodel", "1.5.2")
+            val bmVer = project.configurations["compileOnly"].dependencies
+                .first { it.group == "io.github.toxicity188" && it.name == "BetterModel" }
+                .version!!
+
+            modrinth("bettermodel", bmVer)
         }
-        minecraftVersion("1.21.4")
+        minecraftVersion(project.properties["minecraftVersion"] as String)
     }
 }
