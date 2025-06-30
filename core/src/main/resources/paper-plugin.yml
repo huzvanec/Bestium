@@ -1,6 +1,6 @@
 name: Bestium
 version: '${version}'
-main: cz.jeme.bestium.BestiumImpl
+main: cz.jeme.bestium.BestiumPlugin
 bootstrapper: cz.jeme.bestium.BestiumBootstrapper
 api-version: '${minecraftVersion}'
 author: Hužva

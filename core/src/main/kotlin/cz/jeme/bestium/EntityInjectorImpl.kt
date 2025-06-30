@@ -1,244 +1,122 @@
 package cz.jeme.bestium
 
-import com.mojang.datafixers.DataFixUtils
-import com.mojang.datafixers.types.Type
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
 import cz.jeme.bestium.api.inject.Injectable
-import cz.jeme.bestium.craft.CraftCustomEntity
-import cz.jeme.bestium.craft.CraftCustomLivingEntity
-import cz.jeme.bestium.util.setStaticFinal
-import cz.jeme.bestium.util.toResourceLocation
 import kr.toxicity.model.api.BetterModel
 import net.kyori.adventure.key.Key
-import net.minecraft.SharedConstants
-import net.minecraft.core.Holder
-import net.minecraft.core.MappedRegistry
-import net.minecraft.core.Registry
-import net.minecraft.resources.ResourceKey
-import net.minecraft.util.datafix.DataFixers
-import net.minecraft.util.datafix.fixes.References
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier
-import net.minecraft.world.entity.ai.attributes.DefaultAttributes
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
-import org.bukkit.craftbukkit.CraftServer
-import org.bukkit.craftbukkit.entity.CraftEntityType
-import org.bukkit.craftbukkit.entity.CraftEntityTypes
-import org.bukkit.craftbukkit.entity.CraftEntityTypes.EntityTypeData
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.*
-import java.util.function.BiFunction
-import java.util.function.Consumer
-import java.util.logging.Level
-import net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE as ENTITY_TYPE_REGISTRY
-import org.bukkit.entity.Entity as BukkitEntity
-import org.bukkit.entity.EntityType as BukkitEntityType
+import java.util.function.Supplier
 
 
 internal object EntityInjectorImpl : EntityInjector {
-    private val logger by lazy { BestiumImpl.logger }
+    private val logger = ComponentLogger.logger(javaClass)
 
-    private val injections = mutableMapOf<Class<out Entity>, EntityInjection<*>>()
+    private val registrations = mutableSetOf<Supplier<EntityInjection<*, *>>>()
+    private val injections = hashMapOf<Class<out Entity>, EntityInjection<*, *>>()
 
-    override fun <T> injections(): Map<Class<T>, EntityInjection<T>> where T : Entity, T : Injectable {
-        @Suppress("UNCHECKED_CAST")
-        return injections as Map<Class<T>, EntityInjection<T>>
+    private var phase: EntityInjector.Phase = EntityInjector.Phase.REGISTRATION
+
+    override fun phase() = phase
+
+    override fun <T> injections(): Map<Class<T>, EntityInjection<T, *>> where T : Entity, T : Injectable {
+        when (phase) {
+            EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> {
+                throw IllegalStateException("Injection registrations not resolved yet")
+            }
+
+            else -> {
+                @Suppress("UNCHECKED_CAST")
+                return injections as Map<Class<T>, EntityInjection<T, *>>
+            }
+        }
     }
-
-    private val types = mutableMapOf<Class<out Entity>, EntityType<*>>()
 
     override fun <T> types(): Map<Class<T>, EntityType<T>> where T : Entity, T : Injectable {
-        @Suppress("UNCHECKED_CAST")
-        return types as Map<Class<T>, EntityType<T>>
+        when (phase) {
+            EntityInjector.Phase.INJECTED -> {
+                @Suppress("UNCHECKED_CAST")
+                return unit.types as Map<Class<T>, EntityType<T>>
+            }
+
+            else -> {
+                throw IllegalStateException("Injection is not complete yet")
+            }
+        }
     }
-
-    var frozen: Boolean = false
-        private set
-
-    override fun frozen() = frozen
 
     private val keys = mutableSetOf<Key>()
 
-    override fun register(injection: EntityInjection<*>) {
-        if (frozen)
-            throw IllegalStateException("Entities already injected. Registrations must be done before the plugin is loaded.")
-        val clazz = injection.entityClass()
-        if (injections.containsKey(clazz))
-            throw IllegalArgumentException("There is already a registered injection for the entity class '${clazz.name}'")
-        if (keys.contains(injection.key()))
-            throw IllegalArgumentException("There is already a registered injection with key '${injection.key()}'")
-        keys.add(injection.key())
-        injections[clazz] = injection
+    override fun register(injectionSupplier: Supplier<EntityInjection<*, *>>) {
+        registrations.add(injectionSupplier)
     }
 
-    private fun doInject() {
-        // reset entity type holders
-        MappedRegistry::class.java.getDeclaredField("unregisteredIntrusiveHolders")
-            .apply { isAccessible = true }
-            .set(
-                ENTITY_TYPE_REGISTRY,
-                IdentityHashMap<EntityType<*>, Holder.Reference<EntityType<*>>>()
-            )
+    private lateinit var unit: InjectionUnit
 
-        // unfreeze entity type registry
-        MappedRegistry::class.java.getDeclaredField("frozen")
-            .apply { isAccessible = true }
-            .set(ENTITY_TYPE_REGISTRY, false)
-
-        // obtain data fixer types
-        @Suppress("UNCHECKED_CAST")
-        val dataFixer = DataFixers.getDataFixer()
-            .getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion.version))
-            .findChoiceType(References.ENTITY)
-            .types() as MutableMap<String, Type<*>>
-
-        // obtain attribute suppliers
-        val attributeSuppliers = DefaultAttributes::class.java.getDeclaredField("SUPPLIERS")
-            .apply { isAccessible = true }
-
-        @Suppress("UNCHECKED_CAST")
-        val attributeSupplierMap = (
-                attributeSuppliers.get(null) as Map<EntityType<out Entity>, AttributeSupplier>
-                ).toMutableMap()
-
-        // obtain bukkit entity type data
-        val entityTypeData = CraftEntityTypes::class.java.getDeclaredField("ENTITY_TYPE_DATA")
-            .apply { isAccessible = true }
-
-        @Suppress("UNCHECKED_CAST")
-        val entityTypeDataMap = (
-                entityTypeData.get(null) as Map<BukkitEntityType, EntityTypeData<*, *>>
-                ).toMutableMap()
-
-        // map of backing entity type -> list of custom entity classes
-        val bukkitTypeDataContainer = mutableMapOf<EntityType<out Entity>, MutableList<Class<out Entity>>>()
-
-        for (inj in injections.values) {
-            val entityClass = inj.entityClass()
-            val key = inj.key()
-            val keyStr = key.asString()
-            val backingType = inj.backingType()
-
-            // copy data fixer from backing type
-            dataFixer[keyStr] = dataFixer[ENTITY_TYPE_REGISTRY.getKey(backingType).toString()]
-                ?: throw IllegalStateException("No data fixer registered for backing type: '$backingType'")
-
-            // create main entity type
-            val nmsType = EntityType.Builder.of(
-                inj.entityFactory(),
-                inj.mobCategory()
-            )
-                .clientTrackingRange(backingType.clientTrackingRange())
-                .sized(backingType.width, backingType.height)
-                .eyeHeight(backingType.dimensions.eyeHeight)
-                .apply {
-                    @Suppress("UNCHECKED_CAST")
-                    (inj.typeCustomizer() as Consumer<EntityType.Builder<out Entity>>).accept(this)
-                }
-                .build(
-                    ResourceKey.create(
-                        ENTITY_TYPE_REGISTRY.key(),
-                        key.toResourceLocation()
-                    )
-                )
-
-            // register entity type to registry
-            ENTITY_TYPE_REGISTRY.createIntrusiveHolder(nmsType)
-            Registry.register(ENTITY_TYPE_REGISTRY, keyStr, nmsType)
-
-            // register default attributes
-            inj.attributes()?.let {
-                attributeSupplierMap[nmsType] = it
+    private fun loadInjections() {
+        phase = EntityInjector.Phase.PRE_INJECTION
+        registrations
+            .map(Supplier<EntityInjection<*, *>>::get)
+            .forEach { injection ->
+                val clazz = injection.entityClass()
+                if (injections.containsKey(clazz))
+                    throw IllegalArgumentException("Duplicate registered injection with entity class: '${clazz.name}'")
+                if (keys.contains(injection.key()))
+                    throw IllegalArgumentException("Duplicate registered injection with key: '${injection.key()}'")
+                keys.add(injection.key())
+                injections[clazz] = injection
             }
-
-            // copy registry holder from backing type 
-            val registryHolder = EntityType::class.java.getDeclaredField("builtInRegistryHolder")
-                .apply { isAccessible = true }
-            registryHolder.set(nmsType, registryHolder.get(backingType))
-
-            // add class to bukkit type container
-            val classes = bukkitTypeDataContainer.computeIfAbsent(backingType) { mutableListOf() }
-            val index = classes.indexOfFirst { it.isAssignableFrom(entityClass) }
-                .let { if (it == -1) classes.size else it }
-            classes.add(index, entityClass)
-
-            // store entity type for later use
-            types[entityClass] = nmsType
-        }
-
-        // set default attributes
-        attributeSuppliers.setStaticFinal(attributeSupplierMap)
-
-        // inject into backing bukkit entity type data
-        bukkitTypeDataContainer.forEach { (type, classes) ->
-            val craftType = CraftEntityType.minecraftToBukkit(type)
-            val originalData = entityTypeDataMap[craftType]!!
-
-            entityTypeDataMap[craftType] = EntityTypeData(
-                craftType,
-                BukkitEntity::class.java,
-                { server, nms ->
-                    val matchingPair = classes.firstOrNull { it.isInstance(nms) }
-
-                    @Suppress("UNCHECKED_CAST")
-                    if (matchingPair == null)
-                        (originalData.convertFunction as BiFunction<CraftServer, Entity, BukkitEntity>).apply(
-                            server,
-                            nms
-                        )
-                    else if (nms is LivingEntity) CraftCustomLivingEntity(server, nms)
-                    else CraftCustomEntity(server, nms)
-                },
-                originalData.spawnFunction
-            )
-        }
-
-        entityTypeData.setStaticFinal(entityTypeDataMap)
+        unit = InjectionUnit(injections.values)
     }
 
-    /**
-     * Injects all registered custom entities into the game runtime.
-     *
-     * Once called, no further registrations can happen.
-     * Must be called before the worlds are loaded to ensure that custom entities are not removed.
-     *
-     * If any exceptions occur during the injection phase, the JVM is immediately terminated to prevent further data corruption.
-     * @return `true` if all entities were successfully injected, `false` if there were no entities to inject
-     * @throws IllegalStateException if the injector is already frozen or
-     * if the backing type of an injection does not have a registered data fixer
-     */
-    fun inject(): Boolean {
-        if (frozen) throw IllegalStateException("Entities already injected")
-        frozen = true
+    fun injectMinecraft(): Boolean {
+        if (phase != EntityInjector.Phase.REGISTRATION) throw IllegalStateException("Invalid phase for phase 1 injection: $phase")
+
+        // load injections from suppliers
+        loadInjections()
+
+        phase = EntityInjector.Phase.INJECTION_PHASE_1
 
         if (injections.isEmpty()) {
             logger.info("There are no entities to inject")
             return false
         }
 
-        val toInject = injections.size
-        logger.info("Injecting $toInject entit${if (toInject == 1) "y" else "ies"}...")
+        return tryInject(unit::minecraftInjection)
+    }
 
+    fun injectBukkit(): Boolean {
+        if (phase != EntityInjector.Phase.INJECTION_PHASE_1) throw IllegalStateException("Invalid phase for phase 2 injection: $phase")
+        phase = EntityInjector.Phase.INJECTION_PHASE_2
+        if (injections.isEmpty()) return false
+        return tryInject {
+            unit.bukkitInjection()
+            phase = EntityInjector.Phase.INJECTED
+        }
+    }
+
+    private fun tryInject(injectFun: () -> Unit): Boolean {
         try {
-            doInject()
-            logger.info("Injection success")
+            injectFun()
+            return true
         } catch (t: Throwable) {
-            logger.log(Level.SEVERE, "A fatal exception occurred during injection phase: ", t)
-            logger.severe("The server will now be terminated to prevent further data corruption")
+            logger.error("A fatal exception occurred during injection phase: ", t)
+            logger.error("The server will now be terminated to prevent further data corruption")
 
             // Flush and stop all logging
             (LogManager.getContext(false) as LoggerContext).stop()
             // Terminate JVM
             Runtime.getRuntime().halt(-1)
+            return false
         }
-        return true
     }
 
     /**
@@ -252,22 +130,22 @@ internal object EntityInjectorImpl : EntityInjector {
      * @throws IOException if an I/O exception occurs during model file copying
      */
     fun copyModels() {
-        if (!frozen)
-            throw IllegalStateException("Models can be copied only after all entities are injected and injection is frozen")
-        if (!(BestiumImpl.pluginSupport().betterModel()))
+        if (phase != EntityInjector.Phase.INJECTED)
+            throw IllegalStateException("Models can be copied only after all entities are injected")
+        if (!PluginSupportImpl.betterModel())
             throw IllegalStateException("Models can be copied only when BetterModel is loaded")
 
-        val modelsDir = File((BetterModel.inst() as JavaPlugin).dataFolder, "models/.bestium")
+        val modelsDir = File((BetterModel.plugin() as JavaPlugin).dataFolder, "models/.bestium")
         modelsDir.mkdirs()
 
         for (inj in injections.values) {
             val modelUrl = inj.modelUrl() ?: continue
             val outputFile = File(modelsDir, inj.modelName()!! + ".bbmodel")
-            val inputStream = modelUrl.openStream()
-            val outputStream = FileOutputStream(outputFile)
-            inputStream.copyTo(outputStream)
-            inputStream.close()
-            outputStream.close()
+            modelUrl.openStream().use { input ->
+                FileOutputStream(outputFile).use { output ->
+                    input.copyTo(output, bufferSize = 2 shl 13)
+                }
+            }
         }
     }
 }
