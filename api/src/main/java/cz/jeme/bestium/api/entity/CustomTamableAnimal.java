@@ -17,7 +17,7 @@ public abstract class CustomTamableAnimal extends TamableAnimal implements Injec
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

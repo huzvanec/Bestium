@@ -17,7 +17,7 @@ public abstract class CustomAmbientCreature extends AmbientCreature implements I
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

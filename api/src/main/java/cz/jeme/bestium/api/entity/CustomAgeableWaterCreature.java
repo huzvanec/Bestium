@@ -17,7 +17,7 @@ public abstract class CustomAgeableWaterCreature extends AgeableWaterCreature im
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

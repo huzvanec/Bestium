@@ -17,7 +17,7 @@ public abstract class CustomLivingEntity extends LivingEntity implements Injecta
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

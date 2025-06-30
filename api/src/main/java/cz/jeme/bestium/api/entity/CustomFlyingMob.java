@@ -17,7 +17,7 @@ public abstract class CustomFlyingMob extends FlyingMob implements Injectable {
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

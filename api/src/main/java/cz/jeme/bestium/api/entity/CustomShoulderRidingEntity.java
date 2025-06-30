@@ -17,7 +17,7 @@ public abstract class CustomShoulderRidingEntity extends ShoulderRidingEntity im
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

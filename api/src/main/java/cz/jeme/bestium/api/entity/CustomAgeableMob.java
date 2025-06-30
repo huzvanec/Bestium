@@ -17,7 +17,7 @@ public abstract class CustomAgeableMob extends AgeableMob implements Injectable 
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

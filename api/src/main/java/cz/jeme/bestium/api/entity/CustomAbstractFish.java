@@ -17,7 +17,7 @@ public abstract class CustomAbstractFish extends AbstractFish implements Injecta
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

@@ -17,7 +17,7 @@ public abstract class CustomAbstractGolem extends AbstractGolem implements Injec
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

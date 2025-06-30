@@ -16,7 +16,7 @@ public abstract class CustomEntity extends Entity implements Injectable {
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

@@ -17,7 +17,7 @@ public abstract class CustomWaterAnimal extends WaterAnimal implements Injectabl
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override

@@ -17,7 +17,7 @@ public abstract class CustomMob extends Mob implements Injectable {
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_getType();
+        return bestium_backingType();
     }
 
     @Override
