@@ -1,5 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
+import cz.jeme.bestium.api.util.KeyUtils;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -15,10 +16,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @NullMarked
-final class EntityInjectionImpl<T extends Entity & Injectable> implements EntityInjection<T> {
+final class EntityInjectionImpl<T extends Entity & Injectable, B extends org.bukkit.entity.Entity> implements EntityInjection<T, B> {
     private final Key key;
     private final Class<T> entityClass;
     private final EntityType.EntityFactory<T> entityFactory;
+    private final ConvertFunction<T, B> convertFunction;
     private final EntityType<?> backingType;
     private final MobCategory category;
     private final Consumer<EntityType.Builder<T>> typeBuilder;
@@ -26,18 +28,17 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
     private final @Nullable AttributeSupplier attributes;
     private final @Nullable URL modelUrl;
 
-    private EntityInjectionImpl(final BuilderImpl<T> builder) {
+    private EntityInjectionImpl(final BuilderImpl<T, B> builder) {
         key = builder.key;
         entityClass = builder.entityClass;
         entityFactory = builder.entityFactory;
+        convertFunction = builder.convertFunction;
         backingType = builder.backingType;
         category = builder.category;
         typeBuilder = builder.typeBuilder;
         attributes = builder.attributes;
         modelUrl = builder.modelUrl;
-        modelName = modelUrl == null
-                ? null
-                : "bestium" + '.' + key.namespace() + '.' + key.value();
+        modelName = modelUrl == null ? null : KeyUtils.keyToModelName(key);
     }
 
     @Override
@@ -53,6 +54,11 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
     @Override
     public EntityType.EntityFactory<T> entityFactory() {
         return entityFactory;
+    }
+
+    @Override
+    public ConvertFunction<T, B> convertFunction() {
+        return convertFunction;
     }
 
     @Override
@@ -85,10 +91,11 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         return modelName;
     }
 
-    static final class BuilderImpl<T extends Entity & Injectable> implements Builder<T> {
+    static final class BuilderImpl<T extends Entity & Injectable, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
         private final Key key;
         private final Class<T> entityClass;
         private final EntityType.EntityFactory<T> entityFactory;
+        private final ConvertFunction<T, B> convertFunction;
         private final boolean isLivingEntity;
 
         private EntityType<?> backingType = EntityType.SILVERFISH;
@@ -100,10 +107,12 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
 
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,
-                           final EntityType.EntityFactory<T> entityFactory) {
+                           final EntityType.EntityFactory<T> entityFactory,
+                           final ConvertFunction<T, B> convertFunction) {
             this.key = key;
             this.entityClass = entityClass;
             this.entityFactory = entityFactory;
+            this.convertFunction = convertFunction;
 
             isLivingEntity = LivingEntity.class.isAssignableFrom(entityClass);
             attributes = isLivingEntity
@@ -128,7 +137,12 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         }
 
         @Override
-        public Builder<T> backingType(final EntityType<?> backingType) {
+        public ConvertFunction<T, B> convertFunction() {
+            return convertFunction;
+        }
+
+        @Override
+        public Builder<T, B> backingType(final EntityType<?> backingType) {
             this.backingType = backingType;
             return this;
         }
@@ -139,7 +153,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         }
 
         @Override
-        public Builder<T> mobCategory(final MobCategory category) {
+        public Builder<T, B> mobCategory(final MobCategory category) {
             this.category = category;
             return this;
         }
@@ -150,7 +164,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         }
 
         @Override
-        public Builder<T> typeCustomizer(final Consumer<EntityType.Builder<T>> typeBuilder) {
+        public Builder<T, B> typeCustomizer(final Consumer<EntityType.Builder<T>> typeBuilder) {
             this.typeBuilder = typeBuilder;
             return this;
         }
@@ -161,7 +175,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         }
 
         @Override
-        public Builder<T> attributes(final AttributeSupplier attributes) {
+        public Builder<T, B> attributes(final AttributeSupplier attributes) {
             if (!isLivingEntity)
                 throw new UnsupportedOperationException(
                         "'" + entityClass.getName() +
@@ -179,7 +193,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         }
 
         @Override
-        public Builder<T> model(final URL url) {
+        public Builder<T, B> model(final URL url) {
             this.modelUrl = url;
             return this;
         }
@@ -190,7 +204,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         }
 
         @Override
-        public @NotNull EntityInjection<T> build() {
+        public @NotNull EntityInjection<T, B> build() {
             return new EntityInjectionImpl<>(this);
         }
     }
@@ -207,9 +221,9 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
 
     @Override
     public boolean equals(final @Nullable Object o) {
-        if (!(o instanceof final EntityInjectionImpl<?> that)) return false;
+        if (!(o instanceof final EntityInjectionImpl<?, ?> that)) return false;
 
-        return key.equals(that.key) && entityClass.equals(that.entityClass) && entityFactory.equals(that.entityFactory) && backingType.equals(that.backingType) && category == that.category && typeBuilder.equals(that.typeBuilder) && Objects.equals(attributes, that.attributes);
+        return key.equals(that.key) && entityClass.equals(that.entityClass) && entityFactory.equals(that.entityFactory) && convertFunction.equals(that.convertFunction) && backingType.equals(that.backingType) && category == that.category && typeBuilder.equals(that.typeBuilder) && Objects.equals(attributes, that.attributes);
     }
 
     @Override
@@ -217,6 +231,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable> implements Entity
         int result = key.hashCode();
         result = 31 * result + entityClass.hashCode();
         result = 31 * result + entityFactory.hashCode();
+        result = 31 * result + convertFunction.hashCode();
         result = 31 * result + backingType.hashCode();
         result = 31 * result + category.hashCode();
         result = 31 * result + typeBuilder.hashCode();

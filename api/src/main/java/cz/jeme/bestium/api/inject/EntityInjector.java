@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Responsible for injecting custom entities into the Minecraft server runtime.
@@ -13,55 +14,24 @@ import java.util.Map;
  * registers them into both the Minecraft and Bukkit registries, and ensures proper
  * data fixer and type mapping.
  * <p>
- * After injection, the system becomes frozen and no further entities can be registered.
+ * After registration, the system becomes frozen and no further entities can be registered.
+ *
+ * @see #register(Supplier)
+ * @see #canRegister()
  */
 @NullMarked
 public interface EntityInjector {
     /**
-     * Registers an entity by building it from the provided builder.
-     * <p>
-     * This is a convenience method equivalent to:
-     * <pre>{@code
-     * register(builder.build());
-     * }</pre>
-     *
-     * @param builder the builder used to construct and register the entity injection
-     * @throws IllegalStateException    if the injector is already frozen and no more entities can be registered
-     * @throws IllegalArgumentException if the entity has already been registered for injection
-     * @see #frozen()
-     * @see EntityInjection
-     */
-    default void register(final EntityInjection.Builder<?> builder) {
-        register(builder.build());
-    }
-
-    /**
      * Registers a prepared entity injection for later application.
      * <p>
-     * Should be called before the injection phase is finalized.
+     * Should be called before the registration phase ends.
      *
-     * @param injection the entity injection to register
-     * @throws IllegalStateException    if the injector is already frozen and no more entities can be registered
-     * @throws IllegalArgumentException if an entity with the same class or key as this injection has already been registered for injection
-     * @see #frozen()
+     * @param injectionSupplier supplier that provides the entity injection to register
+     * @throws IllegalStateException if the injector is already frozen and no more entities can be registered
      * @see EntityInjection
+     * @see #canRegister()
      */
-    void register(final EntityInjection<?> injection);
-
-    /**
-     * Indicates whether the injection phase has been completed.
-     * <p>
-     * When frozen, no further entities may be registered and the injector
-     * can no longer be used to modify the runtime.
-     * <p>
-     * The injection phase always runs before worlds are loaded. This ensures
-     * that all custom entities are properly registered before the server attempts
-     * to load them from disk, preventing data corruption due to
-     * unrecognized entity types.
-     *
-     * @return {@code true} if the injector has been frozen, {@code false} otherwise
-     */
-    boolean frozen();
+    void register(final Supplier<EntityInjection<?, ?>> injectionSupplier);
 
     /**
      * Returns an unmodifiable view of all registered entity injections.
@@ -71,8 +41,10 @@ public interface EntityInjector {
      *
      * @param <T> the entity type
      * @return an unmodifiable map of entity classes to their registered injections
+     * @throws IllegalStateException if the injector is still in the {@link Phase#REGISTRATION} or {@link Phase#PRE_INJECTION} phase
+     * @see #phase()
      */
-    <T extends Entity & Injectable> @Unmodifiable Map<Class<T>, EntityInjection<T>> injections();
+    <T extends Entity & Injectable> @Unmodifiable Map<Class<T>, EntityInjection<T, ?>> injections();
 
     /**
      * Returns an unmodifiable view of all generated entity types.
@@ -82,6 +54,54 @@ public interface EntityInjector {
      *
      * @param <T> the entity type
      * @return an unmodifiable map of entity classes to their generated entity types
+     * @throws IllegalStateException if the injector is in any other than the {@link Phase#INJECTED} phase
+     * @see #phase()
      */
     <T extends Entity & Injectable> @Unmodifiable Map<Class<T>, EntityType<T>> types();
+
+    /**
+     * Returns the current phase of the entity injection lifecycle.
+     *
+     * @return the current {@link Phase}
+     */
+    Phase phase();
+
+    /**
+     * Helper method that returns whether injection registrations are still allowed.
+     *
+     * @return {@code true} if the injector is currently in the {@link Phase#REGISTRATION} phase, {@code false} otherwise
+     */
+    default boolean canRegister() {
+        return phase() == Phase.REGISTRATION;
+    }
+
+    /**
+     * Represents the lifecycle phases of the entity injection process.
+     * <p>
+     * The injector transitions through these phases in order.
+     */
+    enum Phase {
+        /**
+         * The injector is open to entity registration.
+         * Plugins may provide their registrations via {@link #register(Supplier)}.
+         */
+        REGISTRATION,
+        /**
+         * Registration is closed, all suppliers are resolved and stored.
+         * No further registrations are allowed.
+         */
+        PRE_INJECTION,
+        /**
+         * Phase 1: inject into Minecraft internals.
+         */
+        INJECTION_PHASE_1,
+        /**
+         * Phase 2: inject into Bukkit internals.
+         */
+        INJECTION_PHASE_2,
+        /**
+         * All phases complete, entities are fully injected.
+         */
+        INJECTED
+    }
 }

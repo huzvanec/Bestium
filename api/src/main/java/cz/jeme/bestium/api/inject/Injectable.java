@@ -1,12 +1,12 @@
 package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
-import kr.toxicity.model.api.tracker.Tracker;
+import cz.jeme.bestium.api.util.KeyUtils;
+import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
 import net.kyori.adventure.key.Key;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -27,13 +27,17 @@ public interface Injectable {
     @SuppressWarnings("SuspiciousMethodCalls")
     @ApiStatus.NonExtendable
     default Key bestium_key() {
-        return Objects.requireNonNull(Bestium.instance().injector().injections().get(bestium_asEntity().getClass()).key());
+        return Objects.requireNonNull(Bestium.injector().injections().get(bestium_asEntity().getClass()).key());
     }
 
-    @SuppressWarnings("SuspiciousMethodCalls")
     @ApiStatus.NonExtendable
-    default EntityType<?> bestium_getType() {
-        return Objects.requireNonNull(Bestium.instance().injector().injections().get(bestium_asEntity().getClass()).backingType());
+    default EntityType<?> bestium_backingType() {
+        return Bestium.injector().injections().get(getClass()).backingType();
+    }
+
+    @ApiStatus.NonExtendable
+    default EntityType<?> bestium_realType() {
+        return Bestium.injector().types().get(getClass());
     }
 
     @ApiStatus.NonExtendable
@@ -43,15 +47,11 @@ public interface Injectable {
 
     @ApiStatus.NonExtendable
     default void bestium_init() {
-        if (
-                Bestium.instance().pluginSupport().betterModel() &&
-                this instanceof final LivingEntity thisEntity
-        ) {
-            final Key key = bestium_key();
-            thisEntity.getBukkitEntity().getPersistentDataContainer().set(
-                    Tracker.TRACKING_ID,
+        if (Bestium.pluginSupport().betterModel()) {
+            bestium_asEntity().getBukkitEntity().getPersistentDataContainer().set(
+                    EntityTrackerRegistry.TRACKING_ID,
                     PersistentDataType.STRING,
-                    key.namespace() + '.' + key.value()
+                    KeyUtils.keyToModelName(bestium_key())
             );
         }
     }

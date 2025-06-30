@@ -1,5 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
+import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
@@ -18,40 +19,49 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Represents all necessary metadata and configuration for injecting a custom {@link Entity} into the game.
  * <p>
- * Created using {@link #builder(Key, Class, EntityType.EntityFactory)}.
+ * Created using {@link #builder(Key, Class, EntityType.EntityFactory, ConvertFunction)}.
  * <p>
- * After an instance is created, it can be injected into the server runtime using {@link EntityInjector#register(EntityInjection)}.
+ * After an instance is created, it can be injected into the server runtime using {@link EntityInjector#register(Supplier)} )}.
  *
- * @param <T> the type of the {@link Entity} being injected
+ * @param <M> the type of the Minecraft entity being injected
+ * @param <E> the type of the Bukkit entity the Minecraft entity can be converted to
  * @see EntityInjector
  */
 @NullMarked
-public sealed interface EntityInjection<T extends Entity & Injectable> permits EntityInjectionImpl {
+public sealed interface EntityInjection<M extends Entity & Injectable, E extends org.bukkit.entity.Entity> permits EntityInjectionImpl {
 
     /**
-     * Gets the unique key representing this entity type.
+     * Returns the unique key representing this entity type.
      *
      * @return the namespaced key
      */
     Key key();
 
     /**
-     * Gets the class of the custom entity.
+     * Returns the class of the custom entity.
      *
      * @return the entity class
      */
-    Class<T> entityClass();
+    Class<M> entityClass();
 
     /**
-     * Gets the factory used to create new instances of this entity.
+     * Returns the factory used to create new instances of this entity.
      *
      * @return the entity factory
      */
-    EntityType.EntityFactory<T> entityFactory();
+    EntityType.EntityFactory<M> entityFactory();
+
+    /**
+     * Returns the function that converts the Minecraft entity of type {@link M} into a Bukkit entity of type {@link E}.
+     *
+     * @return the convert function
+     */
+    ConvertFunction<M, E> convertFunction();
 
     /**
      * Returns the backing Minecraft entity type used for client-side rendering and hitbox size.
@@ -72,7 +82,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
      *
      * @return the builder customizer
      */
-    Consumer<EntityType.Builder<T>> typeCustomizer();
+    Consumer<EntityType.Builder<M>> typeCustomizer();
 
     /**
      * Returns the attribute supplier used to define default attributes for this entity.
@@ -103,7 +113,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
      *
      * @return the generated model name, or {@code null} if no model URL was set
      * @see #key()
-     * @see #modelUrl() 
+     * @see #modelUrl()
      */
     @Nullable
     String modelName();
@@ -111,25 +121,34 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
     /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
      *
-     * @param key           a namespaced key such as {@code my_plugin:my_custom_entity}
-     * @param entityClass   the class representing your custom entity
-     * @param entityFactory the factory used to instantiate the entity (usually {@code CustomEntityClass::new})
-     * @param <T>           the type of the entity
+     * @param key             a namespaced key such as {@code my_plugin:my_custom_entity}
+     * @param entityClass     the class representing your custom entity
+     * @param entityFactory   the factory used to instantiate the entity (usually {@code CustomEntityClass::new})
+     * @param convertFunction the factory used to create a Bukkit representation of this entity (e.g., {@code CraftAnimals::new})
+     * @param <M>             the type of the Minecraft entity being injected
+     * @param <E>             the type of the Bukkit entity the Minecraft entity can be converted to
      * @return a new builder instance
      * @see NamespacedKey#NamespacedKey(Plugin, String)
      */
-    static <T extends Entity & Injectable> Builder<T> builder(final Key key,
-                                                              final Class<T> entityClass,
-                                                              final EntityType.EntityFactory<T> entityFactory) {
-        return new EntityInjectionImpl.BuilderImpl<>(key, entityClass, entityFactory);
+    static <M extends Entity & Injectable, E extends org.bukkit.entity.Entity> Builder<M, E> builder(final Key key,
+                                                                                                     final Class<M> entityClass,
+                                                                                                     final EntityType.EntityFactory<M> entityFactory,
+                                                                                                     final ConvertFunction<M, E> convertFunction) {
+        return new EntityInjectionImpl.BuilderImpl<>(
+                key,
+                entityClass,
+                entityFactory,
+                convertFunction
+        );
     }
 
     /**
      * A builder used to configure and construct an {@link EntityInjection}.
      *
-     * @param <T> the entity type
+     * @param <M> the type of the Minecraft entity being injected
+     * @param <E> the type of the Bukkit entity the Minecraft entity can be converted to
      */
-    sealed interface Builder<T extends Entity & Injectable> extends AbstractBuilder<EntityInjection<T>> permits EntityInjectionImpl.BuilderImpl {
+    sealed interface Builder<M extends Entity & Injectable, E extends org.bukkit.entity.Entity> extends AbstractBuilder<EntityInjection<M, E>> permits EntityInjectionImpl.BuilderImpl {
 
         /**
          * Gets the entity key.
@@ -143,14 +162,21 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          *
          * @return the class
          */
-        Class<T> entityClass();
+        Class<M> entityClass();
 
         /**
          * Gets the entity factory.
          *
          * @return the factory
          */
-        EntityType.EntityFactory<T> entityFactory();
+        EntityType.EntityFactory<M> entityFactory();
+
+        /**
+         * Gets the craft entity factory.
+         *
+         * @return the factory
+         */
+        ConvertFunction<M, E> convertFunction();
 
         /**
          * Sets the backing type for rendering and size fallback.
@@ -160,7 +186,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @param backingType the fallback entity type
          * @return this builder
          */
-        Builder<T> backingType(final EntityType<?> backingType);
+        Builder<M, E> backingType(final EntityType<?> backingType);
 
         /**
          * Gets the backing entity type.
@@ -177,7 +203,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @param category the mob category
          * @return this builder
          */
-        Builder<T> mobCategory(final MobCategory category);
+        Builder<M, E> mobCategory(final MobCategory category);
 
         /**
          * Gets the mob category.
@@ -197,14 +223,14 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @param typeBuilder the builder customizer
          * @return this builder
          */
-        Builder<T> typeCustomizer(final Consumer<EntityType.Builder<T>> typeBuilder);
+        Builder<M, E> typeCustomizer(final Consumer<EntityType.Builder<M>> typeBuilder);
 
         /**
          * Gets the type builder customizer.
          *
          * @return the builder consumer
          */
-        Consumer<EntityType.Builder<T>> typeCustomizer();
+        Consumer<EntityType.Builder<M>> typeCustomizer();
 
         /**
          * Sets the default attributes for this entity.
@@ -218,7 +244,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @throws UnsupportedOperationException if the entity is not a LivingEntity
          * @see AttributeSupplier.Builder
          */
-        Builder<T> attributes(final AttributeSupplier attributes);
+        Builder<M, E> attributes(final AttributeSupplier attributes);
 
         /**
          * Sets the default attributes for this entity.
@@ -232,7 +258,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @throws UnsupportedOperationException if the entity is not a LivingEntity
          * @see AttributeSupplier.Builder
          */
-        default Builder<T> attributes(final AttributeSupplier.Builder builder) {
+        default Builder<M, E> attributes(final AttributeSupplier.Builder builder) {
             return attributes(builder.build());
         }
 
@@ -245,18 +271,21 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
         AttributeSupplier attributes();
 
         /**
-         * Sets the model for this entity using a resource bundled with the given plugin.
+         * Sets the model for this entity using a resource bundled in the plugin's JAR.
          * <p>
          * The resource path must be '{@code /}'-separated (e.g., {@code models/my_entity.bbmodel}).
+         * <p>
+         * This method attempts to load the resource using the bootstrapper's class loader.
          *
-         * @param plugin   the plugin from which to load the resource
-         * @param resource the path to the resource inside the plugin's JAR
+         * @param bootstrapper the plugin bootstrapper whose class loader will be used to load the resource
+         * @param resource     the path to the resource inside the plugin's JAR
          * @return this builder
-         * @throws NullPointerException if the resource cannot be found
+         * @throws NullPointerException if the resource cannot be found in the JAR file
          */
-        default Builder<T> model(final Plugin plugin, final String resource) {
+        @SuppressWarnings("UnstableApiUsage")
+        default Builder<M, E> model(final PluginBootstrap bootstrapper, final String resource) {
             return model(Objects.requireNonNull(
-                    plugin.getClass().getClassLoader().getResource(resource),
+                    bootstrapper.getClass().getClassLoader().getResource(resource),
                     "Resource not found: '" + resource + "'"
             ));
         }
@@ -268,7 +297,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @return this builder
          * @throws IllegalArgumentException if the file's URL is invalid
          */
-        default Builder<T> model(final File file) {
+        default Builder<M, E> model(final File file) {
             try {
                 return model(file.toURI().toURL());
             } catch (final MalformedURLException e) {
@@ -282,7 +311,7 @@ public sealed interface EntityInjection<T extends Entity & Injectable> permits E
          * @param url the URL pointing to the model file
          * @return this builder
          */
-        Builder<T> model(final URL url);
+        Builder<M, E> model(final URL url);
 
         /**
          * Gets the URL of the model associated with this entity.
