@@ -50,3 +50,6 @@ gradle-app.setting
 
 # Minecraft server
 run/
+
+# Publishing passwords and stuff
+.env
