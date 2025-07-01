@@ -21,8 +21,9 @@ implementations.
 
 > [!CAUTION]
 > Bestium is currently unstable.
+
+> [!CAUTION]
 > Due to frequent changes in Minecraft's internal codebase, Bestium only supports the latest Minecraft release.
-> There are no plans for full backward compatibility.
 
 ## Usage
 
@@ -59,6 +60,9 @@ Maven:
 
 > [!TIP]
 > Check [here](https://central.sonatype.com/artifact/cz.jeme/bestium/versions) for the latest version.
+
+> [!CAUTION]
+> There are no plans for full backward compatibility.
 
 ## Building
 
