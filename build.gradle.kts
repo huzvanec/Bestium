@@ -22,7 +22,11 @@ allprojects {
     }
 
     java {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        val version = JavaVersion.toVersion(targetJavaVersion)
+        sourceCompatibility = version
+        targetCompatibility = version
+        if (JavaVersion.current() < version)
+            toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
 
     repositories {
