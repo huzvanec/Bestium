@@ -121,7 +121,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
         logger.info("[Phase 1/2] Refreezing entity type registry")
         frozenField.set(ENTITY_TYPE_REGISTRY, true)
 
-        logger.info("[Phase 1/2] Injection complete")
+        logger.info("[Phase 1/2] Bootstrap injection complete")
     }
 
     fun bukkitInjection() {
@@ -130,6 +130,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
         // map of nms backing entity type -> list of entity injections
         val bukkitTypeDataContainer = mutableMapOf<EntityType<out Entity>, MutableList<EntityInjection<*, *>>>()
 
+        logger.info("[Phase 2/2] Fetching Bukkit entity type registry internals")
         @Suppress("UnstableApiUsage")
         val simpleRegistryMapField = BukkitRegistry.SimpleRegistry::class.java.getDeclaredField("map")
             .apply { isAccessible = true }
@@ -139,6 +140,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 simpleRegistryMapField.get(BukkitRegistry.ENTITY_TYPE) as Map<NamespacedKey, BukkitEntityType>
                 ).toMutableMap()
 
+        logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity registry")
         for (inj in injections) {
             val backingType = inj.backingType()
             val entityClass = inj.entityClass()
@@ -154,7 +156,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             simpleRegistryMap[key.toNamespacedKey()] = CraftEntityType.minecraftToBukkit(backingType)
         }
 
-        logger.info("[Phase 2/2] Retrieving Bukkit entity types")
+        logger.info("[Phase 2/2] Retrieving Bukkit entity type data")
         val bukkitEntityTypeDataField = CraftEntityTypes::class.java.getDeclaredField("ENTITY_TYPE_DATA")
             .apply { isAccessible = true }
 
@@ -163,7 +165,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 bukkitEntityTypeDataField.get(null) as Map<BukkitEntityType, EntityTypeData<*, *>>
                 ).toMutableMap()
 
-        logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
+        logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity type data")
         // inject into backing bukkit entity type data
         bukkitTypeDataContainer.forEach { (type, classes) ->
             val craftType = CraftEntityType.minecraftToBukkit(type)
@@ -189,11 +191,12 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             )
         }
 
-        logger.info("[Phase 2/2] Overwriting Bukkit entity types")
+        logger.info("[Phase 2/2] Overwriting Bukkit entity type data")
         bukkitEntityTypeDataField.setStaticFinal(bukkitEntityTypeData)
 
+        logger.info("[Phase 2/2] Overwriting Bukkit entity type registry internals")
         simpleRegistryMapField.set(BukkitRegistry.ENTITY_TYPE, simpleRegistryMap)
 
-        logger.info("[Phase 2/2] Injection complete")
+        logger.info("[Phase 2/2] Load injection complete")
     }
 }
