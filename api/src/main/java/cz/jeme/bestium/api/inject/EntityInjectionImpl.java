@@ -1,6 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.util.KeyUtils;
+import cz.jeme.bestium.api.util.ModelUtils;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -38,7 +38,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable, B extends org.buk
         typeBuilder = builder.typeBuilder;
         attributes = builder.attributes;
         modelUrl = builder.modelUrl;
-        modelName = modelUrl == null ? null : KeyUtils.keyToModelName(key);
+        modelName = modelUrl == null ? null : ModelUtils.keyToModelName(key);
     }
 
     @Override
