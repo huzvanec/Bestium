@@ -2,7 +2,8 @@
 
 A powerful plugin library for creating custom Minecraft entities with unique behaviors.
 
-Bestium injects your entity code directly into the Minecraft and Bukkit runtimes. Unlike traditional methods, it allows
+Bestium [injects your entity code directly into the Minecraft and Bukkit runtimes](core/src/main/kotlin/cz/jeme/bestium/InjectionUnit.kt).
+Unlike traditional methods, it allows
 you to create custom entities without extending non-abstract vanilla entities—meaning you're not bound by their existing
 implementations.
 
@@ -31,13 +32,14 @@ Download the [latest release](https://github.com/huzvanec/Bestium/releases/lates
 
 ### Code
 
-Add the Bestium API dependency to your project (hosted on [Maven Central](https://central.sonatype.com/)).
+Add the Bestium API dependency to your project (hosted
+on [Maven Central](https://central.sonatype.com/artifact/cz.jeme/bestium)).
 
 Gradle:
 
 ```kts
 dependencies {
-  compileOnly("cz.jeme:bestium:1.0.0")
+    compileOnly("cz.jeme:bestium:1.0.0")
 }
 ```
 
