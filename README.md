@@ -23,6 +23,41 @@ implementations.
 > Due to frequent changes in Minecraft's internal codebase, Bestium only supports the latest Minecraft release.
 > There are no plans for full backward compatibility.
 
+## Usage
+
+### Server
+
+Download the [latest release](https://github.com/huzvanec/Bestium/releases/latest) JAR into the `plugins/` folder.
+
+### Code
+
+Add the Bestium API dependency to your project (hosted on [Maven Central](https://central.sonatype.com/)).
+
+Gradle:
+
+```kts
+dependencies {
+  compileOnly("cz.jeme:bestium:1.0.0")
+}
+```
+
+Maven:
+
+```xml
+
+<dependencies>
+    <dependency>
+        <groupId>cz.jeme</groupId>
+        <artifactId>bestium</artifactId>
+        <version>1.0.0</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+```
+
+> [!TIP]
+> Check [here](https://central.sonatype.com/artifact/cz.jeme/bestium/versions) for the latest version.
+
 ## Building
 
 Requirements:
