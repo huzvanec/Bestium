@@ -36,7 +36,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly("io.github.toxicity188:BetterModel:1.7.0")
+        compileOnly("io.github.toxicity188:BetterModel:1.8.0")
     }
 }
 
