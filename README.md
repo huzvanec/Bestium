@@ -1,5 +1,7 @@
 # Bestium
 
+<img src="branding/capybara.png" alt="Capybara" width="40%" />
+
 A powerful plugin library for creating custom Minecraft entities with unique behaviors.
 
 Bestium [injects your entity code directly into the Minecraft and Bukkit runtimes](core/src/main/kotlin/cz/jeme/bestium/InjectionUnit.kt).
