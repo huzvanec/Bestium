@@ -1,0 +1,131 @@
+---
+title: Project Setup
+description: Learn how to setup your project environment with Bestium.
+---
+
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+To use Bestium, you need to start with a working [Paper plugin setup](https://docs.papermc.io/paper/dev/project-setup/).
+Your build must use either **Gradle Kotlin DSL** or **Gradle Groovy DSL**. Maven cannot be used, because paperweight-userdev
+does not support Maven.
+
+You can write your plugin code in either **Java** or **Kotlin**. Kotlin is recommended for its expressiveness,
+but fully optional.
+
+## Add dependencies
+
+To use Bestium in your plugin project, you'll need two dependencies:
+- [paperweight-userdev](https://docs.papermc.io/paper/dev/userdev/) — for access to Minecraft internals (NMS).
+- [Bestium API](https://central.sonatype.com/artifact/cz.jeme/bestium) — for using Bestium’s entity injection tools.
+
+Your Gradle build configuration should look something like this:
+<Tabs syncKey="buildLang">
+    <TabItem label="Gradle Kotlin DSL">
+        ```kts title="build.gradle.kts" replace
+        plugins {
+            id("io.papermc.paperweight.userdev") version "%{LATEST_USERDEV}%"
+        }
+
+        repositories {
+            mavenCentral()
+        }
+
+        dependencies {
+            compileOnly("cz.jeme:bestium:%{LATEST_BESTIUM}%")
+            paperweight.paperDevBundle("MINECRAFT_VER-R0.1-SNAPSHOT")
+        }
+        ```
+    </TabItem>
+    <TabItem label="Gradle Groovy DSL">
+        ```groovy title="build.gradle" replace
+        plugins {
+            id 'io.papermc.paperweight.userdev' version '%{LATEST_USERDEV}%'
+        }
+
+        repositories {
+            mavenCentral()
+        }
+
+        dependencies {
+            compileOnly 'cz.jeme:bestium:%{LATEST_BESTIUM}%'
+            paperDevBundle 'MINECRAFT_VER-R0.1-SNAPSHOT'
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+Replace `MINECRAFT_VER` with the Minecraft version Bestium requires.
+
+## Verify your setup
+
+Once your build is synced, you should be able to import main Bestium class:
+
+<Tabs syncKey="lang">
+    <TabItem label="Kotlin">
+        ```kotlin
+        import cz.jeme.bestium.api.Bestium
+        ```
+    </TabItem>
+    <TabItem label="Java">
+        ```java
+        import cz.jeme.bestium.api.Bestium;
+        ```
+    </TabItem>
+</Tabs>
+
+## Converting to a Paper plugin
+
+To use Bestium, your plugin must be a [Paper plugin](https://docs.papermc.io/paper/dev/getting-started/paper-plugins/).
+
+This means replacing your `plugin.yml` with a `paper-plugin.yml`.
+
+:::note[Why switch?]
+Paper plugins support additional features like [bootstrappers](https://docs.papermc.io/paper/dev/getting-started/paper-plugins/#bootstrapper),
+which let you run code early in the server initialization process.
+:::
+
+Follow [this guide](https://docs.papermc.io/paper/dev/getting-started/paper-plugins/) to migrate from Bukkit to Paper plugin format.
+
+## Creating a Bootstrapper
+Bootstrappers allow you to run code very early in the Minecraft server's startup sequence.
+This is essential for registering custom entities with Bestium before datapacks (and biomes) are loaded.
+
+To use a bootstrapper:
+1. Implement the `PluginBootstrap` interface:
+    <Tabs syncKey="lang">
+        <TabItem label="Kotlin">
+            ```kotlin title="MyPluginBootstrapper.kt"
+            package com.example.myplugin
+
+            import io.papermc.paper.plugin.bootstrap.BootstrapContext
+            import io.papermc.paper.plugin.bootstrap.PluginBootstrap
+
+            @Suppress("UnstableApiUsage")
+            internal class MyPluginBootstrapper : PluginBootstrap {
+                override fun bootstrap(context: BootstrapContext) {
+                    // Here the injection will happen
+                }
+            }
+            ```
+        </TabItem>
+        <TabItem label="Java">
+            ```java title="MyPluginBootstrapper.java"
+            package com.example.myplugin;
+
+            import io.papermc.paper.plugin.bootstrap.BootstrapContext;
+            import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
+
+            @SuppressWarnings("UnstableApiUsage")
+            public class MyPluginBootstrapper implements PluginBootstrap {
+                @Override
+                public void bootstrap(BootstrapContext context) {
+                    // Here the injection will happen
+                }
+            }
+            ```
+        </TabItem>
+    </Tabs>
+2. Register your class:
+    ```yml title="paper-plugin.yml"
+   bootstrapper: com.example.myplugin.MyPluginBootstrapper
+   ```
