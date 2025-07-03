@@ -138,6 +138,9 @@ public interface Injectable {
     @ApiStatus.NonExtendable
     default void bestium_init() {
         if (Bestium.pluginSupport().betterModel()) {
+            // normal BetterModel API for adding models to entities cannot be used here
+            // as this is run even before the entity is loaded, BetterModel freaks out
+            // and detaches the model from the entity
             bestium_asEntity().getBukkitEntity().getPersistentDataContainer().set(
                     EntityTrackerRegistry.TRACKING_ID,
                     PersistentDataType.STRING,
