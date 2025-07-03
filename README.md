@@ -5,9 +5,10 @@
   <br/>
   <br/>
   <a href="https://bestium.jeme.cz">
-    <img src="branding/docs.png" alt="Docs" width="30%" />
+    <img src="branding/docs.png" alt="Docs" width="15%" />
   </a>
 </div>
+<br/>
 
 Unlike traditional methods, Bestium injects your entity code directly into the Minecraft and Bukkit runtimes, it allows
 you to create custom entities without extending non-abstract vanilla entities, meaning you're not bound by their existing
