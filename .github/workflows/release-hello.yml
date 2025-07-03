@@ -1,0 +1,13 @@
+name: Test Release Trigger
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  say-hello:
+    name: Say Hello on Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet
+        run: echo "🎉 Hello World! A release was just published!"
