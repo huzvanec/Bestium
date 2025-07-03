@@ -50,3 +50,12 @@ mavenPublishing {
         }
     }
 }
+
+tasks {
+    javadoc {
+        (options as? StandardJavadocDocletOptions)?.apply {
+            docTitle = "Bestium API v$version"
+            windowTitle = docTitle
+        }
+    }
+}
