@@ -1,0 +1,19 @@
+[versions]
+java = "21"
+kotlin = "2.2.0"
+shadow = "9.0.0-beta17"
+publish = "0.33.0"
+paperweight = "2.0.0-beta.17"
+paper = "1.21.6-R0.1-SNAPSHOT"
+run-paper = "2.3.1"
+bettermodel = "1.7.0"
+
+[libraries]
+kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+paperweight-userdev-plugin = { group = "io.papermc.paperweight", name = "paperweight-userdev", version.ref = "paperweight" }
+bettermodel = { group = "io.github.toxicity188", name = "BetterModel", version.ref = "bettermodel" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }

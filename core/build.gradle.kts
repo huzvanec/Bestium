@@ -1,15 +1,17 @@
-val minecraftVersion = project.properties["minecraftVersion"] as String
+plugins {
+    id("kotlin-conventions")
+    id("plugin-conventions")
+}
 
 dependencies {
     implementation(project(":api"))
-    paperweight.paperDevBundle("$minecraftVersion-R0.1-SNAPSHOT")
 }
 
 tasks {
     processResources {
         val props = mapOf(
-            "version" to version,
-            "minecraftVersion" to minecraftVersion,
+            "version" to project.version,
+            "minecraftVersion" to paperToMinecraftVersion(libs.versions.paper.get()),
         )
         inputs.properties(props)
         filteringCharset = "UTF-8"

@@ -2,11 +2,9 @@ import com.vanniktech.maven.publish.JavaLibrary
 import com.vanniktech.maven.publish.JavadocJar
 
 plugins {
-    id("com.vanniktech.maven.publish") version "0.33.0"
-}
-
-dependencies {
-    paperweight.paperDevBundle("${project.properties["minecraftVersion"]}-R0.1-SNAPSHOT")
+    id("java-conventions")
+    id("plugin-conventions")
+    alias(libs.plugins.maven.publish)
 }
 
 mavenPublishing {
@@ -21,7 +19,7 @@ mavenPublishing {
     signAllPublications()
 
     coordinates(
-        rootProject.group as String,
+        project.group as String,
         "bestium",
         rootProject.version as String
     )
