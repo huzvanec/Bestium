@@ -1,4 +1,4 @@
-name: Publish Bestium API to Maven Central
+name: Publish API to Maven Central
 
 on:
   release:

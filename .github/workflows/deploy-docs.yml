@@ -1,4 +1,4 @@
-name: Deploy Bestium docs and API javadoc to GitHub Pages
+name: Deploy docs and javadoc
 
 on:
   release:
