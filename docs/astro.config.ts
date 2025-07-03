@@ -10,6 +10,7 @@ export default defineConfig({
         starlight({
             title: 'Bestium Docs',
             social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/huzvanec/Bestium' }],
+            favicon: '/favicon.ico',
             sidebar: [
                 {
                     label: 'Start Here',
