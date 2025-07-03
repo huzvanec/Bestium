@@ -18,7 +18,7 @@ Make sure to choose the correct Minecraft internal class.
 
 ## Choose the right base class
 
-Bestium provides a set of abstract base classes in the `cz.jeme.bestium.api.entity` package that simplify working with injectable entities.
+Bestium provides a set of abstract base classes in the [`cz.jeme.bestium.api.entity`](/javadocs/cz/jeme/bestium/api/entity/package-summary.html) package that simplify working with injectable entities.
 
 Pick the one that best fits your entity:
 - `CustomAnimal` — for passive creatures like cows or capybaras
@@ -27,7 +27,7 @@ Pick the one that best fits your entity:
 etc.
 
 If you want to extend a concrete vanilla Minecraft class (like `Zombie`) or create something less conventional,
-consult the Javadoc for `cz.jeme.bestium.api.inject.Injectable`.
+consult [the Javadoc for the `Injectable` interface](/javadocs/cz/jeme/bestium/api/inject/Injectable.html).
 
 ## Create the entity class
 Your class must
@@ -183,7 +183,7 @@ Now, complete your entity class by implementing the required methods:
 If you get stuck, try decompiling a vanilla Minecraft entity that’s similar to yours.
 For example, for the Capybara, look at `net.minecraft.world.entity.animal.Pig` to understand how the logic works.
 
-You can also explore the Bestium Javadoc and the open-source [Bestium Example plugin](https://github.com/huzvanec/BestiumExample) for inspiration.
+You can also explore the [Bestium API Javadocs](/javadocs) and the open-source [Bestium Example plugin](https://github.com/huzvanec/BestiumExample) for inspiration.
 :::
 
 Your finished class will look something like this:

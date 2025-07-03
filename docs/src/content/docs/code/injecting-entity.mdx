@@ -24,7 +24,7 @@ This is done using:
 The `Supplier` provides an `EntityInjection` instance. Since this registration happens very early in server startup (before Bukkit or CraftBukkit are initialized)
 you can't create the `EntityInjection` immediately. The `Supplier` is only resolved once the internals are ready.
 
-## `EntityInjection` interface
+## [`EntityInjection`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.html) interface
 
 An `EntityInjection` is created using:
 <Tabs syncKey="lang">
@@ -119,7 +119,7 @@ You must provide four required parameters:
 ### Additional configuration
 After the required parameters, you can chain several additional methods:
 
-#### `backingType(EntityType)`
+#### [`backingType(EntityType)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#backingType(net.minecraft.world.entity.EntityType))
 Determines the entity our capybara 'disguises as'. This is what the client will see.
 <Tabs syncKey="lang">
     <TabItem label="Kotlin">
@@ -135,7 +135,7 @@ Determines the entity our capybara 'disguises as'. This is what the client will 
 </Tabs>
 > Defaults to: `EntityType.SILVERFISH`
 
-#### `attributes(AttributeSupplier.Builder)`
+#### [`attributes(AttributeSupplier.Builder)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#attributes(net.minecraft.world.entity.ai.attributes.AttributeSupplier))
 Defines the default entity attributes, you should call the static attributes method [created earlier](../coding-entity#add-default-attributes).
 <Tabs syncKey="lang">
     <TabItem label="Kotlin">
@@ -150,7 +150,8 @@ Defines the default entity attributes, you should call the static attributes met
     </TabItem>
 </Tabs>
 > Defaults to: `LivingEntity.createLivingAttributes()` if the entity is living entity otherwise to `null`
-#### `mobCategory(MobCategory)`
+
+#### [`mobCategory(MobCategory)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#mobCategory(net.minecraft.world.entity.MobCategory))
 Sets the category this mob belongs to, this defines whether the mob is friendly or hostile, how many instances there can be per chunk, whether it persists in world or how far from the player it despawns.
 | Mob category | Description | Max per chunk | Friendly | Persistent | Despawn distance |
 | ------------ | ----------- | ----------------------- | ----------- | ------------- | ---------------- | 
@@ -178,7 +179,7 @@ Our capybara is a friendly mob, so we use `CREATURE`:
 </Tabs>
 > Defaults to: `MobCategory.MISC`
 
-#### `model(PluginBootstrap, String)`
+#### [`model(PluginBootstrap, String)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#model(io.papermc.paper.plugin.bootstrap.PluginBootstrap,java.lang.String))
 Sets the entity model displayed if [BetterModel](https://github.com/toxicity188/BetterModel) is installed on the server.
 The file must be a `.bbmodel` ([BlockBench](https://www.blockbench.net/) model) bundled inside the plugin's JAR:
 <Tabs syncKey="lang">
@@ -201,7 +202,7 @@ If you don't have a model yet, you can use
 licenced under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html).
 :::
 
-#### `model(File)`
+#### [`model(File)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#model(java.io.File))
 Sets the entity model displayed if [BetterModel](https://github.com/toxicity188/BetterModel) is installed on the server.
 The file must be a `.bbmodel` ([BlockBench](https://www.blockbench.net/) model) file provided as an external `java.io.File`.
 > Defaults to: no model
