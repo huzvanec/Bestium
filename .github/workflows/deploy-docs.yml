@@ -1,18 +1,12 @@
-name: Deploy Bestium docs to GitHub Pages
+name: Deploy Bestium docs and API javadoc to GitHub Pages
 
 on:
-  push:
-    branches: [ master ]
-    tags:
-      - 'v*.*.*'
-    paths:
-      - 'docs/**'
-      - 'api/**'
-      - '.github/workflows/deploy-docs.yml'
+  release:
+    types: [ published ]
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     permissions:
       contents: write
     
@@ -26,10 +20,10 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: 21
 
       - name: Generate API Javadoc
@@ -40,12 +34,12 @@ jobs:
           mkdir -p docs/public/jd
           cp -r api/build/docs/javadoc/* docs/public/jd/
 
-      - name: Install pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           cache-dependency-path: ./docs/pnpm-lock.yaml
@@ -56,7 +50,7 @@ jobs:
         run: pnpm install
         working-directory: ./docs
 
-      - name: Build Astro
+      - name: Build docs
         run: pnpm run build
         working-directory: ./docs
 
