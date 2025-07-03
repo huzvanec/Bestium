@@ -21,6 +21,10 @@ jobs:
       matrix:
         node-version: [ 20 ]
     
+    defaults: 
+      run:
+        working-directory: ./docs
+    
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -38,11 +42,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: ./docs
 
       - name: Build Astro
         run: pnpm run build
-        working-directory: ./docs
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
