@@ -16,6 +16,9 @@ jobs:
       matrix:
         node-version: [ 20 ]
     
+    env:
+      JAVADOC_PATH: javadocs
+    
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -31,8 +34,8 @@ jobs:
 
       - name: Copy API Javadoc
         run: |
-          mkdir -p docs/public/jd
-          cp -r api/build/docs/javadoc/* docs/public/jd/
+          mkdir -p docs/public/${JAVADOC_PATH}
+          cp -r api/build/docs/javadoc/* docs/public/${JAVADOC_PATH}/
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
