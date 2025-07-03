@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="branding/capybara.png" alt="Capybara" width="60%" />
+  <img src="branding/capybara.png" alt="Capybara" width="40%" />
   <h1>Bestium</h1>
   A powerful plugin library for creating custom Minecraft entities with unique behaviors.
   <br/>
   <br/>
   <a href="https://bestium.jeme.cz">
-    <img src="branding/docs.png" alt="Docs" width="50%" />
+    <img src="branding/docs.png" alt="Docs" width="30%" />
   </a>
 </div>
 
