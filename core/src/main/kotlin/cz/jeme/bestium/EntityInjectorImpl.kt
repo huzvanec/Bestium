@@ -2,7 +2,6 @@ package cz.jeme.bestium
 
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
-import cz.jeme.bestium.api.inject.Injectable
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import kr.toxicity.model.api.BetterModel
 import net.kyori.adventure.key.Key
@@ -26,7 +25,7 @@ internal object EntityInjectorImpl : EntityInjector {
 
     override fun phase() = phase
 
-    override fun <T> injections(): Map<Class<T>, EntityInjection<T, *>> where T : Entity, T : Injectable {
+    override fun <T> injections(): Map<Class<T>, EntityInjection<T, *>> where T : Entity {
         when (phase) {
             EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> {
                 throw IllegalStateException("Injection registrations not resolved yet")
@@ -39,7 +38,7 @@ internal object EntityInjectorImpl : EntityInjector {
         }
     }
 
-    override fun <T> types(): Map<Class<T>, EntityType<T>> where T : Entity, T : Injectable {
+    override fun <T> types(): Map<Class<T>, EntityType<T>> where T : Entity {
         when (phase) {
             EntityInjector.Phase.INJECTED -> {
                 @Suppress("UNCHECKED_CAST")
