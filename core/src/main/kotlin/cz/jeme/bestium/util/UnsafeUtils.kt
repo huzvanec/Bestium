@@ -2,6 +2,8 @@
 
 package cz.jeme.bestium.util
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.LoggerContext
 import sun.misc.Unsafe
 import java.lang.reflect.Field
 
@@ -21,3 +23,10 @@ fun Field.setFinal(obj: Any?, value: Any?) = unsafe.putObject(
     unsafe.staticFieldOffset(this),
     value
 )
+
+fun flushLoggingAndCrashJvm() {
+    // Flush and stop all logging
+    (LogManager.getContext(false) as LoggerContext).stop()
+    // Terminate JVM
+    Runtime.getRuntime().halt(-1)
+}

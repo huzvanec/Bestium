@@ -3,13 +3,12 @@ package cz.jeme.bestium
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
 import cz.jeme.bestium.api.inject.Injectable
+import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import kr.toxicity.model.api.BetterModel
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.core.LoggerContext
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.io.FileOutputStream
@@ -114,10 +113,7 @@ internal object EntityInjectorImpl : EntityInjector {
             logger.error("A fatal exception occurred during injection phase: ", t)
             logger.error("The server will now be terminated to prevent further data corruption")
 
-            // Flush and stop all logging
-            (LogManager.getContext(false) as LoggerContext).stop()
-            // Terminate JVM
-            Runtime.getRuntime().halt(-1)
+            flushLoggingAndCrashJvm()
             return false
         }
     }
