@@ -3,8 +3,13 @@ interface Tag {
 }
 
 async function fetchGitHubVersions(owner: string, repo: string) {
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/tags`)
-    const json: Tag[] = response.ok ? await response.json() : [{ name: "v0.0.0" }]
+    let response: Response;
+    try {
+        response = await fetch(`https://api.github.com/repos/${owner}/${repo}/tags`)
+    } catch (e) {
+        response = {ok: false} as Response
+    }
+    const json: Tag[] = response.ok ? await response.json() : [{name: "v0.0.0"}]
     return json.map(tag => tag.name.substring(1));
 }
 
