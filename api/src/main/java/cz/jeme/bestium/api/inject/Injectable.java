@@ -75,7 +75,7 @@ public interface Injectable {
      */
     @SuppressWarnings("unchecked")
     @ApiStatus.NonExtendable
-    default <T extends Entity & Injectable> @NotNull T bestium_asEntity() {
+    default <T extends Entity> @NotNull T bestium_asEntity() {
         if (!(this instanceof final Entity entity))
             throw new IllegalStateException("Classes implementing '" + Injectable.class.getName() + "' must extend '" + Entity.class.getName() + "'");
         return (T) entity;

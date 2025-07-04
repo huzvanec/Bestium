@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @NullMarked
-final class EntityInjectionImpl<T extends Entity & Injectable, B extends org.bukkit.entity.Entity> implements EntityInjection<T, B> {
+final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements EntityInjection<T, B> {
     private final Key key;
     private final Class<T> entityClass;
     private final EntityType.EntityFactory<T> entityFactory;
@@ -91,7 +91,7 @@ final class EntityInjectionImpl<T extends Entity & Injectable, B extends org.buk
         return modelName;
     }
 
-    static final class BuilderImpl<T extends Entity & Injectable, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
+    static final class BuilderImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
         private final Key key;
         private final Class<T> entityClass;
         private final EntityType.EntityFactory<T> entityFactory;

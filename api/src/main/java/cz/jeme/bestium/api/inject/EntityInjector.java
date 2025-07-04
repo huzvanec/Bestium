@@ -44,7 +44,7 @@ public interface EntityInjector {
      * @throws IllegalStateException if the injector is still in the {@link Phase#REGISTRATION} or {@link Phase#PRE_INJECTION} phase
      * @see #phase()
      */
-    <T extends Entity & Injectable> @Unmodifiable Map<Class<T>, EntityInjection<T, ?>> injections();
+    <T extends Entity> @Unmodifiable Map<Class<T>, EntityInjection<T, ?>> injections();
 
     /**
      * Returns an unmodifiable view of all generated entity types.
@@ -57,7 +57,7 @@ public interface EntityInjector {
      * @throws IllegalStateException if the injector is in any other than the {@link Phase#INJECTED} phase
      * @see #phase()
      */
-    <T extends Entity & Injectable> @Unmodifiable Map<Class<T>, EntityType<T>> types();
+    <T extends Entity> @Unmodifiable Map<Class<T>, EntityType<T>> types();
 
     /**
      * Returns the current phase of the entity injection lifecycle.

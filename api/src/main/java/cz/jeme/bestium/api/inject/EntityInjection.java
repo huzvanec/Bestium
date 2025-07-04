@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @see EntityInjector
  */
 @NullMarked
-public sealed interface EntityInjection<M extends Entity & Injectable, E extends org.bukkit.entity.Entity> permits EntityInjectionImpl {
+public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.entity.Entity> permits EntityInjectionImpl {
 
     /**
      * Returns the unique key representing this entity type.
@@ -148,7 +148,7 @@ public sealed interface EntityInjection<M extends Entity & Injectable, E extends
      * @param <M> the type of the Minecraft entity being injected
      * @param <E> the type of the Bukkit entity the Minecraft entity can be converted to
      */
-    sealed interface Builder<M extends Entity & Injectable, E extends org.bukkit.entity.Entity> extends AbstractBuilder<EntityInjection<M, E>> permits EntityInjectionImpl.BuilderImpl {
+    sealed interface Builder<M extends Entity, E extends org.bukkit.entity.Entity> extends AbstractBuilder<EntityInjection<M, E>> permits EntityInjectionImpl.BuilderImpl {
 
         /**
          * Gets the entity key.
