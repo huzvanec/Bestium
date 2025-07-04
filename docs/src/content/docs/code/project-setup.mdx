@@ -86,6 +86,23 @@ which let you run code early in the server initialization process.
 
 Follow [this guide](https://docs.papermc.io/paper/dev/getting-started/paper-plugins/) to migrate from Bukkit to Paper plugin format.
 
+## Depending on Bestium
+
+To access Bestium's API, you need to add it as a plugin dependency.
+This can be achieved by adding the following lines to your `paper-plugin.yml`:
+
+```yml title="paper-plugin.yml"
+dependencies:
+  bootstrap:
+    Bestium:
+      load: BEFORE
+      required: true
+      join-classpath: true
+  server:
+    Bestium:
+      join-classpath: true
+```
+
 ## Creating a Bootstrapper
 Bootstrappers allow you to run code very early in the Minecraft server's startup sequence.
 This is essential for registering custom entities with Bestium before datapacks (and biomes) are loaded.
