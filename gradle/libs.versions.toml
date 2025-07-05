@@ -4,7 +4,7 @@ kotlin = "2.2.0"
 shadow = "9.0.0-rc1"
 publish = "0.33.0"
 paperweight = "2.0.0-beta.18"
-paper = "1.21.6-R0.1-SNAPSHOT"
+paper = "1.21.7-R0.1-SNAPSHOT"
 run-paper = "2.3.1"
 bettermodel = "1.8.1"
 
