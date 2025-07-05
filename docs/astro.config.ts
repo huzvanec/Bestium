@@ -2,7 +2,7 @@
 import {defineConfig} from 'astro/config';
 import starlight from '@astrojs/starlight';
 import {plugin as constantsPlugin} from './src/util/remark/replace-constants'
-import {LATEST_BESTIUM, LATEST_USERDEV} from './src/util/versions';
+import {LATEST_BESTIUM, LATEST_USERDEV, BESTIUM_PAPER} from './src/util/versions';
 
 // https://astro.build/config
 export default defineConfig({
@@ -46,7 +46,8 @@ export default defineConfig({
                 {
                     constants: {
                         LATEST_BESTIUM,
-                        LATEST_USERDEV
+                        LATEST_USERDEV,
+                        BESTIUM_PAPER
                     }
                 }
             ]

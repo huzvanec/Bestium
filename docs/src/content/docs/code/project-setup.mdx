@@ -32,7 +32,7 @@ Your Gradle build configuration should look something like this:
 
         dependencies {
             compileOnly("cz.jeme:bestium:%{LATEST_BESTIUM}%")
-            paperweight.paperDevBundle("MINECRAFT_VER-R0.1-SNAPSHOT")
+            paperweight.paperDevBundle("%{BESTIUM_PAPER}%")
         }
         ```
     </TabItem>
@@ -48,13 +48,11 @@ Your Gradle build configuration should look something like this:
 
         dependencies {
             compileOnly 'cz.jeme:bestium:%{LATEST_BESTIUM}%'
-            paperDevBundle 'MINECRAFT_VER-R0.1-SNAPSHOT'
+            paperDevBundle '%{BESTIUM_PAPER}%'
         }
         ```
     </TabItem>
 </Tabs>
-
-Replace `MINECRAFT_VER` with the Minecraft version Bestium requires.
 
 ## Verify your setup
 
