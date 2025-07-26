@@ -229,7 +229,7 @@ Your finished class will look something like this:
             }
 
             override fun getBreedOffspring(level: ServerLevel, otherParent: AgeableMob): AgeableMob? {
-                return bestium_realType().create(level, EntitySpawnReason.BREEDING) as Capybara?
+                return bestiumRealType.create(level, EntitySpawnReason.BREEDING) as Capybara?
             }
         }
         ```
@@ -281,7 +281,7 @@ Your finished class will look something like this:
 
             @Override
             public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
-                return (Capybara) bestium_realType().create(level, EntitySpawnReason.BREEDING);
+                return (Capybara) getBestiumRealType().create(level, EntitySpawnReason.BREEDING);
             }
         }
         ```
