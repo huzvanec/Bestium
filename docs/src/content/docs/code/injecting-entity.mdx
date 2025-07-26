@@ -140,12 +140,12 @@ Defines the default entity attributes, you should call the static attributes met
 <Tabs syncKey="lang">
     <TabItem label="Kotlin">
         ```kotlin
-        .setDefaultAttributes(Capybara.createsetDefaultAttributes())
+        .setDefaultAttributes(Capybara.createDefaultAttributes())
         ```
     </TabItem>
     <TabItem label="Java">
         ```java
-        .setDefaultAttributes(Capybara.createsetDefaultAttributes())
+        .setDefaultAttributes(Capybara.createDefaultAttributes())
         ```
     </TabItem>
 </Tabs>
@@ -247,7 +247,7 @@ The final capybara injection registration looks like this:
                     ::CraftAnimals
                 )
                 .setBackingType(EntityType.PIG)
-                .setDefaultAttributes(Capybara.createsetDefaultAttributes())
+                .setDefaultAttributes(Capybara.createDefaultAttributes())
                 .setMobCategory(MobCategory.CREATURE)
                 .setModel(this, "capybara.bbmodel")
                 .build()
@@ -266,7 +266,7 @@ The final capybara injection registration looks like this:
                                     CraftAnimals::new
                             )
                             .setBackingType(EntityType.PIG)
-                            .setDefaultAttributes(Capybara.createsetDefaultAttributes())
+                            .setDefaultAttributes(Capybara.createDefaultAttributes())
                             .setMobCategory(MobCategory.CREATURE)
                             .setModel(this, "capybara.bbmodel")
                             .build()
