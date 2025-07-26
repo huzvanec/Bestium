@@ -34,6 +34,7 @@ export default defineConfig({
                         {label: 'Project setup', slug: 'code/project-setup'},
                         {label: 'Coding an entity', slug: 'code/coding-entity'},
                         {label: 'Injecting an entity', slug: 'code/injecting-entity'},
+                        {label: 'Spawning an entity', slug: 'code/spawning-entity'},
                     ]
                 }
             ],

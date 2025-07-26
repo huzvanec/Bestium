@@ -1,0 +1,116 @@
+---
+title: Spawning an entity
+description: Learn how to spawn injected entities with Bestium API.
+---
+
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+After you have [injected your entity](../injecting-entity), you will likely want to spawn it in the world.
+You can use the `/summon` command (e.g. `/summon my_plugin:capybara`), but you may also want to do this programmatically using the Bestium API.
+
+To spawn an entity with the API, use:
+<Tabs syncKey="lang">
+    <TabItem label="Kotlin">
+        ```kotlin
+        Bestium.spawn(Location, Class, EntitySpawnReason, CreatureSpawnEvent.SpawnReason, [Consumer])
+        ```
+    </TabItem>
+    <TabItem label="Java">
+        ```java
+        Bestium.spawn(Location, Class, EntitySpawnReason, CreatureSpawnEvent.SpawnReason, [Consumer]);
+        ```
+    </TabItem>
+</Tabs>
+
+This method requires four parameters:
+
+1. **Location** – The position where the entity should be spawned.
+    <Tabs syncKey="lang">
+        <TabItem label="Kotlin">
+            ```kotlin
+            Location(world, 0.0, 64.0, 0.0)
+            ```
+        </TabItem>
+        <TabItem label="Java">
+            ```java
+            new Location(world, 0.0, 64.0, 0.0)
+            ```
+        </TabItem>
+    </Tabs>
+
+2. **Class** – The class of the injected entity you want to spawn.
+    <Tabs syncKey="lang">
+        <TabItem label="Kotlin">
+            ```kotlin
+            Capybara::class.java
+            ```
+        </TabItem>
+        <TabItem label="Java">
+            ```java
+            Capybara.class
+            ```
+        </TabItem>
+    </Tabs>
+
+3. **EntitySpawnReason** – The (NMS) reason for spawning the entity, stored in the entity data.
+    
+    For example, when spawning via a command:
+    <Tabs syncKey="lang">
+        <TabItem label="Kotlin">
+            ```kotlin
+            EntitySpawnReason.COMMAND
+            ```
+        </TabItem>
+        <TabItem label="Java">
+            ```java
+            EntitySpawnReason.COMMAND
+            ```
+        </TabItem>
+    </Tabs>
+
+4. **CreatureSpawnEvent.SpawnReason** – The (Bukkit) spawn reason, used for Bukkit events.
+    
+    For example, when spawning via a command:
+    <Tabs syncKey="lang">
+        <TabItem label="Kotlin">
+            ```kotlin
+            CreatureSpawnEvent.SpawnReason.COMMAND
+            ```
+        </TabItem>
+        <TabItem label="Java">
+            ```java
+            CreatureSpawnEvent.SpawnReason.COMMAND
+            ```
+        </TabItem>
+    </Tabs>
+5. **Consumer** (optional) – A function that allows you to modify the entity just before it is spawned.  
+   This is useful if you want to customize the entity, such as setting its name or properties, right after creation.
+
+    <Tabs syncKey="lang">
+        <TabItem label="Kotlin">
+            ```kotlin
+            { capybara ->
+                // You can access the Bukkit representation and use the Bukkit API here.
+                // Capybara can be safely cast to CraftAnimals because ::CraftAnimals
+                // was specified as the convert function during injection registration.
+                val bukkitCapybara = capybara.bukkitEntity as CraftAnimals
+
+                bukkitCapybara.customName(Component.text("Ben the capybara"))
+                bukkitCapybara.isCustomNameVisible = true
+            }
+            ```
+        </TabItem>
+        <TabItem label="Java">
+            ```java
+            capybara -> {
+                // You can access the Bukkit representation and use the Bukkit API here.
+                // Capybara can be safely cast to CraftAnimals because CraftAnimals::new
+                // was specified as the convert function during injection registration.
+                CraftAnimals bukkitCapybara = (CraftAnimals) capybara.getBukkitEntity();
+
+                bukkitCapybara.customName(Component.text("Ben the capybara"));
+                bukkitCapybara.setCustomNameVisible(true);
+            }
+            ```
+        </TabItem>
+    </Tabs>
