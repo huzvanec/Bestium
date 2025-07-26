@@ -180,31 +180,6 @@ public interface Bestium {
     }
 
     /**
-     * Spawns a custom injected entity with default initialization logic and with {@link CreatureSpawnEvent.SpawnReason#DEFAULT}.
-     *
-     * @param location          the location where the entity should spawn
-     * @param entityClass       the class of the injected entity to spawn
-     * @param entitySpawnReason the Minecraft {@link EntitySpawnReason} to use when spawning
-     * @param <T>               the type of the entity
-     * @return the spawned entity instance, or {@code null} if spawning failed
-     * @throws IllegalArgumentException if the given class is not a registered injected entity
-     * @see #spawn(Location, Class, EntitySpawnReason, CreatureSpawnEvent.SpawnReason)
-     */
-    @Nullable
-    static <T extends Entity> T spawn(
-            final Location location,
-            final Class<T> entityClass,
-            final EntitySpawnReason entitySpawnReason
-    ) {
-        return spawn(
-                location,
-                entityClass,
-                entitySpawnReason,
-                CreatureSpawnEvent.SpawnReason.DEFAULT // = missing
-        );
-    }
-
-    /**
      * Retrieves the Bestium {@link Key} of the injected Bukkit {@link org.bukkit.entity.Entity}, or {@code null} if not injected.
      * <p>
      * This is the same key that was used when registering the entity injection.
