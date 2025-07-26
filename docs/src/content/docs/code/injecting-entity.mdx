@@ -179,6 +179,30 @@ Our capybara is a friendly mob, so we use `CREATURE`:
 </Tabs>
 > Defaults to: `MobCategory.MISC`
 
+#### [`typeCustomizer(Consumer<EntityType.Builder>)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#typeCustomizer(java.util.function.Consumer))
+Sets a type customizer for the entity type being registered. This allows you to modify the underlying EntityType.Builder before it is built and registered for injection.
+
+You can use this to customize properties like whether the entity can be summoned with `/summon`, whether it's fire immune, and more:
+<Tabs syncKey="lang">
+    <TabItem label="Kotlin">
+        ```kotlin
+        .typeCustomizer { builder ->
+            builder.noSummon()
+            builder.fireImmune()
+        }
+        ```
+    </TabItem>
+    <TabItem label="Java">
+        ```java
+        .typeCustomizer(builder -> {
+            builder.noSummon();
+            builder.fireImmune();
+        })
+        ```
+    </TabItem>
+</Tabs>
+> Defaults to: no customizer
+
 #### [`model(PluginBootstrap, String)`](/javadocs/cz/jeme/bestium/api/inject/EntityInjection.Builder.html#model(io.papermc.paper.plugin.bootstrap.PluginBootstrap,java.lang.String))
 Sets the entity model displayed if [BetterModel](https://github.com/toxicity188/BetterModel) is installed on the server.
 The file must be a `.bbmodel` ([BlockBench](https://www.blockbench.net/) model) bundled inside the plugin's JAR:
