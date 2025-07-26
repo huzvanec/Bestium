@@ -1,7 +1,7 @@
 package cz.jeme.bestium
 
-import cz.jeme.bestium.util.InstanceUtils
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
+import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
@@ -25,14 +25,14 @@ internal class BestiumBootstrapper : PluginBootstrap {
             return
         }
 
-        InstanceUtils.storeApiInstance(EntityInjectorImpl)
+        storeApiInstance(EntityInjectorImpl)
 
-        val handler = LifecycleEvents.DATAPACK_DISCOVERY.newHandler {
+        val injectionHandler = LifecycleEvents.DATAPACK_DISCOVERY.newHandler {
             if (injectionHappened) return@newHandler; injectionHappened = true
             EntityInjectorImpl.injectMinecraft() // phase 1 injection
-        }.priority(-1)
+        }.priority(-1) // prioritize
 
-        context.lifecycleManager.registerEventHandler(handler)
+        context.lifecycleManager.registerEventHandler(injectionHandler)
     }
 
     override fun createPlugin(context: PluginProviderContext) = BestiumPlugin

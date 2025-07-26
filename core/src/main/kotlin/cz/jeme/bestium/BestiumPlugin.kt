@@ -1,20 +1,21 @@
 package cz.jeme.bestium
 
+import cz.jeme.bestium.api.Bestium
 import cz.jeme.bestium.command.SummonCommand
-import cz.jeme.bestium.util.InstanceUtils
+import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.kyori.adventure.key.KeyPattern
 import org.bukkit.NamespacedKey
 import org.bukkit.plugin.java.JavaPlugin
 
 
-internal object BestiumPlugin : JavaPlugin() {
+internal object BestiumPlugin : JavaPlugin(), Bestium {
     // override default logger
     private val logger = componentLogger
 
     init {
-        InstanceUtils.storeApiInstance(this)
-        InstanceUtils.storeApiInstance(PluginSupportImpl)
+        storeApiInstance(this)
+        storeApiInstance(PluginSupportImpl)
     }
 
     override fun onEnable() {
@@ -28,7 +29,6 @@ internal object BestiumPlugin : JavaPlugin() {
         }
 
         logger.info("Registering commands")
-        @Suppress("UnstableApiUsage")
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             val commands = event.registrar()
             SummonCommand(this, commands)
@@ -37,5 +37,5 @@ internal object BestiumPlugin : JavaPlugin() {
         logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
     }
 
-    fun key(@KeyPattern.Value key: String): NamespacedKey = NamespacedKey(this, key)
+    override fun key(@KeyPattern.Value key: String): NamespacedKey = NamespacedKey(this, key)
 }

@@ -7,6 +7,8 @@ import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -130,6 +132,20 @@ public interface Injectable {
     }
 
     /**
+     * The persistent data key used to identify injected entities.
+     * <p>
+     * This key is stored in an entity's {@link PersistentDataContainer}
+     * and holds a {@link PersistentDataType#STRING} representing the injected entity's {@link Key}.
+     * <p>
+     * Presence of this key signifies that the entity was spawned via the Bestium injection system.
+     *
+     * @see Bestium#isInjectedEntity(Entity)
+     * @see Bestium#getInjectedEntityKey(Entity)
+     */
+    @ApiStatus.Internal
+    NamespacedKey BESTIUM_ID_KEY = Bestium.bestium().key("bestium_id");
+
+    /**
      * Initializes this Bestium entity.
      * <p>
      * This method sets up persistent tracking data (e.g., for models), and should be called from
@@ -137,14 +153,23 @@ public interface Injectable {
      */
     @ApiStatus.NonExtendable
     default void bestium_init() {
+        final Entity entity = bestium_asEntity();
+        final var bukkitEntity = entity.getBukkitEntity();
+
+        final Key key = bestium_key();
+        bukkitEntity.getPersistentDataContainer().set(
+                BESTIUM_ID_KEY,
+                PersistentDataType.STRING,
+                key.asString()
+        );
         if (Bestium.pluginSupport().betterModel()) {
             // normal BetterModel API for adding models to entities cannot be used here
             // as this is run even before the entity is loaded, BetterModel freaks out
             // and detaches the model from the entity
-            bestium_asEntity().getBukkitEntity().getPersistentDataContainer().set(
+            bukkitEntity.getPersistentDataContainer().set(
                     EntityTrackerRegistry.TRACKING_ID,
                     PersistentDataType.STRING,
-                    ModelUtils.keyToModelName(bestium_key())
+                    ModelUtils.keyToModelName(key)
             );
         }
     }
