@@ -21,17 +21,17 @@ public abstract class CustomPathfinderMob extends PathfinderMob implements Injec
     protected CustomPathfinderMob(final EntityType<? extends CustomPathfinderMob> entityType,
                                   final Level level) {
         super(entityType, level);
-        bestium_init();
+        initBestium();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_backingType();
+        return getBestiumBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        bestium_addAdditionalSaveData(output);
+        addBestiumAdditionalSaveData(output);
     }
 }

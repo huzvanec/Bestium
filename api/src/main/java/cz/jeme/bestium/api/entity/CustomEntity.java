@@ -19,16 +19,16 @@ import org.jspecify.annotations.NullMarked;
 public abstract class CustomEntity extends Entity implements Injectable {
     protected CustomEntity(final EntityType<? extends CustomEntity> entityType, final Level level) {
         super(entityType, level);
-        bestium_init();
+        initBestium();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_backingType();
+        return getBestiumBackingType();
     }
 
     @Override
     protected void addAdditionalSaveData(final ValueOutput output) {
-        bestium_addAdditionalSaveData(output);
+        addBestiumAdditionalSaveData(output);
     }
 }

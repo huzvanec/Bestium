@@ -37,5 +37,5 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
     }
 
-    override fun key(@KeyPattern.Value key: String): NamespacedKey = NamespacedKey(this, key)
+    override fun createKey(@KeyPattern.Value key: String): NamespacedKey = NamespacedKey(this, key)
 }

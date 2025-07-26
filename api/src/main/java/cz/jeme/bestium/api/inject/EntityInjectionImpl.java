@@ -42,52 +42,52 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     }
 
     @Override
-    public Key key() {
+    public Key getKey() {
         return key;
     }
 
     @Override
-    public Class<T> entityClass() {
+    public Class<T> getEntityClass() {
         return entityClass;
     }
 
     @Override
-    public EntityType.EntityFactory<T> entityFactory() {
+    public EntityType.EntityFactory<T> getEntityFactory() {
         return entityFactory;
     }
 
     @Override
-    public ConvertFunction<T, B> convertFunction() {
+    public ConvertFunction<T, B> getConvertFunction() {
         return convertFunction;
     }
 
     @Override
-    public EntityType<?> backingType() {
+    public EntityType<?> getBackingType() {
         return backingType;
     }
 
     @Override
-    public MobCategory mobCategory() {
+    public MobCategory getMobCategory() {
         return category;
     }
 
     @Override
-    public Consumer<EntityType.Builder<T>> typeCustomizer() {
+    public Consumer<EntityType.Builder<T>> getTypeCustomizer() {
         return typeBuilder;
     }
 
     @Override
-    public @Nullable AttributeSupplier attributes() {
+    public @Nullable AttributeSupplier getDefaultAttributes() {
         return attributes;
     }
 
     @Override
-    public @Nullable URL modelUrl() {
+    public @Nullable URL getModelUrl() {
         return modelUrl;
     }
 
     @Override
-    public @Nullable String modelName() {
+    public @Nullable String getModelName() {
         return modelName;
     }
 
@@ -122,60 +122,60 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
 
 
         @Override
-        public Key key() {
+        public Key getKey() {
             return key;
         }
 
         @Override
-        public Class<T> entityClass() {
+        public Class<T> getEntityClass() {
             return entityClass;
         }
 
         @Override
-        public EntityType.EntityFactory<T> entityFactory() {
+        public EntityType.EntityFactory<T> getEntityFactory() {
             return entityFactory;
         }
 
         @Override
-        public ConvertFunction<T, B> convertFunction() {
+        public ConvertFunction<T, B> getConvertFunction() {
             return convertFunction;
         }
 
         @Override
-        public Builder<T, B> backingType(final EntityType<?> backingType) {
+        public Builder<T, B> setBackingType(final EntityType<?> backingType) {
             this.backingType = backingType;
             return this;
         }
 
         @Override
-        public EntityType<?> backingType() {
+        public EntityType<?> getBackingType() {
             return backingType;
         }
 
         @Override
-        public Builder<T, B> mobCategory(final MobCategory category) {
+        public Builder<T, B> setMobCategory(final MobCategory category) {
             this.category = category;
             return this;
         }
 
         @Override
-        public MobCategory mobCategory() {
+        public MobCategory getMobCategory() {
             return category;
         }
 
         @Override
-        public Builder<T, B> typeCustomizer(final Consumer<EntityType.Builder<T>> typeBuilder) {
+        public Builder<T, B> setTypeCustomizer(final Consumer<EntityType.Builder<T>> typeBuilder) {
             this.typeBuilder = typeBuilder;
             return this;
         }
 
         @Override
-        public Consumer<EntityType.Builder<T>> typeCustomizer() {
+        public Consumer<EntityType.Builder<T>> getTypeCustomizer() {
             return typeBuilder;
         }
 
         @Override
-        public Builder<T, B> attributes(final AttributeSupplier attributes) {
+        public Builder<T, B> setDefaultAttributes(final AttributeSupplier attributes) {
             if (!isLivingEntity)
                 throw new UnsupportedOperationException(
                         "'" + entityClass.getName() +
@@ -188,18 +188,18 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         }
 
         @Override
-        public @Nullable AttributeSupplier attributes() {
+        public @Nullable AttributeSupplier getDefaultAttributes() {
             return attributes;
         }
 
         @Override
-        public Builder<T, B> model(final URL url) {
+        public Builder<T, B> setModel(final URL url) {
             this.modelUrl = url;
             return this;
         }
 
         @Override
-        public @Nullable URL modelUrl() {
+        public @Nullable URL getModelUrl() {
             return modelUrl;
         }
 

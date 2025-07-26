@@ -18,17 +18,17 @@ public abstract class CustomAgeableMob extends AgeableMob implements Injectable 
     protected CustomAgeableMob(final EntityType<? extends CustomAgeableMob> entityType,
                                final Level level) {
         super(entityType, level);
-        bestium_init();
+        initBestium();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return bestium_backingType();
+        return getBestiumBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        bestium_addAdditionalSaveData(output);
+        addBestiumAdditionalSaveData(output);
     }
 }

@@ -14,12 +14,11 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.entity.EntityType
 import java.util.concurrent.CompletableFuture
 
-@Suppress("UnstableApiUsage")
 object SummonableEntitiesSuggestionProvider : SuggestionProvider<CommandSourceStack> {
     init {
         @Suppress("UNCHECKED_CAST")
         SuggestionProviders.register<SharedSuggestionProvider>(
-            BestiumPlugin.key("summonable_entities").toResourceLocation(),
+            BestiumPlugin.createKey("summonable_entities").toResourceLocation(),
             this as SuggestionProvider<SharedSuggestionProvider>
         )
     }

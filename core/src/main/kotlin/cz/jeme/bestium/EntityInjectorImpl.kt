@@ -20,38 +20,41 @@ internal object EntityInjectorImpl : EntityInjector {
 
     private val registrations = mutableSetOf<Supplier<EntityInjection<*, *>>>()
     private val injections = hashMapOf<Class<out Entity>, EntityInjection<*, *>>()
+    private val keyedInjections = hashMapOf<Key, EntityInjection<*, *>>()
 
     private var phase: EntityInjector.Phase = EntityInjector.Phase.REGISTRATION
 
-    override fun phase() = phase
+    override fun getPhase() = phase
 
-    override fun <T> injections(): Map<Class<T>, EntityInjection<T, *>> where T : Entity {
-        when (phase) {
-            EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> {
-                throw IllegalStateException("Injection registrations not resolved yet")
-            }
+    override fun <T> getInjections(): Map<Class<T>, EntityInjection<T, *>> where T : Entity = when (phase) {
+        EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> throw IllegalStateException(
+            "Injection registrations not resolved yet"
+        )
 
-            else -> {
-                @Suppress("UNCHECKED_CAST")
-                return injections as Map<Class<T>, EntityInjection<T, *>>
-            }
-        }
+        else -> @Suppress("UNCHECKED_CAST")
+        injections as Map<Class<T>, EntityInjection<T, *>>
     }
 
-    override fun <T> types(): Map<Class<T>, EntityType<T>> where T : Entity {
-        when (phase) {
-            EntityInjector.Phase.INJECTED -> {
-                @Suppress("UNCHECKED_CAST")
-                return unit.types as Map<Class<T>, EntityType<T>>
-            }
+    override fun getKeyedInjections(): Map<Key, EntityInjection<out Entity, *>> = when (phase) {
+        EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> throw IllegalStateException(
+            "Injection registrations not resolved yet"
+        )
 
-            else -> {
-                throw IllegalStateException("Injection is not complete yet")
-            }
-        }
+        else -> keyedInjections
     }
 
-    private val keys = mutableSetOf<Key>()
+    override fun <T> getTypes(): Map<Class<T>, EntityType<T>> where T : Entity = when (phase) {
+        EntityInjector.Phase.INJECTED -> @Suppress("UNCHECKED_CAST")
+        unit.types as Map<Class<T>, EntityType<T>>
+
+        else -> throw IllegalStateException("Injection is not complete yet")
+    }
+
+    override fun getKeyedTypes(): Map<Key, EntityType<out Entity>> = when (phase) {
+        EntityInjector.Phase.INJECTED -> unit.keyedTypes
+
+        else -> throw IllegalStateException("Injection is not complete yet")
+    }
 
     override fun register(injectionSupplier: Supplier<EntityInjection<*, *>>) {
         registrations.add(injectionSupplier)
@@ -64,13 +67,14 @@ internal object EntityInjectorImpl : EntityInjector {
         registrations
             .map(Supplier<EntityInjection<*, *>>::get)
             .forEach { injection ->
-                val clazz = injection.entityClass()
+                val clazz = injection.getEntityClass()
+                val key = injection.getKey()
                 if (injections.containsKey(clazz))
                     throw IllegalArgumentException("Duplicate registered injection with entity class: '${clazz.name}'")
-                if (keys.contains(injection.key()))
-                    throw IllegalArgumentException("Duplicate registered injection with key: '${injection.key()}'")
-                keys.add(injection.key())
+                if (keyedInjections.containsKey(key))
+                    throw IllegalArgumentException("Duplicate registered injection with key: '${injection.getKey()}'")
                 injections[clazz] = injection
+                keyedInjections[key] = injection
             }
         unit = InjectionUnit(injections.values)
     }
@@ -137,8 +141,8 @@ internal object EntityInjectorImpl : EntityInjector {
         modelsDir.mkdirs()
 
         for (inj in injections.values) {
-            val modelUrl = inj.modelUrl() ?: continue
-            val outputFile = File(modelsDir, inj.modelName()!! + ".bbmodel")
+            val modelUrl = inj.getModelUrl() ?: continue
+            val outputFile = File(modelsDir, inj.getModelName()!! + ".bbmodel")
             modelUrl.openStream().use { input ->
                 FileOutputStream(outputFile).use { output ->
                     input.copyTo(output, bufferSize = 2 shl 13)

@@ -40,49 +40,49 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      *
      * @return the namespaced key
      */
-    Key key();
+    Key getKey();
 
     /**
      * Returns the class of the custom entity.
      *
      * @return the entity class
      */
-    Class<M> entityClass();
+    Class<M> getEntityClass();
 
     /**
      * Returns the factory used to create new instances of this entity.
      *
      * @return the entity factory
      */
-    EntityType.EntityFactory<M> entityFactory();
+    EntityType.EntityFactory<M> getEntityFactory();
 
     /**
      * Returns the function that converts the Minecraft entity of type {@link M} into a Bukkit entity of type {@link E}.
      *
      * @return the convert function
      */
-    ConvertFunction<M, E> convertFunction();
+    ConvertFunction<M, E> getConvertFunction();
 
     /**
      * Returns the backing Minecraft entity type used for client-side rendering and hitbox size.
      *
      * @return the backing type
      */
-    EntityType<?> backingType();
+    EntityType<?> getBackingType();
 
     /**
      * Returns the category of the entity.
      *
      * @return the mob category
      */
-    MobCategory mobCategory();
+    MobCategory getMobCategory();
 
     /**
      * Returns the type builder customizer used to modify entity properties.
      *
      * @return the builder customizer
      */
-    Consumer<EntityType.Builder<M>> typeCustomizer();
+    Consumer<EntityType.Builder<M>> getTypeCustomizer();
 
     /**
      * Returns the attribute supplier used to define default attributes for this entity.
@@ -91,7 +91,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * @return the attribute supplier or {@code null}
      */
     @Nullable
-    AttributeSupplier attributes();
+    AttributeSupplier getDefaultAttributes();
 
     /**
      * Returns the URL of the model associated with this entity.
@@ -99,7 +99,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * @return the model URL, or {@code null} if none was set
      */
     @Nullable
-    URL modelUrl();
+    URL getModelUrl();
 
     /**
      * Returns the model name used to identify this entity's model.
@@ -112,11 +112,11 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * would have the model name {@code bestium.example_plugin.custom_entity}.
      *
      * @return the generated model name, or {@code null} if no model URL was set
-     * @see #key()
-     * @see #modelUrl()
+     * @see #getKey()
+     * @see #getModelUrl()
      */
     @Nullable
-    String modelName();
+    String getModelName();
 
     /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
@@ -155,28 +155,28 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          *
          * @return the key
          */
-        Key key();
+        Key getKey();
 
         /**
          * Gets the entity class.
          *
          * @return the class
          */
-        Class<M> entityClass();
+        Class<M> getEntityClass();
 
         /**
          * Gets the entity factory.
          *
          * @return the factory
          */
-        EntityType.EntityFactory<M> entityFactory();
+        EntityType.EntityFactory<M> getEntityFactory();
 
         /**
          * Gets the craft entity factory.
          *
          * @return the factory
          */
-        ConvertFunction<M, E> convertFunction();
+        ConvertFunction<M, E> getConvertFunction();
 
         /**
          * Sets the backing type for rendering and size fallback.
@@ -186,14 +186,14 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @param backingType the fallback entity type
          * @return this builder
          */
-        Builder<M, E> backingType(final EntityType<?> backingType);
+        Builder<M, E> setBackingType(final EntityType<?> backingType);
 
         /**
          * Gets the backing entity type.
          *
          * @return the fallback type
          */
-        EntityType<?> backingType();
+        EntityType<?> getBackingType();
 
         /**
          * Sets the mob category of the entity.
@@ -203,14 +203,14 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @param category the mob category
          * @return this builder
          */
-        Builder<M, E> mobCategory(final MobCategory category);
+        Builder<M, E> setMobCategory(final MobCategory category);
 
         /**
          * Gets the mob category.
          *
          * @return the category
          */
-        MobCategory mobCategory();
+        MobCategory getMobCategory();
 
         /**
          * Sets a customizer for the entity type builder.
@@ -223,14 +223,14 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @param typeBuilder the builder customizer
          * @return this builder
          */
-        Builder<M, E> typeCustomizer(final Consumer<EntityType.Builder<M>> typeBuilder);
+        Builder<M, E> setTypeCustomizer(final Consumer<EntityType.Builder<M>> typeBuilder);
 
         /**
          * Gets the type builder customizer.
          *
          * @return the builder consumer
          */
-        Consumer<EntityType.Builder<M>> typeCustomizer();
+        Consumer<EntityType.Builder<M>> getTypeCustomizer();
 
         /**
          * Sets the default attributes for this entity.
@@ -244,7 +244,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @throws UnsupportedOperationException if the entity is not a LivingEntity
          * @see AttributeSupplier.Builder
          */
-        Builder<M, E> attributes(final AttributeSupplier attributes);
+        Builder<M, E> setDefaultAttributes(final AttributeSupplier attributes);
 
         /**
          * Sets the default attributes for this entity.
@@ -258,8 +258,8 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @throws UnsupportedOperationException if the entity is not a LivingEntity
          * @see AttributeSupplier.Builder
          */
-        default Builder<M, E> attributes(final AttributeSupplier.Builder builder) {
-            return attributes(builder.build());
+        default Builder<M, E> setDefaultAttributes(final AttributeSupplier.Builder builder) {
+            return setDefaultAttributes(builder.build());
         }
 
         /**
@@ -268,7 +268,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @return the attributes or {@code null}
          */
         @Nullable
-        AttributeSupplier attributes();
+        AttributeSupplier getDefaultAttributes();
 
         /**
          * Sets the model for this entity using a resource bundled in the plugin's JAR.
@@ -283,8 +283,8 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @throws NullPointerException if the resource cannot be found in the JAR file
          */
         @SuppressWarnings("UnstableApiUsage")
-        default Builder<M, E> model(final PluginBootstrap bootstrapper, final String resource) {
-            return model(Objects.requireNonNull(
+        default Builder<M, E> setModel(final PluginBootstrap bootstrapper, final String resource) {
+            return setModel(Objects.requireNonNull(
                     bootstrapper.getClass().getClassLoader().getResource(resource),
                     "Resource not found: '" + resource + "'"
             ));
@@ -297,9 +297,9 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @return this builder
          * @throws IllegalArgumentException if the file's URL is invalid
          */
-        default Builder<M, E> model(final File file) {
+        default Builder<M, E> setModel(final File file) {
             try {
-                return model(file.toURI().toURL());
+                return setModel(file.toURI().toURL());
             } catch (final MalformedURLException e) {
                 throw new IllegalArgumentException("Given file has invalid URL: '" + file.getAbsolutePath() + "'", e);
             }
@@ -311,7 +311,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @param url the URL pointing to the model file
          * @return this builder
          */
-        Builder<M, E> model(final URL url);
+        Builder<M, E> setModel(final URL url);
 
         /**
          * Gets the URL of the model associated with this entity.
@@ -319,6 +319,6 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @return the model URL, or {@code null} if none was set
          */
         @Nullable
-        URL modelUrl();
+        URL getModelUrl();
     }
 }

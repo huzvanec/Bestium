@@ -63,7 +63,7 @@ public interface Bestium {
      * @return the {@link JavaPlugin} instance
      * @throws IllegalStateException if called before the plugin is loaded
      */
-    static JavaPlugin plugin() {
+    static JavaPlugin getPlugin() {
         return (JavaPlugin) InstanceHolder.getObject("cz.jeme.bestium.BestiumPlugin");
     }
 
@@ -75,8 +75,8 @@ public interface Bestium {
      * @return the {@link Bestium} instance
      * @throws IllegalStateException if called before the plugin is loaded
      */
-    static Bestium bestium() {
-        return (Bestium) plugin();
+    static Bestium getBestium() {
+        return (Bestium) getPlugin();
     }
 
     /**
@@ -87,7 +87,7 @@ public interface Bestium {
      * @throws IllegalStateException if called before the Bestium bootstrap happens
      * @see EntityInjector
      */
-    static EntityInjector injector() {
+    static EntityInjector getInjector() {
         return (EntityInjector) InstanceHolder.getObject("cz.jeme.bestium.EntityInjectorImpl");
     }
 
@@ -99,7 +99,7 @@ public interface Bestium {
      * @throws IllegalStateException if called before Bestium plugin is loaded
      * @see PluginSupport
      */
-    static PluginSupport pluginSupport() {
+    static PluginSupport getPluginSupport() {
         return (PluginSupport) InstanceHolder.getObject("cz.jeme.bestium.PluginSupportImpl");
     }
 
@@ -123,7 +123,7 @@ public interface Bestium {
             final CreatureSpawnEvent.SpawnReason creatureSpawnReason,
             final Consumer<T> consumer
     ) {
-        final EntityType<Entity> type = injector().types().get(entityClass);
+        final EntityType<Entity> type = getInjector().getTypes().get(entityClass);
         if (type == null) throw new IllegalArgumentException(
                 "Entity '" + entityClass + "' is not an injected entity!"
         );
@@ -186,10 +186,10 @@ public interface Bestium {
      *
      * @param entity the Bukkit {@link org.bukkit.entity.Entity} to retrieve the key from
      * @return the {@link Key} identifying the injected entity type, or {@code null} if the entity is not an injected entity
-     * @see #getInjectedEntityKey(org.bukkit.entity.Entity)
+     * @see #requireInjectedEntityKey(org.bukkit.entity.Entity)
      */
     @SuppressWarnings("PatternValidation")
-    static @Nullable Key getInjectedEntityKeyOrNull(final org.bukkit.entity.Entity entity) {
+    static @Nullable Key getInjectedEntityKey(final org.bukkit.entity.Entity entity) {
         String keyStr = entity.getPersistentDataContainer().get(
                 Injectable.BESTIUM_ID_KEY,
                 PersistentDataType.STRING
@@ -206,42 +206,14 @@ public interface Bestium {
      * @param entity the Bukkit {@link org.bukkit.entity.Entity} to retrieve the key from
      * @return the {@link Key} identifying the injected entity type
      * @throws IllegalArgumentException if the entity is not an injected entity
-     * @see #getInjectedEntityKeyOrNull(org.bukkit.entity.Entity)
+     * @see #getInjectedEntityKey(org.bukkit.entity.Entity)
      */
-    static Key getInjectedEntityKey(final org.bukkit.entity.Entity entity) {
-        final Key key = getInjectedEntityKeyOrNull(entity);
+    static Key requireInjectedEntityKey(final org.bukkit.entity.Entity entity) {
+        final Key key = getInjectedEntityKey(entity);
         if (key == null) throw new IllegalArgumentException(
                 "Provided entity is not an injected entity!"
         );
         return key;
-    }
-
-    /**
-     * Retrieves the Bestium {@link Key} of the injected Minecraft NMS {@link Entity}.
-     * <p>
-     * This is the same key that was used when registering the entity injection.
-     * Throws an exception if the entity is not injected.
-     *
-     * @param entity the NMS {@link Entity} to retrieve the key from
-     * @return the {@link Key} identifying the injected entity type
-     * @throws IllegalArgumentException if the entity is not an injected entity
-     * @see #getInjectedEntityKeyOrNull(Entity)
-     */
-    static @Nullable Key getInjectedEntityKeyOrNull(final Entity entity) {
-        return getInjectedEntityKeyOrNull(entity.getBukkitEntity());
-    }
-
-    /**
-     * Retrieves the Bestium {@link Key} of the injected Minecraft NMS {@link Entity}, or {@code null} if not injected.
-     * <p>
-     * This is the same key that was used when registering the entity injection.
-     *
-     * @param entity the NMS {@link Entity} to retrieve the key from
-     * @return the {@link Key} identifying the injected entity type, or {@code null} if the entity is not an injected entity
-     * @see #getInjectedEntityKey(Entity)
-     */
-    static Key getInjectedEntityKey(final Entity entity) {
-        return getInjectedEntityKey(entity.getBukkitEntity());
     }
 
     /**
@@ -258,21 +230,11 @@ public interface Bestium {
     }
 
     /**
-     * Checks whether the given {@link Entity} is an injected entity.
-     *
-     * @param entity the {@link Entity} to check
-     * @return {@code true} if the entity was injected by Bestium, {@code false} otherwise
-     */
-    static boolean isInjectedEntity(final Entity entity) {
-        return isInjectedEntity(entity.getBukkitEntity());
-    }
-
-    /**
      * Constructs a {@link NamespacedKey} from the given string key value.
      *
      * @param key the string value of the key. Must follow the {@link KeyPattern.Value} format
      * @return a {@link NamespacedKey} constructed from the given value
      */
     @ApiStatus.Internal
-    NamespacedKey key(final @KeyPattern.Value String key);
+    NamespacedKey createKey(final @KeyPattern.Value String key);
 }

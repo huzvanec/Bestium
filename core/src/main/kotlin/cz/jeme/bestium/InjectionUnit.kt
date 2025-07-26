@@ -6,6 +6,7 @@ import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.util.setStaticFinal
 import cz.jeme.bestium.util.toNamespacedKey
 import cz.jeme.bestium.util.toResourceLocation
+import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minecraft.SharedConstants
 import net.minecraft.core.Holder
@@ -35,8 +36,10 @@ import org.bukkit.entity.EntityType as BukkitEntityType
 class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
     private val logger = ComponentLogger.logger("BestiumInjectionUnit")
     private val _types = mutableMapOf<Class<out Entity>, EntityType<*>>()
+    private val _keyedTypes = mutableMapOf<Key, EntityType<*>>()
     private val toInject = injections.size
     val types: Map<Class<out Entity>, EntityType<*>> = _types
+    val keyedTypes: Map<Key, EntityType<*>> = _keyedTypes
 
     fun minecraftInjection() {
         logger.info("[Phase 1/2] Starting entity injection (bootstrap phase)")
@@ -54,7 +57,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
         @Suppress("UNCHECKED_CAST")
         val attributeSuppliers: MutableMap<EntityType<out Entity>, AttributeSupplier> = (
-                attributeSuppliersField.get(null) as Map<EntityType<out Entity>, AttributeSupplier>
+                attributeSuppliersField[null] as Map<EntityType<out Entity>, AttributeSupplier>
                 ).toMutableMap()
 
         logger.info("[Phase 1/2] Resetting unregistered intrusive entity type holders")
@@ -70,10 +73,10 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
         logger.info("[Phase 1/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
         for (inj in injections) {
-            val entityClass = inj.entityClass()
-            val key = inj.key()
+            val entityClass = inj.entityClass
+            val key = inj.key
             val keyStr = key.asString()
-            val backingType = inj.backingType()
+            val backingType = inj.backingType
 
             // copy data fixer from backing type
             dataFixerTypes[keyStr] = dataFixerTypes[ENTITY_TYPE_REGISTRY.getKey(backingType).toString()]
@@ -81,15 +84,15 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
             // create main entity type
             val nmsType = EntityType.Builder.of(
-                inj.entityFactory(),
-                inj.mobCategory()
+                inj.entityFactory,
+                inj.mobCategory
             )
                 .clientTrackingRange(backingType.clientTrackingRange())
                 .sized(backingType.width, backingType.height)
                 .eyeHeight(backingType.dimensions.eyeHeight)
                 .apply {
                     @Suppress("UNCHECKED_CAST")
-                    (inj.typeCustomizer() as Consumer<EntityType.Builder<out Entity>>).accept(this)
+                    (inj.typeCustomizer as Consumer<EntityType.Builder<out Entity>>).accept(this)
                 }
                 .build(
                     ResourceKey.create(
@@ -103,15 +106,16 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             Registry.register(ENTITY_TYPE_REGISTRY, keyStr, nmsType)
 
             // register default attributes
-            inj.attributes()?.let { attributeSuppliers[nmsType] = it }
+            inj.defaultAttributes?.let { attributeSuppliers[nmsType] = it }
 
             // copy registry holder from backing type 
             val registryHolder = EntityType::class.java.getDeclaredField("builtInRegistryHolder")
                 .apply { isAccessible = true }
-            registryHolder.set(nmsType, registryHolder.get(backingType))
+            registryHolder[nmsType] = registryHolder[backingType]
 
             // store entity type for later use
             _types[entityClass] = nmsType
+            _keyedTypes[key] = nmsType
         }
 
         logger.info("[Phase 1/2] Overwriting default attribute suppliers")
@@ -137,18 +141,18 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
         @Suppress("UNCHECKED_CAST")
         val simpleRegistryMap = (
-                simpleRegistryMapField.get(BukkitRegistry.ENTITY_TYPE) as Map<NamespacedKey, BukkitEntityType>
+                simpleRegistryMapField[BukkitRegistry.ENTITY_TYPE] as Map<NamespacedKey, BukkitEntityType>
                 ).toMutableMap()
 
         logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity registry")
         for (inj in injections) {
-            val backingType = inj.backingType()
-            val entityClass = inj.entityClass()
-            val key = inj.key()
+            val backingType = inj.backingType
+            val entityClass = inj.entityClass
+            val key = inj.key
 
             // add class to bukkit type container
             val classes = bukkitTypeDataContainer.computeIfAbsent(backingType) { mutableListOf() }
-            val index = classes.indexOfFirst { it.entityClass().isAssignableFrom(entityClass) }
+            val index = classes.indexOfFirst { it.entityClass.isAssignableFrom(entityClass) }
                 .let { if (it == -1) classes.size else it }
             classes.add(index, inj)
 
@@ -162,7 +166,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
         @Suppress("UNCHECKED_CAST")
         val bukkitEntityTypeData: MutableMap<BukkitEntityType, EntityTypeData<*, *>> = (
-                bukkitEntityTypeDataField.get(null) as Map<BukkitEntityType, EntityTypeData<*, *>>
+                bukkitEntityTypeDataField[null] as Map<BukkitEntityType, EntityTypeData<*, *>>
                 ).toMutableMap()
 
         logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity type data")
@@ -175,10 +179,10 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 craftType,
                 BukkitEntity::class.java,
                 { server, nms ->
-                    val inj = classes.firstOrNull { it.entityClass().isInstance(nms) }
+                    val inj = classes.firstOrNull { it.entityClass.isInstance(nms) }
 
                     inj?.let {
-                        (inj.convertFunction() as ConvertFunction<Entity, BukkitEntity>).apply(
+                        (inj.convertFunction as ConvertFunction<Entity, BukkitEntity>).apply(
                             server,
                             nms
                         )

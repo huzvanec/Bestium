@@ -34,34 +34,34 @@ import java.util.Objects;
  * <ol>
  *   <li>Create an abstract class that extends a vanilla Minecraft entity (e.g. {@code Skeleton}).</li>
  *   <li>Implement {@link Injectable}.</li>
- *   <li>Call {@link #bestium_init()} in the constructor.</li>
- *   <li>Override {@code getType()} and return {@link #bestium_backingType()}.</li>
- *   <li>Override {@code addAdditionalSaveData(ValueOutput)} to call both {@code super.addAdditionalSaveData(ValueOutput)} and {@link #bestium_addAdditionalSaveData(ValueOutput)}.</li>
+ *   <li>Call {@link #initBestium()} in the constructor.</li>
+ *   <li>Override {@code getType()} and return {@link #getBestiumBackingType()}.</li>
+ *   <li>Override {@code addAdditionalSaveData(ValueOutput)} to call both {@code super.addAdditionalSaveData(ValueOutput)} and {@link #addBestiumAdditionalSaveData(ValueOutput)}.</li>
  * </ol>
  * For example:
  * <pre>{@code
  * public abstract class CustomSkeleton extends Skeleton implements Injectable {
  *     public CustomSkeleton(EntityType<? extends CustomSkeleton> type, Level level) {
  *         super(type, level);
- *         bestium_init();
+ *         initBestium();
  *     }
  *
  *     @Override
  *     public EntityType<?> getType() {
- *         return bestium_backingType();
+ *         return getBestiumBackingType();
  *     }
  *
  *     @Override
  *     protected void addAdditionalSaveData(ValueOutput output) {
  *         super.addAdditionalSaveData(output);
- *         bestium_addAdditionalSaveData(output);
+ *         addBestiumAdditionalSaveData(output);
  *     }
  * }
  * }</pre>
  * <p>
  * This abstract class can then be extended further to implement specific custom behavior.
  * <p>
- * <strong>Note:</strong> Calls to {@link #bestium_key()}, {@link #bestium_backingType()}, and {@link #bestium_realType()} are relatively expensive
+ * <strong>Note:</strong> Calls to {@link #getBestiumKey()}, {@link #getBestiumBackingType()}, and {@link #getBestiumRealType()} are relatively expensive
  * and should be cached if accessed frequently.
  */
 @NullMarked
@@ -77,7 +77,7 @@ public interface Injectable {
      */
     @SuppressWarnings("unchecked")
     @ApiStatus.NonExtendable
-    default <T extends Entity> @NotNull T bestium_asEntity() {
+    default <T extends Entity> @NotNull T asBestiumEntity() {
         if (!(this instanceof final Entity entity))
             throw new IllegalStateException("Classes implementing '" + Injectable.class.getName() + "' must extend '" + Entity.class.getName() + "'");
         return (T) entity;
@@ -91,8 +91,8 @@ public interface Injectable {
      */
     @SuppressWarnings("SuspiciousMethodCalls")
     @ApiStatus.NonExtendable
-    default Key bestium_key() {
-        return Objects.requireNonNull(Bestium.injector().injections().get(bestium_asEntity().getClass()).key());
+    default Key getBestiumKey() {
+        return Objects.requireNonNull(Bestium.getInjector().getInjections().get(asBestiumEntity().getClass()).getKey());
     }
 
     /**
@@ -100,11 +100,11 @@ public interface Injectable {
      * This is the type used for interaction with vanilla systems such as spawning or serialization.
      *
      * @return the vanilla backing type
-     * @see EntityInjection#backingType()
+     * @see EntityInjection#getBackingType()
      */
     @ApiStatus.NonExtendable
-    default EntityType<?> bestium_backingType() {
-        return Bestium.injector().injections().get(getClass()).backingType();
+    default EntityType<?> getBestiumBackingType() {
+        return Bestium.getInjector().getInjections().get(getClass()).getBackingType();
     }
 
     /**
@@ -116,8 +116,8 @@ public interface Injectable {
      * @return the internal Bestium entity type
      */
     @ApiStatus.NonExtendable
-    default EntityType<?> bestium_realType() {
-        return Bestium.injector().types().get(getClass());
+    default EntityType<?> getBestiumRealType() {
+        return Bestium.getInjector().getTypes().get(getClass());
     }
 
     /**
@@ -127,8 +127,8 @@ public interface Injectable {
      * @param output the save target to write to
      */
     @ApiStatus.NonExtendable
-    default void bestium_addAdditionalSaveData(final ValueOutput output) {
-        output.putString(Entity.TAG_ID, bestium_key().asString());
+    default void addBestiumAdditionalSaveData(final ValueOutput output) {
+        output.putString(Entity.TAG_ID, getBestiumKey().asString());
     }
 
     /**
@@ -139,11 +139,12 @@ public interface Injectable {
      * <p>
      * Presence of this key signifies that the entity was spawned via the Bestium injection system.
      *
-     * @see Bestium#isInjectedEntity(Entity)
-     * @see Bestium#getInjectedEntityKey(Entity)
+     * @see Bestium#isInjectedEntity(org.bukkit.entity.Entity)
+     * @see Bestium#getInjectedEntityKey(org.bukkit.entity.Entity)
+     * @see Bestium#requireInjectedEntityKey(org.bukkit.entity.Entity)
      */
     @ApiStatus.Internal
-    NamespacedKey BESTIUM_ID_KEY = Bestium.bestium().key("bestium_id");
+    NamespacedKey BESTIUM_ID_KEY = Bestium.getBestium().createKey("bestium_id");
 
     /**
      * Initializes this Bestium entity.
@@ -152,17 +153,17 @@ public interface Injectable {
      * the constructor of your custom entity class.
      */
     @ApiStatus.NonExtendable
-    default void bestium_init() {
-        final Entity entity = bestium_asEntity();
+    default void initBestium() {
+        final Entity entity = asBestiumEntity();
         final var bukkitEntity = entity.getBukkitEntity();
 
-        final Key key = bestium_key();
+        final Key key = getBestiumKey();
         bukkitEntity.getPersistentDataContainer().set(
                 BESTIUM_ID_KEY,
                 PersistentDataType.STRING,
                 key.asString()
         );
-        if (Bestium.pluginSupport().betterModel()) {
+        if (Bestium.getPluginSupport().betterModel()) {
             // normal BetterModel API for adding models to entities cannot be used here
             // as this is run even before the entity is loaded, BetterModel freaks out
             // and detaches the model from the entity
