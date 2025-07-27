@@ -43,4 +43,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: './javadoc'
+          destination_dir: ${{ steps.obtain_version.outputs.version }}
           cname: jd.bestium.jeme.cz
