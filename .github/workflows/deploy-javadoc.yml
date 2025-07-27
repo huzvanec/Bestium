@@ -1,4 +1,4 @@
-name: Deploy docs and javadoc
+name: Deploy javadoc
 
 on:
   release:
