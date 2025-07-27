@@ -37,4 +37,8 @@ tasks {
         }
         minecraftVersion(paperToMinecraftVersion(libs.versions.paper.get()))
     }
+
+    register("printVersion") {
+        doLast { print(version) }
+    }
 }

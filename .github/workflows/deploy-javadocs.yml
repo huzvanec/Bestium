@@ -1,0 +1,46 @@
+name: Deploy docs and javadoc
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    permissions:
+      contents: write
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Obtain project version
+        id: obtain_version
+        run: |
+          version=$(./gradlew -q printVersion)
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+      - name: Generate API Javadoc
+        run: ./gradlew api:javadoc
+
+      - name: Copy API Javadoc
+        env:
+          VERSION: ${{ steps.obtain_version.outputs.version }}
+        run: |
+          mkdir -p javadoc/${VERSION}/
+          cp -r api/build/docs/javadoc/* javadoc/${VERSION}/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: './javadoc'
+          cname: jd.bestium.jeme.cz
