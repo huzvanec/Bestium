@@ -3,6 +3,7 @@
   "extends": [
     "config:recommended"
   ],
+  "automergeType": "branch",
   "packageRules": [
     {
       "matchUpdateTypes": [
