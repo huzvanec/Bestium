@@ -5,8 +5,8 @@ shadow = "9.0.0-rc2"
 publish = "0.34.0"
 paperweight = "2.0.0-beta.18"
 paper = "1.21.8-R0.1-SNAPSHOT"
-run-paper = "2.3.1"
-bettermodel = "1.10.0"
+run-paper = "2.3.0"
+bettermodel = "1.10.1"
 
 [libraries]
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
