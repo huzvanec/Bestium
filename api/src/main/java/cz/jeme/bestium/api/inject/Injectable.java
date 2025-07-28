@@ -149,8 +149,7 @@ public interface Injectable {
     /**
      * Initializes this Bestium entity.
      * <p>
-     * This method sets up persistent tracking data (e.g., for models), and should be called from
-     * the constructor of your custom entity class.
+     * This method should be called from the constructor of your custom entity base class.
      */
     @ApiStatus.NonExtendable
     default void initBestium() {
