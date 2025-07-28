@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Bestium.iml" filepath="$PROJECT_DIR$/.idea/Bestium.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/api/Bestium.api.main.iml" filepath="$PROJECT_DIR$/.idea/modules/api/Bestium.api.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/api/Bestium.api.test.iml" filepath="$PROJECT_DIR$/.idea/modules/api/Bestium.api.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/buildSrc/Bestium.buildSrc.main.iml" filepath="$PROJECT_DIR$/.idea/modules/buildSrc/Bestium.buildSrc.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Bestium.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Bestium.core.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Bestium.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Bestium.core.test.iml" />
     </modules>

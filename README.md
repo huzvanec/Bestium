@@ -4,37 +4,38 @@
   A powerful plugin library for creating custom Minecraft entities with unique behaviors.
   <br/>
   <br/>
-  <a href="https://bestium.jeme.cz">
+  <a href="https://docs.bestium.jeme.cz">
     <img src="branding/docs.png" alt="Docs" width="15%" />
   </a>
 </div>
 <br/>
 
 Unlike traditional methods, Bestium injects your entity code directly into the Minecraft and Bukkit runtimes, it allows
-you to create custom entities without extending non-abstract vanilla entities, meaning you're not bound by their existing
-implementations.
+you to create custom entities without extending non-abstract vanilla entities, meaning you're not bound by their
+existing implementations.
 
 - [x] Inject custom entity code into the Minecraft and Bukkit runtimes
 - [x] Preserve entities over server restarts and chunk unloads
 - [x] Craft a nice API with full javadoc
 - [x] Integrate [BetterModel](https://github.com/toxicity188/BetterModel) (❤️
   to [toxicity188](https://github.com/toxicity188)) to add custom models to entities
-- [x] Full datapack biome support (entities can be added to biomes naturally)
+- [x] Datapack biome support (entities can be added to biomes naturally)
+- [x] In-game summon command
 - [x] Mob spawn egg support
 - [ ] Mob spawner support
-- [ ] In-game spawn command
 - [ ] In-game GUI with spawn eggs
 - [ ] Config
 
 > [!WARNING]
-> Bestium may be unstable.
+> Depending on what you desire, Bestium may be unstable.
 
 > [!CAUTION]
 > Due to frequent changes in Minecraft's internal codebase, Bestium only supports the latest Minecraft release.
 
 ## Usage
 
-Check out the [Bestium Docs](https://bestium.jeme.cz) for more information.
+Check out the [Documentation](https://docs.bestium.jeme.cz) and [Javadoc](https://jd.bestium.jeme.cz)
+for more information.
 
 ## Building
 
