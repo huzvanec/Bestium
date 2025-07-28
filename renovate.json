@@ -3,6 +3,19 @@
   "extends": [
     "config:recommended"
   ],
-  "automerge": true,
-  "automergeType": "branch"
+  "packageRules": [
+    {
+      "matchBaseBranches": [
+        "master"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true,
+      "ignoreTests": true
+    }
+  ]
 }
