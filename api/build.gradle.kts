@@ -56,6 +56,18 @@ tasks {
         (options as? StandardJavadocDocletOptions)?.apply {
             docTitle = "Bestium API v$version"
             windowTitle = docTitle
+            links(
+                "https://docs.oracle.com/en/java/javase/${libs.versions.java.get()}/docs/api/",
+                "https://jd.papermc.io/paper/${paperToMinecraftVersion(libs.versions.paper.get())}/",
+                "https://jspecify.dev/docs/api/",
+                "https://jd.advntr.dev/api/latest/",
+                "https://jd.advntr.dev/key/latest/",
+                "https://jd.advntr.dev/text-minimessage/latest/",
+                "https://jd.advntr.dev/text-serializer-gson/latest/",
+                "https://jd.advntr.dev/text-serializer-legacy/latest/",
+                "https://jd.advntr.dev/text-serializer-plain/latest/",
+                "https://jd.advntr.dev/text-logger-slf4j/latest/"
+            )
         }
     }
 }
