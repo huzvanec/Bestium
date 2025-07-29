@@ -1,8 +1,11 @@
 package cz.jeme.bestium.api;
 
+import org.jetbrains.annotations.ApiStatus;
+
 /**
  * Provides support for checking the status of optional dependency plugins for Bestium.
  */
+@ApiStatus.NonExtendable
 public interface PluginSupport {
 
     /**

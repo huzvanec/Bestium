@@ -8,7 +8,6 @@ import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Extend this class to implement your own mob with custom behavior or properties.
@@ -17,12 +16,17 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * Examples of vanilla {@link CustomMob} subclasses: {@link Slime}, {@link Ghast}, {@link Phantom}
  */
-@NullMarked
 public abstract class CustomMob extends Mob implements Injectable {
+    /**
+     * The constructor of this class.
+     *
+     * @param entityType the real type of this entity, unlike {@link #getType()}
+     * @param level      the level this entity is created in
+     */
     protected CustomMob(final EntityType<? extends CustomMob> entityType,
                         final Level level) {
         super(entityType, level);
-        initBestium();
+        initBestium(entityType, level);
     }
 
     @Override

@@ -4,7 +4,6 @@ import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -20,7 +19,6 @@ import java.util.function.Supplier;
  * @see #register(Supplier)
  * @see #canRegister()
  */
-@NullMarked
 public interface EntityInjector {
     /**
      * Registers a prepared entity injection for later application.

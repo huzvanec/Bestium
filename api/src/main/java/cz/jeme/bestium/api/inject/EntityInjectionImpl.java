@@ -1,6 +1,8 @@
 package cz.jeme.bestium.api.inject;
 
-import cz.jeme.bestium.api.util.ModelUtils;
+import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
+import cz.jeme.bestium.api.inject.variant.EntityVariant;
+import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -8,14 +10,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NullMarked;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
-import java.net.URL;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-@NullMarked
 final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements EntityInjection<T, B> {
     private final Key key;
     private final Class<T> entityClass;
@@ -24,9 +26,8 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     private final EntityType<?> backingType;
     private final MobCategory category;
     private final Consumer<EntityType.Builder<T>> typeBuilder;
-    private final @Nullable String modelName;
     private final @Nullable AttributeSupplier attributes;
-    private final @Nullable URL modelUrl;
+    private final Map<String, BoundEntityVariant> variants;
 
     private EntityInjectionImpl(final BuilderImpl<T, B> builder) {
         key = builder.key;
@@ -37,8 +38,18 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         category = builder.category;
         typeBuilder = builder.typeBuilder;
         attributes = builder.attributes;
-        modelUrl = builder.modelUrl;
-        modelName = modelUrl == null ? null : ModelUtils.keyToModelName(key);
+        variants = builder.variants.stream()
+                .map(variant -> variant.bind(this))
+                .collect(Collectors.toMap(
+                        EntityVariant::getId,
+                        Function.identity(),
+                        (variant1, variant2) -> {
+                            throw new AssertionError(
+                                    "Duplicate variant keys encountered in a set. This indicates an issue with the equals function of AbstractEntityVariant."
+                            );
+                        },
+                        LinkedHashMap::new
+                ));
     }
 
     @Override
@@ -82,13 +93,8 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     }
 
     @Override
-    public @Nullable URL getModelUrl() {
-        return modelUrl;
-    }
-
-    @Override
-    public @Nullable String getModelName() {
-        return modelName;
+    public @Unmodifiable Map<String, BoundEntityVariant> getVariants() {
+        return Collections.unmodifiableMap(variants);
     }
 
     static final class BuilderImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
@@ -103,7 +109,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         private Consumer<EntityType.Builder<T>> typeBuilder = b -> {
         };
         private @Nullable AttributeSupplier attributes;
-        private @Nullable URL modelUrl;
+        private Set<UnboundEntityVariant> variants = new LinkedHashSet<>();
 
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,
@@ -193,14 +199,20 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         }
 
         @Override
-        public Builder<T, B> setModel(final URL url) {
-            this.modelUrl = url;
+        public Builder<T, B> addVariant(final UnboundEntityVariant variant) {
+            variants.add(variant);
             return this;
         }
 
         @Override
-        public @Nullable URL getModelUrl() {
-            return modelUrl;
+        public Builder<T, B> setVariants(final Collection<UnboundEntityVariant> variants) {
+            this.variants = new LinkedHashSet<>(variants);
+            return this;
+        }
+
+        @Override
+        public @Unmodifiable Set<UnboundEntityVariant> getVariants() {
+            return Collections.unmodifiableSet(variants);
         }
 
         @Override

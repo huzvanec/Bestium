@@ -10,7 +10,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.util.function.Supplier
 
@@ -67,8 +66,8 @@ internal object EntityInjectorImpl : EntityInjector {
         registrations
             .map(Supplier<EntityInjection<*, *>>::get)
             .forEach { injection ->
-                val clazz = injection.getEntityClass()
-                val key = injection.getKey()
+                val clazz = injection.entityClass
+                val key = injection.key
                 if (injections.containsKey(clazz))
                     throw IllegalArgumentException("Duplicate registered injection with entity class: '${clazz.name}'")
                 if (keyedInjections.containsKey(key))
@@ -140,14 +139,17 @@ internal object EntityInjectorImpl : EntityInjector {
         val modelsDir = File((BetterModel.plugin() as JavaPlugin).dataFolder, "models/.bestium")
         modelsDir.mkdirs()
 
-        for (inj in injections.values) {
-            val modelUrl = inj.getModelUrl() ?: continue
-            val outputFile = File(modelsDir, inj.getModelName()!! + ".bbmodel")
-            modelUrl.openStream().use { input ->
-                FileOutputStream(outputFile).use { output ->
-                    input.copyTo(output, bufferSize = 2 shl 13)
+        injections.values
+            .flatMap { inj -> inj.variants.values }
+            .forEach { variant ->
+                variant.modelUrl.openStream().use { input ->
+                    File(
+                        modelsDir,
+                        variant.modelName + ".bbmodel"
+                    ).outputStream().use { output ->
+                        input.copyTo(output, bufferSize = 2 shl 13)
+                    }
                 }
             }
-        }
     }
 }

@@ -7,19 +7,23 @@ import net.minecraft.world.entity.animal.Cod;
 import net.minecraft.world.entity.animal.Salmon;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Extend this class to implement your own fish with schooling and other custom behavior or properties.
  * <p>
  * Examples of vanilla {@link AbstractSchoolingFish} subclasses: {@link Cod}, {@link Salmon}
  */
-@NullMarked
 public abstract class CustomAbstractSchoolingFish extends AbstractSchoolingFish implements Injectable {
+    /**
+     * The constructor of this class.
+     *
+     * @param entityType the real type of this entity, unlike {@link #getType()}
+     * @param level      the level this entity is created in
+     */
     protected CustomAbstractSchoolingFish(final EntityType<? extends CustomAbstractSchoolingFish> entityType,
                                           final Level level) {
         super(entityType, level);
-        initBestium();
+        initBestium(entityType, level);
     }
 
     @Override

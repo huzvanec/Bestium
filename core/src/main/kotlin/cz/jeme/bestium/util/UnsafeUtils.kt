@@ -9,8 +9,7 @@ import java.lang.reflect.Field
 
 private val unsafe by lazy {
     Unsafe::class.java.getDeclaredField("theUnsafe")
-        .apply { isAccessible = true }
-        .get(null) as Unsafe
+        .apply { isAccessible = true }[null] as Unsafe
 }
 
 fun Field.setStaticFinal(value: Any?) = setFinal(

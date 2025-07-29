@@ -1,12 +1,20 @@
 package cz.jeme.bestium.api.util;
 
+import cz.jeme.bestium.api.inject.EntityInjection;
+import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import net.kyori.adventure.key.Key;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Utility class for handling model-related operations.
+ *
+ * @deprecated Replaced by variants API, see:
+ * <ul>
+ *     <li>package {@link cz.jeme.bestium.api.inject.variant}</li>
+ *     <li>{@link EntityInjection#getModelPrefix()}</li>
+ *     <li>{@link BoundEntityVariant#getModelName()}</li>
+ * </ul>
  */
-@NullMarked
+@Deprecated(since = "2.1.0")
 public final class ModelUtils {
     private ModelUtils() {
         throw new AssertionError();

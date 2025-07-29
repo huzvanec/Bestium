@@ -1,5 +1,8 @@
 package cz.jeme.bestium.api.inject;
 
+import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
+import cz.jeme.bestium.api.inject.variant.EntityVariant;
+import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
@@ -11,13 +14,15 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
-import org.jspecify.annotations.NullMarked;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Objects;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -32,7 +37,6 @@ import java.util.function.Supplier;
  * @param <E> the type of the Bukkit entity the Minecraft entity can be converted to
  * @see EntityInjector
  */
-@NullMarked
 public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.entity.Entity> permits EntityInjectionImpl {
 
     /**
@@ -97,9 +101,49 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * Returns the URL of the model associated with this entity.
      *
      * @return the model URL, or {@code null} if none was set
+     * @deprecated Use {@link #getVariants()} and {@link EntityVariant#getModelUrl()}.
      */
+    @Deprecated(since = "2.1.0")
     @Nullable
-    URL getModelUrl();
+    default URL getModelUrl() {
+        final Iterator<BoundEntityVariant> it = getVariants().values().iterator();
+        return it.hasNext() ? it.next().getModelUrl() : null;
+    }
+
+    /**
+     * Returns the model name prefix used for entity variants bound to this injection.
+     * <p>
+     * The returned string is based on the entity's Bestium {@link Key},
+     * with the format:
+     * <pre>{@code bestium.<key_namespace>.<key_value>}</pre>
+     * where slashes in the key's value are replaced with dots.
+     * <p>
+     * This prefix is used to construct full model names for the entity's variants. For example,
+     * if the prefix is
+     * <pre>{@code bestium.my_plugin.capybara}</pre>
+     * the full variant model name might be:
+     * <pre>{@code bestium.my_plugin.capybara.cold}</pre>
+     *
+     * @return the variant model prefix for this entity
+     * @see BoundEntityVariant#getModelName()
+     */
+    default String getModelPrefix() {
+        final Key key = getKey();
+        return "bestium." +
+               key.namespace() + "." +
+               key.value().replace('/', '.');
+    }
+
+    /**
+     * Returns the model variants associated with this entity injection.
+     * <p>
+     * The returned map preserves the insertion order of the variants.
+     * Keys are the entity variant IDs, and values are the corresponding bound variants.
+     *
+     * @return an unmodifiable, insertion-ordered map of bound entity variants
+     */
+    @Unmodifiable
+    Map<String, BoundEntityVariant> getVariants();
 
     /**
      * Returns the model name used to identify this entity's model.
@@ -116,7 +160,11 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * @see #getModelUrl()
      */
     @Nullable
-    String getModelName();
+    @Deprecated(since = "2.1.0")
+    default String getModelName() {
+        final Iterator<BoundEntityVariant> it = getVariants().values().iterator();
+        return it.hasNext() ? it.next().getModelName() : null;
+    }
 
     /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
@@ -276,49 +324,158 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * The resource path must be '{@code /}'-separated (e.g., {@code models/my_entity.bbmodel}).
          * <p>
          * This method attempts to load the resource using the bootstrapper's class loader.
+         * <p>
+         * This overwrites all variants with a single variant with the ID {@code 'default'}.
          *
          * @param bootstrapper the plugin bootstrapper whose class loader will be used to load the resource
          * @param resource     the path to the resource inside the plugin's JAR
          * @return this builder
-         * @throws NullPointerException if the resource cannot be found in the JAR file
+         * @throws IllegalArgumentException if the resource cannot be found in the JAR file
+         * @deprecated Use {@link #addVariant(UnboundEntityVariant)} , {@link #addVariants(Collection)}
+         * * and {@link #setVariants(Collection)}.
          */
         @SuppressWarnings("UnstableApiUsage")
+        @Deprecated(since = "2.1.0")
         default Builder<M, E> setModel(final PluginBootstrap bootstrapper, final String resource) {
-            return setModel(Objects.requireNonNull(
-                    bootstrapper.getClass().getClassLoader().getResource(resource),
-                    "Resource not found: '" + resource + "'"
-            ));
+            return setVariants(Set.of(EntityVariant.fromModelResource("default", bootstrapper, resource)));
         }
 
         /**
          * Sets the model for this entity using a local file on the filesystem.
+         * <p>
+         * This overwrites all variants with a single variant with the ID {@code 'default'}.
          *
          * @param file the file containing the model
          * @return this builder
          * @throws IllegalArgumentException if the file's URL is invalid
+         * @deprecated Use {@link #addVariant(UnboundEntityVariant)} , {@link #addVariants(Collection)}
+         * and {@link #setVariants(Collection)}.
          */
+        @Deprecated(since = "2.1.0")
         default Builder<M, E> setModel(final File file) {
-            try {
-                return setModel(file.toURI().toURL());
-            } catch (final MalformedURLException e) {
-                throw new IllegalArgumentException("Given file has invalid URL: '" + file.getAbsolutePath() + "'", e);
-            }
+            return setVariants(Set.of(EntityVariant.fromModelFile("default", file)));
         }
 
         /**
          * Sets the model for this entity using the given URL.
+         * <p>
+         * This overwrites all variants with a single variant with the ID {@code 'default'}.
          *
          * @param url the URL pointing to the model file
          * @return this builder
+         * @deprecated Use {@link #addVariant(UnboundEntityVariant)} , {@link #addVariants(Collection)}
+         * and {@link #setVariants(Collection)}.
          */
-        Builder<M, E> setModel(final URL url);
+        @Deprecated(since = "2.1.0")
+        default Builder<M, E> setModel(final URL url) {
+            return setVariants(Set.of(EntityVariant.fromModelUrl("default", url)));
+        }
 
         /**
-         * Gets the URL of the model associated with this entity.
+         * Replaces all entity variants providing models for this entity injection with the given collection.
+         * <p>
+         * This operation discards any previously added variants, whether added via this or other methods.
+         * The order of variants in the provided collection matters: the default variant chosen by a spawning entity
+         * will be the first variant in this collection.
+         * <p>
+         * The collection must not contain variants with duplicate IDs. If duplicates exist, they will be
+         * silently eliminated with undefined behavior.
          *
-         * @return the model URL, or {@code null} if none was set
+         * @param variants the collection of unbound entity variants to set
+         * @return this builder
+         * @see #addVariant(UnboundEntityVariant)
+         * @see #addVariants(UnboundEntityVariant, UnboundEntityVariant, UnboundEntityVariant...)
+         * @see #addVariants(Collection)
+         * @see Injectable#chooseBestiumVariant(Map)
          */
+        Builder<M, E> setVariants(final Collection<UnboundEntityVariant> variants);
+
+        /**
+         * Adds a single entity variant providing a model to this entity injection.
+         * <p>
+         * If this is the first variant added, it will be used as the default variant when a spawning
+         * entity is choosing a model.
+         * <p>
+         * If a variant with the same ID already exists, this method will ignore the new variant silently.
+         *
+         * @param variant the unbound entity variant to add
+         * @return this builder
+         * @see #addVariants(UnboundEntityVariant, UnboundEntityVariant, UnboundEntityVariant...)
+         * @see #addVariants(Collection)
+         * @see #setVariants(Collection)
+         * @see Injectable#chooseBestiumVariant(Map)
+         */
+        Builder<M, E> addVariant(final UnboundEntityVariant variant);
+
+        /**
+         * Adds a collection of entity variants providing models to this entity injection.
+         * <p>
+         * The order of variants in the collection matters: if this is the first time variants are added,
+         * the first element will be used as the default variant when a spawning entity is choosing a variant.
+         * <p>
+         * Variants with IDs that duplicate existing variants in the injection will be ignored.
+         * If there are duplicate IDs within the provided collection itself, the first variant encountered
+         * with that ID will be prioritized.
+         *
+         * @param variants the collection of unbound entity variants to add
+         * @return this builder
+         * @see #addVariant(UnboundEntityVariant)
+         * @see #addVariants(UnboundEntityVariant, UnboundEntityVariant, UnboundEntityVariant...)
+         * @see #setVariants(Collection)
+         * @see Injectable#chooseBestiumVariant(Map)
+         */
+        default Builder<M, E> addVariants(final Collection<UnboundEntityVariant> variants) {
+            variants.forEach(this::addVariant);
+            return this;
+        }
+
+        /**
+         * Adds two or more entity variants providing models to this entity injection.
+         * <p>
+         * The order of variants matters: if this is the first time variants are added,
+         * the first argument will be the default variant selected when a spawning entity is
+         * choosing a model.
+         * <p>
+         * Variants with duplicate IDs compared to already added variants will be ignored.
+         * For duplicates within the arguments themselves, the first variant with the ID will be prioritized.
+         *
+         * @param first  the first unbound entity variant to add
+         * @param second the second unbound entity variant to add
+         * @param rest   additional unbound entity variants to add
+         * @return this builder
+         * @see #addVariant(UnboundEntityVariant)
+         * @see #addVariants(Collection)
+         * @see #setVariants(Collection)
+         * @see Injectable#chooseBestiumVariant(Map)
+         */
+        default Builder<M, E> addVariants(final UnboundEntityVariant first, final UnboundEntityVariant second, final UnboundEntityVariant... rest) {
+            addVariant(first);
+            addVariant(second);
+            for (final UnboundEntityVariant variant : rest) addVariant(variant);
+            return this;
+        }
+
+        /**
+         * Returns an unmodifiable set of entity variants added to this entity injection.
+         * <p>
+         * The returned set preserves the order in which variants were added.
+         *
+         * @return an unmodifiable, ordered set of added entity variants
+         */
+        @Unmodifiable
+        Set<UnboundEntityVariant> getVariants();
+
+        /**
+         * Gets the URL of the first registered entity variant.
+         *
+         * @return the model URL of the first variant, or {@code null} if no variants are registered
+         * @deprecated Use {@link #getVariants()} and {@link EntityVariant#getModelUrl()} instead.
+         */
+        @Deprecated(since = "2.1.0")
         @Nullable
-        URL getModelUrl();
+        default URL getModelUrl() {
+            Iterator<UnboundEntityVariant> it = getVariants().iterator();
+            return it.hasNext() ? it.next().getModelUrl() : null;
+        }
     }
 }

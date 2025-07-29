@@ -1,19 +1,22 @@
 package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
-import cz.jeme.bestium.api.util.ModelUtils;
+import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -21,8 +24,10 @@ import java.util.Objects;
  * <p>
  * This is an interface because Java does not support multiple class inheritance, and Bestium entities
  * cannot be directly injected into the official vanilla entity hierarchy. While this is technically
- * an interface, its methods are <strong>not</strong> intended to be overridden — they provide essential
- * infrastructure logic for Bestium entity injection.
+ * an interface, most of its methods (marked with {@link ApiStatus.NonExtendable}) are <strong>not intended to be overridden</strong>,
+ * they provide essential logic for Bestium entity injection.
+ * <p>
+ * <strong>This interface may get breaking changes even in minor releases!</strong>
  * <p>
  * Before you start implementing this interface to create your custom abstract class, you should first check the
  * {@code cz.jeme.bestium.api.entity} package. It may already contain a suitable implementation, such as {@code CustomMonster}
@@ -32,9 +37,9 @@ import java.util.Objects;
  * <p>
  * To create an injectable custom entity, you should:
  * <ol>
- *   <li>Create an abstract class that extends a vanilla Minecraft entity (e.g. {@code Skeleton}).</li>
+ *   <li>Create an <strong>abstract</strong> class that extends a vanilla Minecraft entity (e.g. {@code Skeleton}).</li>
  *   <li>Implement {@link Injectable}.</li>
- *   <li>Call {@link #initBestium()} in the constructor.</li>
+ *   <li>Call {@link #initBestium(EntityType, Level)} in the constructor.</li>
  *   <li>Override {@code getType()} and return {@link #getBestiumBackingType()}.</li>
  *   <li>Override {@code addAdditionalSaveData(ValueOutput)} to call both {@code super.addAdditionalSaveData(ValueOutput)} and {@link #addBestiumAdditionalSaveData(ValueOutput)}.</li>
  * </ol>
@@ -61,10 +66,9 @@ import java.util.Objects;
  * <p>
  * This abstract class can then be extended further to implement specific custom behavior.
  * <p>
- * <strong>Note:</strong> Calls to {@link #getBestiumKey()}, {@link #getBestiumBackingType()}, and {@link #getBestiumRealType()} are relatively expensive
- * and should be cached if accessed frequently.
+ *
+ * @see cz.jeme.bestium.api.entity
  */
-@NullMarked
 public interface Injectable {
     /**
      * Returns this object cast as a {@link net.minecraft.world.entity.Entity}.
@@ -84,27 +88,44 @@ public interface Injectable {
     }
 
     /**
+     * Returns the {@link EntityInjection} object used to inject this entity into the runtime.
+     * <p>
+     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
+     *
+     * @return the registered entity injection
+     * @throws NullPointerException if the entity was not properly registered
+     */
+    @ApiStatus.NonExtendable
+    default EntityInjection<?, ?> getBestiumInjection() {
+        return Objects.requireNonNull(Bestium.getInjector().getInjections().get(getClass()));
+    }
+
+    /**
      * Returns the unique {@link Key} associated with this injectable entity.
+     * <p>
+     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
      * @return the registered entity key
      * @throws NullPointerException if the entity was not properly registered
      */
-    @SuppressWarnings("SuspiciousMethodCalls")
     @ApiStatus.NonExtendable
     default Key getBestiumKey() {
-        return Objects.requireNonNull(Bestium.getInjector().getInjections().get(asBestiumEntity().getClass()).getKey());
+        return getBestiumInjection().getKey();
     }
 
     /**
      * Returns the vanilla {@link EntityType} that backs this custom entity.
      * This is the type used for interaction with vanilla systems such as spawning or serialization.
+     * <p>
+     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
      * @return the vanilla backing type
+     * @throws NullPointerException if the entity was not properly registered
      * @see EntityInjection#getBackingType()
      */
     @ApiStatus.NonExtendable
     default EntityType<?> getBestiumBackingType() {
-        return Bestium.getInjector().getInjections().get(getClass()).getBackingType();
+        return getBestiumInjection().getBackingType();
     }
 
     /**
@@ -112,12 +133,15 @@ public interface Injectable {
      * <p>
      * <strong>Warning:</strong> This type is not safe to send to the client, as it is not recognized
      * by vanilla clients and may cause packet errors or disconnections.
+     * <p>
+     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
      * @return the internal Bestium entity type
+     * @throws NullPointerException if the entity was not properly registered
      */
     @ApiStatus.NonExtendable
     default EntityType<?> getBestiumRealType() {
-        return Bestium.getInjector().getTypes().get(getClass());
+        return Objects.requireNonNull(Bestium.getInjector().getTypes().get(getClass()));
     }
 
     /**
@@ -132,45 +156,159 @@ public interface Injectable {
     }
 
     /**
-     * The persistent data key used to identify injected entities.
+     * Holder class for lazily initializing and caching Bestium persistent data keys.
      * <p>
-     * This key is stored in an entity's {@link PersistentDataContainer}
-     * and holds a {@link PersistentDataType#STRING} representing the injected entity's {@link Key}.
-     * <p>
-     * Presence of this key signifies that the entity was spawned via the Bestium injection system.
-     *
-     * @see Bestium#isInjectedEntity(org.bukkit.entity.Entity)
-     * @see Bestium#getInjectedEntityKey(org.bukkit.entity.Entity)
-     * @see Bestium#requireInjectedEntityKey(org.bukkit.entity.Entity)
+     * This ensures that the keys are created only when first accessed,
+     * preventing early initialization issues before Bestium is fully loaded.
      */
     @ApiStatus.Internal
-    NamespacedKey BESTIUM_ID_KEY = Bestium.getBestium().createKey("bestium_id");
+    final class KeyHolder {
+        private KeyHolder() {
+            throw new AssertionError();
+        }
+
+        private static @Nullable NamespacedKey BESTIUM_ID_KEY;
+        private static @Nullable NamespacedKey BESTIUM_VARIANT_KEY;
+
+        /**
+         * Returns the persistent data key used to identify injected entities.
+         * <p>
+         * This key is stored in an entity's {@link PersistentDataContainer}
+         * and holds a {@link PersistentDataType#STRING} representing the injected entity's {@link Key}.
+         * <p>
+         * Presence of this key signifies that the entity was spawned via the Bestium injection system.
+         *
+         * @return the namespaced key
+         * @see Bestium#isInjectedEntity(org.bukkit.entity.Entity)
+         * @see Bestium#getInjectedEntityKey(org.bukkit.entity.Entity)
+         * @see Bestium#requireInjectedEntityKey(org.bukkit.entity.Entity)
+         */
+        public static NamespacedKey getBestiumIdKey() {
+            if (BESTIUM_ID_KEY == null)
+                BESTIUM_ID_KEY = Bestium.getBestium().createKey("bestium_id");
+            return BESTIUM_ID_KEY;
+        }
+
+        /**
+         * Returns the persistent data key used to identify Bestium entity variants.
+         * <p>
+         * This key is stored in an entity's {@link PersistentDataContainer}
+         * and holds a {@link PersistentDataType#STRING} representing the injected entity's variant ID.
+         * <p>
+         * If the value is {@code "NO_MODEL"}, it signals the entity should not have any model.
+         *
+         * @return the namespaced key
+         */
+        public static NamespacedKey getBestiumVariantKey() {
+            if (BESTIUM_VARIANT_KEY == null)
+                BESTIUM_VARIANT_KEY = Bestium.getBestium().createKey("bestium_variant");
+            return BESTIUM_VARIANT_KEY;
+        }
+    }
 
     /**
      * Initializes this Bestium entity.
      * <p>
      * This method should be called from the constructor of your custom entity base class.
+     *
+     * @param entityType the real entity type of this entity
+     * @param level      the level this entity is created in
+     * @throws IllegalArgumentException if the entity type is not the real entity type of this entity
+     * @throws IllegalStateException    when {@link #chooseBestiumVariant(Map)} returns a variant other than from the provided map
      */
     @ApiStatus.NonExtendable
-    default void initBestium() {
-        final Entity entity = asBestiumEntity();
-        final var bukkitEntity = entity.getBukkitEntity();
+    default void initBestium(final EntityType<?> entityType, final Level level) {
+        if (entityType != getBestiumRealType()) throw new IllegalArgumentException(
+                "Provided entity type is not the real entity type: " + entityType
+        );
+
+        final Entity entity = asBestiumEntity(); // this injectable as a NMS entity
+        final var bukkitEntity = entity.getBukkitEntity(); // as Bukkit to use persistent data api
 
         final Key key = getBestiumKey();
-        bukkitEntity.getPersistentDataContainer().set(
-                BESTIUM_ID_KEY,
+        final PersistentDataContainer container = bukkitEntity.getPersistentDataContainer();
+
+        // save the Bestium id
+        container.set(
+                KeyHolder.getBestiumIdKey(),
                 PersistentDataType.STRING,
                 key.asString()
         );
-        if (Bestium.getPluginSupport().betterModel()) {
-            // normal BetterModel API for adding models to entities cannot be used here
-            // as this is run even before the entity is loaded, BetterModel freaks out
-            // and detaches the model from the entity
-            bukkitEntity.getPersistentDataContainer().set(
-                    EntityTrackerRegistry.TRACKING_ID,
+
+        // read existing entity variant
+        final String existingVariant = container.get(
+                KeyHolder.getBestiumVariantKey(),
+                PersistentDataType.STRING
+        );
+
+        // if the entity already has a variant (even NULL), return
+        // that means the entity was already spawned in and this is (very probably)
+        // just a server restart and we want to persist entity variants over restarts
+        // otherwise animals could change variants even with the simplest random-picking
+        // variant implementation
+        if (existingVariant != null) return;
+        // the mob does not have a variant yet, pick it and store it
+
+        // pick a variant
+        final BoundEntityVariant variant = chooseBestiumVariant(getBestiumInjection().getVariants());
+        if (variant == null) {
+            // null was returned, this means that the entity should not have a model (variant)
+            container.remove(EntityTrackerRegistry.TRACKING_ID); // remove any model if present
+            // store Bestium variant as NO_MODEL
+            // this should be somewhat ok, because variant IDs check for Key namespace regex, which is
+            // [a-z0-9.-_], meaning no upper case allowed
+            container.set(
+                    KeyHolder.getBestiumVariantKey(),
                     PersistentDataType.STRING,
-                    ModelUtils.keyToModelName(key)
+                    "NO_MODEL"
             );
+        } else { // a variant was returned for this entity
+            if (!variant.getInjection().getKey().equals(key))
+                // the variant is from a different entity
+                throw new IllegalStateException(
+                        "Provided entity variant is registered for a different entity: " +
+                        variant.getInjection().getKey().asString() +
+                        " instead of " +
+                        key.asString()
+                );
+            // store the variant id
+            container.set(
+                    KeyHolder.getBestiumVariantKey(),
+                    PersistentDataType.STRING,
+                    variant.getId()
+            );
+            // check if better model is loaded, then render model
+            if (Bestium.getPluginSupport().betterModel()) {
+                // normal BetterModel API for adding models to entities cannot be used here
+                // as this is run even before the entity is loaded, BetterModel freaks out
+                // and detaches the model from the entity
+                container.set(
+                        EntityTrackerRegistry.TRACKING_ID,
+                        PersistentDataType.STRING,
+                        variant.getModelName()
+                );
+            }
         }
+    }
+
+    /**
+     * Selects the preferred {@link BoundEntityVariant} from the provided map.
+     * <p>
+     * <strong>This method is, exceptionally for this interface, intended to be overridden.</strong>
+     * The default implementation returns the first variant in insertion order.
+     * <p>
+     * An overriding implementation may use custom selection strategies, for example,
+     * choosing a variant at random.
+     * <p>
+     * Returning {@code null} indicates that no model variant should be displayed for the entity.
+     * <p>
+     * Returning a variant that is not present in the provided map will result in an exception.
+     *
+     * @param variants an insertion-ordered map of bound entity variants, may be empty
+     * @return the selected variant to use for rendering, or {@code null} to suppress model display
+     */
+    default @Nullable BoundEntityVariant chooseBestiumVariant(final Map<String, BoundEntityVariant> variants) {
+        final Iterator<BoundEntityVariant> it = variants.values().iterator();
+        return it.hasNext() ? it.next() : null;
     }
 }

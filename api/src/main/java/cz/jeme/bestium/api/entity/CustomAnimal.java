@@ -8,19 +8,23 @@ import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Extend this class to implement your own animal with custom behavior or properties.
  * <p>
  * Examples of vanilla {@link Animal} subclasses: {@link Sheep}, {@link Pig}, {@link Panda}
  */
-@NullMarked
 public abstract class CustomAnimal extends Animal implements Injectable {
+    /**
+     * The constructor of this class.
+     *
+     * @param entityType the real type of this entity, unlike {@link #getType()}
+     * @param level      the level this entity is created in
+     */
     protected CustomAnimal(final EntityType<? extends CustomAnimal> entityType,
                            final Level level) {
         super(entityType, level);
-        initBestium();
+        initBestium(entityType, level);
     }
 
     @Override

@@ -6,7 +6,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Extend this class to implement your own living entity with custom behavior or properties.
@@ -15,12 +14,17 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * Examples of vanilla {@link LivingEntity} subclasses: {@link ArmorStand}
  */
-@NullMarked
 public abstract class CustomLivingEntity extends LivingEntity implements Injectable {
+    /**
+     * The constructor of this class.
+     *
+     * @param entityType the real type of this entity, unlike {@link #getType()}
+     * @param level      the level this entity is created in
+     */
     protected CustomLivingEntity(final EntityType<? extends CustomLivingEntity> entityType,
                                  final Level level) {
         super(entityType, level);
-        initBestium();
+        initBestium(entityType, level);
     }
 
     @Override

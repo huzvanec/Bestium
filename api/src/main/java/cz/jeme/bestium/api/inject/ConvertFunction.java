@@ -15,4 +15,3 @@ import java.util.function.BiFunction;
 @FunctionalInterface
 public interface ConvertFunction<M extends Entity, E extends org.bukkit.entity.Entity> extends BiFunction<CraftServer, M, E> {
 }
-

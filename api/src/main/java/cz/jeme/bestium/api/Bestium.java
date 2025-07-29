@@ -15,7 +15,6 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -25,7 +24,7 @@ import java.util.function.Consumer;
 /**
  * The core system for managing custom Minecraft entities.
  */
-@NullMarked
+@ApiStatus.NonExtendable
 public interface Bestium {
     /**
      * Holds all the internal singleton instances.
@@ -54,6 +53,7 @@ public interface Bestium {
             return inst;
         }
 
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
         private static final Map<String, Object> INSTANCES = new HashMap<>();
     }
 
@@ -191,7 +191,7 @@ public interface Bestium {
     @SuppressWarnings("PatternValidation")
     static @Nullable Key getInjectedEntityKey(final org.bukkit.entity.Entity entity) {
         String keyStr = entity.getPersistentDataContainer().get(
-                Injectable.BESTIUM_ID_KEY,
+                Injectable.KeyHolder.getBestiumIdKey(),
                 PersistentDataType.STRING
         );
         return keyStr == null ? null : Key.key(keyStr);
@@ -224,7 +224,7 @@ public interface Bestium {
      */
     static boolean isInjectedEntity(final org.bukkit.entity.Entity entity) {
         return entity.getPersistentDataContainer().has(
-                Injectable.BESTIUM_ID_KEY,
+                Injectable.KeyHolder.getBestiumIdKey(),
                 PersistentDataType.STRING
         );
     }

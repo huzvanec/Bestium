@@ -6,7 +6,6 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Extend this class to implement your own pathfinder mob with custom behavior or properties.
@@ -16,12 +15,17 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * Examples of vanilla {@link PathfinderMob} subclasses: {@link Allay}
  */
-@NullMarked
 public abstract class CustomPathfinderMob extends PathfinderMob implements Injectable {
+    /**
+     * The constructor of this class.
+     *
+     * @param entityType the real type of this entity, unlike {@link #getType()}
+     * @param level      the level this entity is created in
+     */
     protected CustomPathfinderMob(final EntityType<? extends CustomPathfinderMob> entityType,
                                   final Level level) {
         super(entityType, level);
-        initBestium();
+        initBestium(entityType, level);
     }
 
     @Override

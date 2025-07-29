@@ -8,7 +8,7 @@ import io.papermc.paper.plugin.bootstrap.PluginBootstrap
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 
-@Suppress("UnstableApiUsage")
+@Suppress("UnstableApiUsage", "unused")
 internal class BestiumBootstrapper : PluginBootstrap {
     private var injectionHappened = false
 
