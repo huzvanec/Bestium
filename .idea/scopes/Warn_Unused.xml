@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Warn Unused" pattern="*..*&amp;&amp;!src[Bestium.api*]:*..*" />
+</component>

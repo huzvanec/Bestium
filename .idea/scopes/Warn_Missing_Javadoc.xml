@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Warn Missing Javadoc" pattern="src[Bestium.api*]:*..*&amp;&amp;!src[Bestium.api.main]:cz.jeme.bestium.api.entity..*" />
+</component>
