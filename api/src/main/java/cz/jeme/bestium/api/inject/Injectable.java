@@ -16,8 +16,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  * Represents a Bestium entity that can be injected into the Minecraft runtime.
  * <p>
@@ -92,11 +90,13 @@ public interface Injectable {
      * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
      * @return the registered entity injection
-     * @throws NullPointerException if the entity was not properly registered
+     * @throws IllegalStateException if this entity's {@link EntityInjection} was not yet injected
      */
     @ApiStatus.NonExtendable
     default EntityInjection<?, ?> getBestiumInjection() {
-        return Objects.requireNonNull(Bestium.getInjector().getInjections().get(getClass()));
+        final EntityInjection<Entity, ?> injection = Bestium.getInjector().getInjections().get(getClass());
+        if (injection == null) throw new IllegalStateException("Not injected yet");
+        return injection;
     }
 
     /**
@@ -105,7 +105,7 @@ public interface Injectable {
      * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
      * @return the registered entity key
-     * @throws NullPointerException if the entity was not properly registered
+     * @throws IllegalStateException if this entity's {@link EntityInjection} was not yet injected
      */
     @ApiStatus.NonExtendable
     default Key getBestiumKey() {
@@ -119,8 +119,9 @@ public interface Injectable {
      * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
      * @return the vanilla backing type
-     * @throws NullPointerException if the entity was not properly registered
+     * @throws IllegalStateException if this entity's {@link EntityInjection} was not yet injected
      * @see EntityInjection#getBackingType()
+     * @see #getBestiumRealType()
      */
     @ApiStatus.NonExtendable
     default EntityType<?> getBestiumBackingType() {
@@ -135,12 +136,13 @@ public interface Injectable {
      * <p>
      * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
      *
-     * @return the internal Bestium entity type
-     * @throws NullPointerException if the entity was not properly registered
+     * @return the real entity type
+     * @throws IllegalStateException if the entity was not properly registered
+     * @see #getBestiumBackingType()
      */
     @ApiStatus.NonExtendable
     default EntityType<?> getBestiumRealType() {
-        return Objects.requireNonNull(Bestium.getInjector().getTypes().get(getClass()));
+        return getBestiumInjection().getRealType();
     }
 
     /**
@@ -218,16 +220,15 @@ public interface Injectable {
      */
     @ApiStatus.NonExtendable
     default void initBestium(final EntityType<?> entityType, final Level level) {
-        if (entityType != getBestiumRealType()) throw new IllegalArgumentException(
-                "Provided entity type is not the real entity type: " + entityType
-        );
-
-        final Entity entity = asBestiumEntity(); // this injectable as a NMS entity
-        final var bukkitEntity = entity.getBukkitEntity(); // as Bukkit to use persistent data api
-
         final EntityInjection<?, ?> injection = getBestiumInjection();
 
+        if (entityType != injection.getRealType()) throw new IllegalArgumentException(
+                "Provided entity type is not the real entity type: '" + entityType + "'"
+        );
+
         final Key key = injection.getKey();
+        final Entity entity = asBestiumEntity(); // this injectable as a NMS entity
+        final var bukkitEntity = entity.getBukkitEntity(); // as Bukkit to use persistent data api
         final PersistentDataContainer container = bukkitEntity.getPersistentDataContainer();
 
         // save the Bestium id

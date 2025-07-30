@@ -176,6 +176,18 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
     VariantPicker getVariantPicker();
 
     /**
+     * Returns the synthetic {@link EntityType} created and used internally by Bestium.
+     * <p>
+     * <strong>Warning:</strong> This type is not safe to send to the client, as it is not recognized
+     * by vanilla clients and may cause packet errors or disconnections.
+     *
+     * @return the real entity type
+     * @throws IllegalStateException if this {@link EntityInjection} was not yet injected into the runtime
+     * @see #getBackingType()
+     */
+    EntityType<M> getRealType();
+
+    /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
      *
      * @param key             a namespaced key such as {@code my_plugin:my_custom_entity}

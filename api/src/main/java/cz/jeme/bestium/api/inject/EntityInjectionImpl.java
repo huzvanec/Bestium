@@ -1,5 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
+import cz.jeme.bestium.api.Bestium;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
@@ -30,6 +31,8 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     private final @Nullable AttributeSupplier attributes;
     private final Map<String, BoundEntityVariant> variants;
     private final VariantPicker variantPicker;
+
+    private @Nullable EntityType<T> lazyRealType;
 
     private EntityInjectionImpl(final BuilderImpl<T, B> builder) {
         key = builder.key;
@@ -103,6 +106,17 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     @Override
     public VariantPicker getVariantPicker() {
         return variantPicker;
+    }
+
+    @Override
+    public EntityType<T> getRealType() {
+        if (lazyRealType == null) {
+            @SuppressWarnings("unchecked")
+            EntityType<T> type = (EntityType<T>) Bestium.getInjector().getTypes().get(entityClass);
+            if (type == null) throw new IllegalStateException("Not injected yet");
+            lazyRealType = type;
+        }
+        return lazyRealType;
     }
 
     static final class BuilderImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
