@@ -3,6 +3,7 @@ package cz.jeme.bestium.api.inject;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
+import cz.jeme.bestium.api.inject.variant.VariantPicker;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -28,6 +29,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     private final Consumer<EntityType.Builder<T>> typeBuilder;
     private final @Nullable AttributeSupplier attributes;
     private final Map<String, BoundEntityVariant> variants;
+    private final VariantPicker variantPicker;
 
     private EntityInjectionImpl(final BuilderImpl<T, B> builder) {
         key = builder.key;
@@ -50,6 +52,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
                         },
                         LinkedHashMap::new
                 ));
+        variantPicker = builder.variantPicker;
     }
 
     @Override
@@ -97,19 +100,26 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         return Collections.unmodifiableMap(variants);
     }
 
+    @Override
+    public VariantPicker getVariantPicker() {
+        return variantPicker;
+    }
+
     static final class BuilderImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
+        // required parameters
         private final Key key;
         private final Class<T> entityClass;
         private final EntityType.EntityFactory<T> entityFactory;
         private final ConvertFunction<T, B> convertFunction;
         private final boolean isLivingEntity;
-
+        // optional parameters
         private EntityType<?> backingType = EntityType.SILVERFISH;
         private MobCategory category = MobCategory.MISC;
         private Consumer<EntityType.Builder<T>> typeBuilder = b -> {
         };
         private @Nullable AttributeSupplier attributes;
         private Set<UnboundEntityVariant> variants = new LinkedHashSet<>();
+        private VariantPicker variantPicker = VariantPicker.first();
 
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,
@@ -213,6 +223,17 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         @Override
         public @Unmodifiable Set<UnboundEntityVariant> getVariants() {
             return Collections.unmodifiableSet(variants);
+        }
+
+        @Override
+        public Builder<T, B> setVariantPicker(final VariantPicker variantPicker) {
+            this.variantPicker = variantPicker;
+            return this;
+        }
+
+        @Override
+        public VariantPicker getVariantPicker() {
+            return variantPicker;
         }
 
         @Override

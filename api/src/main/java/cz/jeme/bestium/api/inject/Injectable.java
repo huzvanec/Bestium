@@ -2,6 +2,7 @@ package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
+import cz.jeme.bestium.api.inject.variant.VariantPicker;
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
@@ -15,8 +16,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -214,7 +213,8 @@ public interface Injectable {
      * @param entityType the real entity type of this entity
      * @param level      the level this entity is created in
      * @throws IllegalArgumentException if the entity type is not the real entity type of this entity
-     * @throws IllegalStateException    when {@link #chooseBestiumVariant(Map)} returns a variant other than from the provided map
+     * @throws IllegalStateException    when the {@link VariantPicker} of this entity's {@link EntityInjection} returns
+     *                                  a variant that does not belong to this entity
      */
     @ApiStatus.NonExtendable
     default void initBestium(final EntityType<?> entityType, final Level level) {
@@ -225,7 +225,9 @@ public interface Injectable {
         final Entity entity = asBestiumEntity(); // this injectable as a NMS entity
         final var bukkitEntity = entity.getBukkitEntity(); // as Bukkit to use persistent data api
 
-        final Key key = getBestiumKey();
+        final EntityInjection<?, ?> injection = getBestiumInjection();
+
+        final Key key = injection.getKey();
         final PersistentDataContainer container = bukkitEntity.getPersistentDataContainer();
 
         // save the Bestium id
@@ -250,7 +252,12 @@ public interface Injectable {
         // the mob does not have a variant yet, pick it and store it
 
         // pick a variant
-        final BoundEntityVariant variant = chooseBestiumVariant(getBestiumInjection().getVariants());
+        final VariantPicker.Context pickerCtx = new VariantPicker.Context(
+                entity,
+                getBestiumRealType(),
+                injection
+        );
+        final BoundEntityVariant variant = injection.getVariantPicker().pick(injection.getVariants(), pickerCtx);
         if (variant == null) {
             // null was returned, this means that the entity should not have a model (variant)
             container.remove(EntityTrackerRegistry.TRACKING_ID); // remove any model if present
@@ -289,26 +296,5 @@ public interface Injectable {
                 );
             }
         }
-    }
-
-    /**
-     * Selects the preferred {@link BoundEntityVariant} from the provided map.
-     * <p>
-     * <strong>This method is, exceptionally for this interface, intended to be overridden.</strong>
-     * The default implementation returns the first variant in insertion order.
-     * <p>
-     * An overriding implementation may use custom selection strategies, for example,
-     * choosing a variant at random.
-     * <p>
-     * Returning {@code null} indicates that no model variant should be displayed for the entity.
-     * <p>
-     * Returning a variant that is not present in the provided map will result in an exception.
-     *
-     * @param variants an insertion-ordered map of bound entity variants, may be empty
-     * @return the selected variant to use for rendering, or {@code null} to suppress model display
-     */
-    default @Nullable BoundEntityVariant chooseBestiumVariant(final Map<String, BoundEntityVariant> variants) {
-        final Iterator<BoundEntityVariant> it = variants.values().iterator();
-        return it.hasNext() ? it.next() : null;
     }
 }

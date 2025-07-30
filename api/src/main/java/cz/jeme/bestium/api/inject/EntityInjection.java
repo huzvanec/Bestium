@@ -3,6 +3,7 @@ package cz.jeme.bestium.api.inject;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
+import cz.jeme.bestium.api.inject.variant.VariantPicker;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
@@ -165,6 +166,14 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
         final Iterator<BoundEntityVariant> it = getVariants().values().iterator();
         return it.hasNext() ? it.next().getModelName() : null;
     }
+
+    /**
+     * Returns the {@link VariantPicker} responsible for choosing the variant for this
+     * entity when in spawns into the world.
+     *
+     * @return the variant picker for this entity
+     */
+    VariantPicker getVariantPicker();
 
     /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
@@ -386,7 +395,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @see #addVariant(UnboundEntityVariant)
          * @see #addVariants(UnboundEntityVariant, UnboundEntityVariant, UnboundEntityVariant...)
          * @see #addVariants(Collection)
-         * @see Injectable#chooseBestiumVariant(Map)
+         * @see #setVariantPicker(VariantPicker)
          */
         Builder<M, E> setVariants(final Collection<UnboundEntityVariant> variants);
 
@@ -403,7 +412,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @see #addVariants(UnboundEntityVariant, UnboundEntityVariant, UnboundEntityVariant...)
          * @see #addVariants(Collection)
          * @see #setVariants(Collection)
-         * @see Injectable#chooseBestiumVariant(Map)
+         * @see #setVariantPicker(VariantPicker)
          */
         Builder<M, E> addVariant(final UnboundEntityVariant variant);
 
@@ -422,7 +431,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @see #addVariant(UnboundEntityVariant)
          * @see #addVariants(UnboundEntityVariant, UnboundEntityVariant, UnboundEntityVariant...)
          * @see #setVariants(Collection)
-         * @see Injectable#chooseBestiumVariant(Map)
+         * @see #setVariantPicker(VariantPicker)
          */
         default Builder<M, E> addVariants(final Collection<UnboundEntityVariant> variants) {
             variants.forEach(this::addVariant);
@@ -446,7 +455,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @see #addVariant(UnboundEntityVariant)
          * @see #addVariants(Collection)
          * @see #setVariants(Collection)
-         * @see Injectable#chooseBestiumVariant(Map)
+         * @see #setVariantPicker(VariantPicker)
          */
         default Builder<M, E> addVariants(final UnboundEntityVariant first, final UnboundEntityVariant second, final UnboundEntityVariant... rest) {
             addVariant(first);
@@ -477,5 +486,38 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
             Iterator<UnboundEntityVariant> it = getVariants().iterator();
             return it.hasNext() ? it.next().getModelUrl() : null;
         }
+
+        /**
+         * Sets the {@link VariantPicker} responsible for picking the {@link BoundEntityVariant} when this
+         * entity spawns into the world.
+         * <p>
+         * Defaults to {@link VariantPicker#first()}
+         *
+         * @param variantPicker the variant picker
+         * @return this builder
+         */
+        Builder<M, E> setVariantPicker(final VariantPicker variantPicker);
+
+        /**
+         * Computes and then sets the {@link VariantPicker} responsible for picking the {@link BoundEntityVariant} when
+         * this entity spawns into the world.
+         * <p>
+         * This method may be useful when additional logic needs to run before returning the variant picker.
+         * <p>
+         * Defaults to {@link VariantPicker#first()}
+         *
+         * @param variantPickerSupplier the supplier providing the variant picker
+         * @return this builder
+         */
+        default Builder<M, E> setComputedVariantPicker(final Supplier<VariantPicker> variantPickerSupplier) {
+            return setVariantPicker(variantPickerSupplier.get());
+        }
+
+        /**
+         * Returns the {@link VariantPicker} for this entity.
+         *
+         * @return the variant picker
+         */
+        VariantPicker getVariantPicker();
     }
 }
