@@ -1,7 +1,6 @@
 package cz.jeme.bestium.api;
 
 import cz.jeme.bestium.api.inject.EntityInjector;
-import cz.jeme.bestium.api.inject.Injectable;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.KeyPattern;
 import net.minecraft.world.entity.Entity;
@@ -12,7 +11,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
@@ -104,6 +102,17 @@ public interface Bestium {
     }
 
     /**
+     * Returns the Bestium entity manager instance, handling the initialization,
+     * lifecycle and other logic and helper methods for Bestium entities.
+     *
+     * @return the entity manager instance
+     * @see BestiumEntityManager
+     */
+    static BestiumEntityManager getEntityManager() {
+        return (BestiumEntityManager) InstanceHolder.getObject("cz.jeme.bestium.BestiumEntityManagerImpl");
+    }
+
+    /**
      * Spawns a custom injected entity of the specified class at the given location.
      *
      * @param location            the location where the entity should spawn
@@ -188,13 +197,8 @@ public interface Bestium {
      * @return the {@link Key} identifying the injected entity type, or {@code null} if the entity is not an injected entity
      * @see #requireInjectedEntityKey(org.bukkit.entity.Entity)
      */
-    @SuppressWarnings("PatternValidation")
     static @Nullable Key getInjectedEntityKey(final org.bukkit.entity.Entity entity) {
-        String keyStr = entity.getPersistentDataContainer().get(
-                Injectable.KeyHolder.getBestiumIdKey(),
-                PersistentDataType.STRING
-        );
-        return keyStr == null ? null : Key.key(keyStr);
+        return getEntityManager().getInjectedEntityKey(entity);
     }
 
     /**
@@ -209,11 +213,7 @@ public interface Bestium {
      * @see #getInjectedEntityKey(org.bukkit.entity.Entity)
      */
     static Key requireInjectedEntityKey(final org.bukkit.entity.Entity entity) {
-        final Key key = getInjectedEntityKey(entity);
-        if (key == null) throw new IllegalArgumentException(
-                "Provided entity is not an injected entity!"
-        );
-        return key;
+        return getEntityManager().requireInjectedEntityKey(entity);
     }
 
     /**
@@ -223,10 +223,7 @@ public interface Bestium {
      * @return {@code true} if the entity was injected by Bestium, {@code false} otherwise
      */
     static boolean isInjectedEntity(final org.bukkit.entity.Entity entity) {
-        return entity.getPersistentDataContainer().has(
-                Injectable.KeyHolder.getBestiumIdKey(),
-                PersistentDataType.STRING
-        );
+        return getEntityManager().isInjectedEntity(entity);
     }
 
     /**

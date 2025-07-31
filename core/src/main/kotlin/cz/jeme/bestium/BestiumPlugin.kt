@@ -16,6 +16,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
     init {
         storeApiInstance(this)
         storeApiInstance(PluginSupportImpl)
+        storeApiInstance(BestiumEntityManagerImpl)
     }
 
     override fun onEnable() {
@@ -33,6 +34,9 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
             val commands = event.registrar()
             SummonCommand(this, commands)
         }
+
+        // register events
+        WorldLoadListener
 
         logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
     }

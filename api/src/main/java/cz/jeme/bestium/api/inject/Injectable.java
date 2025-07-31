@@ -1,20 +1,14 @@
 package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
-import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.VariantPicker;
-import kr.toxicity.model.api.tracker.EntityTrackerRegistry;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a Bestium entity that can be injected into the Minecraft runtime.
@@ -72,16 +66,14 @@ public interface Injectable {
      * <p>
      * This is safe by contract, as all implementations of this interface must extend {@code Entity}.
      *
-     * @param <T> the specific type extending both Entity and Injectable
      * @return this object cast as an {@code Entity}
      * @throws IllegalStateException if the implementing class does not extend {@code Entity}
      */
-    @SuppressWarnings("unchecked")
     @ApiStatus.NonExtendable
-    default <T extends Entity> @NotNull T asBestiumEntity() {
+    default @NotNull Entity asBestiumEntity() {
         if (!(this instanceof final Entity entity))
             throw new IllegalStateException("Classes implementing '" + Injectable.class.getName() + "' must extend '" + Entity.class.getName() + "'");
-        return (T) entity;
+        return entity;
     }
 
     /**
@@ -153,149 +145,24 @@ public interface Injectable {
      */
     @ApiStatus.NonExtendable
     default void addBestiumAdditionalSaveData(final ValueOutput output) {
-        output.putString(Entity.TAG_ID, getBestiumKey().asString());
+        Bestium.getEntityManager().saveBestiumEntity(this, output);
     }
 
     /**
-     * Holder class for lazily initializing and caching Bestium persistent data keys.
+     * Initializes the internals this Bestium entity.
      * <p>
-     * This ensures that the keys are created only when first accessed,
-     * preventing early initialization issues before Bestium is fully loaded.
-     */
-    @ApiStatus.Internal
-    final class KeyHolder {
-        private KeyHolder() {
-            throw new AssertionError();
-        }
-
-        private static @Nullable NamespacedKey BESTIUM_ID_KEY;
-        private static @Nullable NamespacedKey BESTIUM_VARIANT_KEY;
-
-        /**
-         * Returns the persistent data key used to identify injected entities.
-         * <p>
-         * This key is stored in an entity's {@link PersistentDataContainer}
-         * and holds a {@link PersistentDataType#STRING} representing the injected entity's {@link Key}.
-         * <p>
-         * Presence of this key signifies that the entity was spawned via the Bestium injection system.
-         *
-         * @return the namespaced key
-         * @see Bestium#isInjectedEntity(org.bukkit.entity.Entity)
-         * @see Bestium#getInjectedEntityKey(org.bukkit.entity.Entity)
-         * @see Bestium#requireInjectedEntityKey(org.bukkit.entity.Entity)
-         */
-        public static NamespacedKey getBestiumIdKey() {
-            if (BESTIUM_ID_KEY == null)
-                BESTIUM_ID_KEY = Bestium.getBestium().createKey("bestium_id");
-            return BESTIUM_ID_KEY;
-        }
-
-        /**
-         * Returns the persistent data key used to identify Bestium entity variants.
-         * <p>
-         * This key is stored in an entity's {@link PersistentDataContainer}
-         * and holds a {@link PersistentDataType#STRING} representing the injected entity's variant ID.
-         * <p>
-         * If the value is {@code "NO_MODEL"}, it signals the entity should not have any model.
-         *
-         * @return the namespaced key
-         */
-        public static NamespacedKey getBestiumVariantKey() {
-            if (BESTIUM_VARIANT_KEY == null)
-                BESTIUM_VARIANT_KEY = Bestium.getBestium().createKey("bestium_variant");
-            return BESTIUM_VARIANT_KEY;
-        }
-    }
-
-    /**
-     * Initializes this Bestium entity.
+     * <strong>This method should be called from the constructor of your entity.</strong>
      * <p>
-     * This method should be called from the constructor of your custom entity base class.
+     * This method sets up variant selection, persistent data, model rendering,
+     * and possible data migration.
      *
-     * @param entityType the real entity type of this entity
-     * @param level      the level this entity is created in
-     * @throws IllegalArgumentException if the entity type is not the real entity type of this entity
-     * @throws IllegalStateException    when the {@link VariantPicker} of this entity's {@link EntityInjection} returns
-     *                                  a variant that does not belong to this entity
+     * @param entityType the real entity type
+     * @param level      the level the entity is spawning or being loaded into
+     * @throws IllegalArgumentException if the provided {@code entityType} does not match the injected one
+     * @throws IllegalStateException    if the {@link VariantPicker} returns a variant for the wrong entity
      */
     @ApiStatus.NonExtendable
     default void initBestium(final EntityType<?> entityType, final Level level) {
-        final EntityInjection<?, ?> injection = getBestiumInjection();
-
-        if (entityType != injection.getRealType()) throw new IllegalArgumentException(
-                "Provided entity type is not the real entity type: '" + entityType + "'"
-        );
-
-        final Key key = injection.getKey();
-        final Entity entity = asBestiumEntity(); // this injectable as a NMS entity
-        final var bukkitEntity = entity.getBukkitEntity(); // as Bukkit to use persistent data api
-        final PersistentDataContainer container = bukkitEntity.getPersistentDataContainer();
-
-        // save the Bestium id
-        container.set(
-                KeyHolder.getBestiumIdKey(),
-                PersistentDataType.STRING,
-                key.asString()
-        );
-
-        // read existing entity variant
-        final String existingVariant = container.get(
-                KeyHolder.getBestiumVariantKey(),
-                PersistentDataType.STRING
-        );
-
-        // if the entity already has a variant (even NULL), return
-        // that means the entity was already spawned in and this is (very probably)
-        // just a server restart and we want to persist entity variants over restarts
-        // otherwise animals could change variants even with the simplest random-picking
-        // variant implementation
-        if (existingVariant != null) return;
-        // the mob does not have a variant yet, pick it and store it
-
-        // pick a variant
-        final VariantPicker.Context pickerCtx = new VariantPicker.Context(
-                entity,
-                getBestiumRealType(),
-                injection
-        );
-        final BoundEntityVariant variant = injection.getVariantPicker().pick(injection.getVariants(), pickerCtx);
-        if (variant == null) {
-            // null was returned, this means that the entity should not have a model (variant)
-            container.remove(EntityTrackerRegistry.TRACKING_ID); // remove any model if present
-            // store Bestium variant as NO_MODEL
-            // this should be somewhat ok, because variant IDs check for Key namespace regex, which is
-            // [a-z0-9.-_], meaning no upper case allowed
-            container.set(
-                    KeyHolder.getBestiumVariantKey(),
-                    PersistentDataType.STRING,
-                    "NO_MODEL"
-            );
-        } else { // a variant was returned for this entity
-            if (!variant.getInjection().getKey().equals(key))
-                // the variant is from a different entity
-                throw new IllegalStateException(
-                        "Provided entity variant is registered for a different entity: " +
-                        variant.getInjection().getKey().asString() +
-                        " instead of " +
-                        key.asString()
-                );
-            // store the variant id
-            container.set(
-                    KeyHolder.getBestiumVariantKey(),
-                    PersistentDataType.STRING,
-                    variant.getId()
-            );
-            // check if better model is loaded, then render model
-            if (Bestium.getPluginSupport().betterModel()) {
-                // normal BetterModel API for adding models to entities cannot be used here
-                // as this is run even before the entity is loaded, BetterModel freaks out
-                // and detaches the model from the entity
-                container.set(
-                        EntityTrackerRegistry.TRACKING_ID,
-                        PersistentDataType.STRING,
-                        variant.getModelName()
-                );
-            }
-        }
+        Bestium.getEntityManager().initializeBestiumEntity(this, entityType, level);
     }
 }

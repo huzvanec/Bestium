@@ -113,7 +113,7 @@ class SummonCommand(plugin: Plugin, commands: Commands) {
         ).create()
 
         EntityType.loadEntityRecursive(
-            tag.copy().apply { putString("id", keyStr) },
+            tag.copy().apply { putString("id", keyStr) /* prevent overwriting the 'id' nbt */ },
             level,
             EntitySpawnReason.COMMAND
         ) { entity ->
