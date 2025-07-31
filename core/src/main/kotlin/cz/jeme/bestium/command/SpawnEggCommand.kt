@@ -1,0 +1,109 @@
+package cz.jeme.bestium.command
+
+import com.mojang.brigadier.Command
+import cz.jeme.bestium.util.toResourceLocation
+import io.papermc.paper.command.brigadier.CommandSourceStack
+import io.papermc.paper.command.brigadier.Commands
+import io.papermc.paper.command.brigadier.Commands.argument
+import io.papermc.paper.command.brigadier.Commands.literal
+import io.papermc.paper.command.brigadier.MessageComponentSerializer
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes
+import io.papermc.paper.command.brigadier.argument.RegistryArgumentExtractor
+import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.registry.RegistryKey
+import io.papermc.paper.registry.TypedKey
+import net.kyori.adventure.text.Component
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.SpawnEggItem
+import net.minecraft.world.item.component.CustomData
+import org.bukkit.craftbukkit.inventory.CraftItemStack
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
+import org.bukkit.entity.EntityType as BukkitEntityType
+
+private val PIG_SPAWN_EGG = SpawnEggItem.byId(EntityType.PIG)!!
+
+class SpawnEggCommand(plugin: Plugin, commands: Commands) {
+
+    private val command = literal("spawnegg")
+        .then(
+            argument("entity", ArgumentTypes.resourceKey(RegistryKey.ENTITY_TYPE))
+                .suggests(SummonableEntitiesSuggestionProvider)
+                .executes { ctx ->
+                    giveSpawnEgg(
+                        ctx.source,
+                        RegistryArgumentExtractor.getTypedKey(
+                            ctx,
+                            RegistryKey.ENTITY_TYPE,
+                            "entity"
+                        ),
+                        PIG_SPAWN_EGG
+                    )
+                }
+                .then(
+                    argument("egg", SpawnEggArgumentType)
+                        .executes { ctx ->
+                            giveSpawnEgg(
+                                ctx.source,
+                                RegistryArgumentExtractor.getTypedKey(
+                                    ctx,
+                                    RegistryKey.ENTITY_TYPE,
+                                    "entity"
+                                ),
+                                ctx.getArgument("egg", SpawnEggItem::class.java)
+                            )
+                        }
+                )
+        )
+        .build()
+
+    private fun giveSpawnEgg(
+        source: CommandSourceStack,
+        spawning: TypedKey<BukkitEntityType>,
+        egg: SpawnEggItem,
+        count: Int = 1
+    ): Int {
+        val player = source.executor as? Player ?: return 0
+        val inventory = player.inventory
+
+        val nmsStack = ItemStack(egg, count).apply {
+            set(
+                DataComponents.ENTITY_DATA,
+                CustomData.of(CompoundTag().apply {
+                    putString("id", spawning.asString())
+                })
+            )
+        }
+
+        val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toResourceLocation())
+
+        val stack = CraftItemStack.asCraftMirror(nmsStack)
+        @Suppress("UnstableApiUsage")
+        stack.setData(
+            DataComponentTypes.ITEM_NAME,
+            MessageComponentSerializer.message().deserialize(entityType.get().value().description)
+                .append(Component.text(" Spawn Egg"))
+        )
+
+
+
+        inventory.addItem(stack).values.forEach {
+            player.world.dropItem(player.location, it)
+        }
+
+        return Command.SINGLE_SUCCESS
+    }
+
+    init {
+        commands.register(
+            plugin.pluginMeta,
+            command,
+            "A shorthand command for obtaining customized spawn eggs",
+            emptyList<String>()
+        )
+    }
+}

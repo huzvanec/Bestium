@@ -1,6 +1,7 @@
 package cz.jeme.bestium
 
 import cz.jeme.bestium.api.Bestium
+import cz.jeme.bestium.command.SpawnEggCommand
 import cz.jeme.bestium.command.SummonCommand
 import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -33,6 +34,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             val commands = event.registrar()
             SummonCommand(this, commands)
+            SpawnEggCommand(this, commands)
         }
 
         // register events
