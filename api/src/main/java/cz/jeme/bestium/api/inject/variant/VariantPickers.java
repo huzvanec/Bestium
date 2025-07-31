@@ -71,7 +71,7 @@ final class VariantPickers {
         return (variants, ctx) -> {
             if (variants.isEmpty()) return null;
             final String variantId = invertedMap.get(accessor.apply(ctx));
-            final BoundEntityVariant variant = variants.get(variantId);
+            final BoundEntityVariant variant = variants.get(variantId == null ? fallback : variantId);
             if (variant == null) throw new IllegalArgumentException(
                     "Unknown variant: '" + variantId + "' for entity '" + ctx.getRealEntityType() + "'"
             );
