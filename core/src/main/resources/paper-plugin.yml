@@ -15,3 +15,10 @@ dependencies:
     Nova:
       required: false
       join-classpath: false
+
+permissions:
+  bestium.command:
+    default: op
+    children:
+      bestium.command.summon: true
+      bestium.command.spawnegg: true

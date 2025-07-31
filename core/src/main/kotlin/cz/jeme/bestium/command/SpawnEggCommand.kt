@@ -32,7 +32,7 @@ private const val MAX_GIVEN_SPAWN_EGGS = 64 * 100
 class SpawnEggCommand(plugin: Plugin, commands: Commands) {
 
     private val command = literal("spawnegg")
-        .requires { it.sender.isOp }
+        .requires { it.sender.hasPermission("bestium.command.spawnegg") }
         .then(
             argument("targets", ArgumentTypes.players())
                 .then(
