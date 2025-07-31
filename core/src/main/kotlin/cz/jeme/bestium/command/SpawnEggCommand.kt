@@ -1,14 +1,15 @@
 package cz.jeme.bestium.command
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import cz.jeme.bestium.util.toResourceLocation
-import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.Commands.argument
 import io.papermc.paper.command.brigadier.Commands.literal
 import io.papermc.paper.command.brigadier.MessageComponentSerializer
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.RegistryArgumentExtractor
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.registry.RegistryKey
 import io.papermc.paper.registry.TypedKey
@@ -26,50 +27,69 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.entity.EntityType as BukkitEntityType
 
 private val PIG_SPAWN_EGG = SpawnEggItem.byId(EntityType.PIG)!!
+private const val MAX_GIVEN_SPAWN_EGGS = 64 * 100
 
 class SpawnEggCommand(plugin: Plugin, commands: Commands) {
 
     private val command = literal("spawnegg")
+        .requires { it.sender.isOp }
         .then(
-            argument("entity", ArgumentTypes.resourceKey(RegistryKey.ENTITY_TYPE))
-                .suggests(SummonableEntitiesSuggestionProvider)
-                .executes { ctx ->
-                    giveSpawnEgg(
-                        ctx.source,
-                        RegistryArgumentExtractor.getTypedKey(
-                            ctx,
-                            RegistryKey.ENTITY_TYPE,
-                            "entity"
-                        ),
-                        PIG_SPAWN_EGG
-                    )
-                }
+            argument("targets", ArgumentTypes.players())
                 .then(
-                    argument("egg", SpawnEggArgumentType)
+                    argument("entity", ArgumentTypes.resourceKey(RegistryKey.ENTITY_TYPE))
+                        .suggests(SummonableEntitiesSuggestionProvider)
                         .executes { ctx ->
                             giveSpawnEgg(
-                                ctx.source,
+                                ctx.getArgument("targets", PlayerSelectorArgumentResolver::class.java)
+                                    .resolve(ctx.source),
                                 RegistryArgumentExtractor.getTypedKey(
                                     ctx,
                                     RegistryKey.ENTITY_TYPE,
                                     "entity"
                                 ),
-                                ctx.getArgument("egg", SpawnEggItem::class.java)
+                                PIG_SPAWN_EGG
                             )
                         }
-                )
-        )
+                        .then(
+                            argument("egg", SpawnEggArgumentType)
+                                .executes { ctx ->
+                                    giveSpawnEgg(
+                                        ctx.getArgument("targets", PlayerSelectorArgumentResolver::class.java)
+                                            .resolve(ctx.source),
+                                        RegistryArgumentExtractor.getTypedKey(
+                                            ctx,
+                                            RegistryKey.ENTITY_TYPE,
+                                            "entity"
+                                        ),
+                                        ctx.getArgument("egg", SpawnEggItem::class.java)
+                                    )
+                                }
+                                .then(
+                                    argument("count", IntegerArgumentType.integer(1, MAX_GIVEN_SPAWN_EGGS))
+                                        .executes { ctx ->
+                                            giveSpawnEgg(
+                                                ctx.getArgument("targets", PlayerSelectorArgumentResolver::class.java)
+                                                    .resolve(ctx.source),
+                                                RegistryArgumentExtractor.getTypedKey(
+                                                    ctx,
+                                                    RegistryKey.ENTITY_TYPE,
+                                                    "entity"
+                                                ),
+                                                ctx.getArgument("egg", SpawnEggItem::class.java),
+                                                IntegerArgumentType.getInteger(ctx, "count")
+                                            )
+                                        }
+                                )
+                        )
+                ))
         .build()
 
     private fun giveSpawnEgg(
-        source: CommandSourceStack,
+        players: List<Player>,
         spawning: TypedKey<BukkitEntityType>,
         egg: SpawnEggItem,
         count: Int = 1
     ): Int {
-        val player = source.executor as? Player ?: return 0
-        val inventory = player.inventory
-
         val nmsStack = ItemStack(egg, count).apply {
             set(
                 DataComponents.ENTITY_DATA,
@@ -89,10 +109,10 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
                 .append(Component.text(" Spawn Egg"))
         )
 
-
-
-        inventory.addItem(stack).values.forEach {
-            player.world.dropItem(player.location, it)
+        players.forEach { player ->
+            player.inventory.addItem(stack).values.forEach {
+                player.world.dropItem(player.location, it)
+            }
         }
 
         return Command.SINGLE_SUCCESS

@@ -29,6 +29,7 @@ import org.bukkit.entity.EntityType as BukkitEntityType
 class SummonCommand(plugin: Plugin, commands: Commands) {
     @Suppress("UNCHECKED_CAST")
     private val command = literal("summon")
+        .requires { it.sender.isOp }
         .then(
             argument("entity", ArgumentTypes.resourceKey(RegistryKey.ENTITY_TYPE))
                 .suggests(SummonableEntitiesSuggestionProvider)
