@@ -179,14 +179,7 @@ public interface VariantPicker {
      * ), "normal");
      * }</pre>
      * <p>
-     * Note:
-     * <ul>
-     *     <li>You may omit the {@code minecraft:} namespace for vanilla biomes.</li>
-     *     <li>
-     *         You may also access vanilla biome keys using a biome object. For example:
-     *         <pre>{@code Biome.PLAINS.getKey()}</pre>
-     *     </li>
-     * </ul>
+     * You may omit the {@code minecraft:} namespace for vanilla biomes.
      *
      * @param biomeMap a map of variant IDs to sets of biome keys
      * @param fallback the fallback variant ID to use if no match is found; may be {@code null}
