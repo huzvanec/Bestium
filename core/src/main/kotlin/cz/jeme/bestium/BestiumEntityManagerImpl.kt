@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.storage.ValueOutput
 import org.bukkit.Bukkit
 import org.bukkit.persistence.PersistentDataType
+import kotlin.jvm.optionals.getOrNull
 import org.bukkit.entity.Entity as BukkitEntity
 
 const val CURRENT_DATA_VERSION = 1
@@ -103,23 +104,21 @@ object BestiumEntityManagerImpl : BestiumEntityManager {
              * Will throw an exception if BetterModel is not loaded.
              */
             fun applyModel(modelName: String) {
-                if (worldsLoaded) {
-                    // if worlds were loaded when the entity initially spawned
-                    // use normal BM API
-                    BetterModel.model(modelName).map { renderer ->
-                        renderer.getOrCreate(bukkitEntity)
-                    }
-                } else {
-                    // if worlds were not loaded (= the entity spawned while worlds were being loaded),
-                    // BM was not enabled yet and it cannot correctly handle model tracking
-                    // a workaround for this is to directly save the BM model data to this entity
-                    // in legacy formatting and wait for BM to pick the entity up and migrate it
-                    bukkitEntity.persistentDataContainer.set(
-                        EntityTrackerRegistry.TRACKING_ID,
-                        PersistentDataType.STRING,
-                        modelName
-                    )
-                }
+                // default BM API cannot be used here, because in cases where the entity spawns naturally,
+                // it is not correctly loaded and BM cannot track it
+                // a workaround for this is to directly save the BM model data to this entity
+                // in legacy formatting and then wait for BM to pick the entity up and migrate it
+                // TODO can this issue be somehow reproduced without Bestium hacks and injections?
+                bukkitEntity.persistentDataContainer.set(
+                    EntityTrackerRegistry.TRACKING_ID,
+                    PersistentDataType.STRING,
+                    modelName
+                )
+                // when worlds are loaded, entities can be spawned with /summon or spawn eggs
+                // which for some reason breaks BM and it does not send the model information
+                // to the client therefore a full refresh is necessary here
+                // TODO does this cost a lot of performance?
+                if (worldsLoaded) BetterModel.registry(bukkitEntity).getOrNull()?.refresh()
             }
 
             if (isFirstSpawn) {
@@ -139,6 +138,7 @@ object BestiumEntityManagerImpl : BestiumEntityManager {
                     }
                 }
 
+                println("storing dataver for ${bukkitEntity.uniqueId}")
                 // store current data version
                 PersistentData.BESTIUM_DATA_VERSION[bukkitEntity] = CURRENT_DATA_VERSION
             } else { // the entity was already spawned and is just being loaded
