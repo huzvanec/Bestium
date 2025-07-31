@@ -122,7 +122,7 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
         commands.register(
             plugin.pluginMeta,
             command,
-            "A shorthand command for obtaining customized spawn eggs",
+            "Gives customized spawn eggs to players",
             emptyList<String>()
         )
     }
