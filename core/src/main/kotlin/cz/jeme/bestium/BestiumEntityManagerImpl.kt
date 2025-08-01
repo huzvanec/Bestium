@@ -4,7 +4,7 @@ import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import cz.jeme.bestium.api.BestiumEntityManager
 import cz.jeme.bestium.api.inject.Injectable
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant
-import cz.jeme.bestium.api.inject.variant.VariantPicker
+import cz.jeme.bestium.api.inject.variant.EntitySpawnContext
 import cz.jeme.bestium.persistence.PersistentData
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry
 import net.minecraft.world.entity.Entity
@@ -63,13 +63,9 @@ object BestiumEntityManagerImpl : BestiumEntityManager, Listener {
 
         /** Picks a variant for the entity, returns `null` if no model should be applied */
         fun pickVariant(): BoundEntityVariant? {
-            val variant = injection.variantPicker.pick(
+            val variant = injection.variantRule.apply(
                 injection.variants,
-                VariantPicker.Context(
-                    entity,
-                    realType,
-                    injection
-                )
+                EntitySpawnContext(bukkitEntity)
             )
 
             variant?.let {
