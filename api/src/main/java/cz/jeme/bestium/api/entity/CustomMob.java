@@ -26,17 +26,17 @@ public abstract class CustomMob extends Mob implements Injectable {
     protected CustomMob(final EntityType<? extends CustomMob> entityType,
                         final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

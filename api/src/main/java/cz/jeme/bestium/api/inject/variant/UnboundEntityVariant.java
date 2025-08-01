@@ -17,7 +17,7 @@ public sealed interface UnboundEntityVariant extends EntityVariant permits Unbou
     /**
      * Binds this variant to the specified injection and returns a new {@link BoundEntityVariant}.
      * <p>
-     * <strong>This method is intended for internal use only and should not be called directly as a part of this API.</strong>
+     * <strong>Note:</strong> This method is intended for internal use only and should not be called directly as a part of this API.
      *
      * @param injection the injection to bind this variant to
      * @return the bound variant

@@ -23,17 +23,17 @@ public abstract class CustomTamableAnimal extends TamableAnimal implements Injec
     protected CustomTamableAnimal(final EntityType<? extends CustomTamableAnimal> entityType,
                                   final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

@@ -24,17 +24,17 @@ public abstract class CustomLivingEntity extends LivingEntity implements Injecta
     protected CustomLivingEntity(final EntityType<? extends CustomLivingEntity> entityType,
                                  final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

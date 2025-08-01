@@ -6,7 +6,9 @@ import cz.jeme.bestium.command.SummonCommand
 import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.kyori.adventure.key.KeyPattern
+import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
 
@@ -37,8 +39,9 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
             SpawnEggCommand(this, commands)
         }
 
-        // register events
-        WorldLoadListener
+        fun Listener.register() = Bukkit.getPluginManager().registerEvents(this, this@BestiumPlugin)
+
+        BestiumEntityManagerImpl.register()
 
         logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
     }

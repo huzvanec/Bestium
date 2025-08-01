@@ -22,17 +22,17 @@ public abstract class CustomShoulderRidingEntity extends ShoulderRidingEntity im
     protected CustomShoulderRidingEntity(final EntityType<? extends CustomShoulderRidingEntity> entityType,
                                          final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

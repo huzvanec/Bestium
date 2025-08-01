@@ -22,17 +22,17 @@ public abstract class CustomAmbientCreature extends AmbientCreature implements I
     protected CustomAmbientCreature(final EntityType<? extends CustomAmbientCreature> entityType,
                                     final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

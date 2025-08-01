@@ -1,11 +1,9 @@
 package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
-import cz.jeme.bestium.api.inject.variant.VariantPicker;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -30,27 +28,27 @@ import org.jetbrains.annotations.NotNull;
  * <ol>
  *   <li>Create an <strong>abstract</strong> class that extends a vanilla Minecraft entity (e.g. {@code Skeleton}).</li>
  *   <li>Implement {@link Injectable}.</li>
- *   <li>Call {@link #initBestium(EntityType, Level)} in the constructor.</li>
- *   <li>Override {@code getType()} and return {@link #getBestiumBackingType()}.</li>
- *   <li>Override {@code addAdditionalSaveData(ValueOutput)} to call both {@code super.addAdditionalSaveData(ValueOutput)} and {@link #addBestiumAdditionalSaveData(ValueOutput)}.</li>
+ *   <li>Call {@link #bestium_init()} in the constructor.</li>
+ *   <li>Override {@code getType()} and return {@link #bestium_getBackingType()}.</li>
+ *   <li>Override {@code addAdditionalSaveData(ValueOutput)} to call both {@code super.addAdditionalSaveData(ValueOutput)} and {@link #bestium_addAdditionalSaveData(ValueOutput)}.</li>
  * </ol>
  * For example:
  * <pre>{@code
  * public abstract class CustomSkeleton extends Skeleton implements Injectable {
  *     public CustomSkeleton(EntityType<? extends CustomSkeleton> type, Level level) {
  *         super(type, level);
- *         initBestium();
+ *         bestium$init();
  *     }
  *
  *     @Override
  *     public EntityType<?> getType() {
- *         return getBestiumBackingType();
+ *         return bestium$getBackingType();
  *     }
  *
  *     @Override
  *     protected void addAdditionalSaveData(ValueOutput output) {
  *         super.addAdditionalSaveData(output);
- *         addBestiumAdditionalSaveData(output);
+ *         bestium$addAdditionalSaveData(output);
  *     }
  * }
  * }</pre>
@@ -70,7 +68,7 @@ public interface Injectable {
      * @throws IllegalStateException if the implementing class does not extend {@code Entity}
      */
     @ApiStatus.NonExtendable
-    default @NotNull Entity asBestiumEntity() {
+    default @NotNull Entity bestium_asEntity() {
         if (!(this instanceof final Entity entity))
             throw new IllegalStateException("Classes implementing '" + Injectable.class.getName() + "' must extend '" + Entity.class.getName() + "'");
         return entity;
@@ -79,13 +77,13 @@ public interface Injectable {
     /**
      * Returns the {@link EntityInjection} object used to inject this entity into the runtime.
      * <p>
-     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
+     * <strong>Note:</strong> Calls to this method are relatively expensive and should be cached if accessed frequently.
      *
      * @return the registered entity injection
      * @throws IllegalStateException if this entity's {@link EntityInjection} was not yet injected
      */
     @ApiStatus.NonExtendable
-    default EntityInjection<?, ?> getBestiumInjection() {
+    default EntityInjection<?, ?> bestium_getInjection() {
         final EntityInjection<Entity, ?> injection = Bestium.getInjector().getInjections().get(getClass());
         if (injection == null) throw new IllegalStateException("Not injected yet");
         return injection;
@@ -94,30 +92,30 @@ public interface Injectable {
     /**
      * Returns the unique {@link Key} associated with this injectable entity.
      * <p>
-     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
+     * <strong>Note:</strong> Calls to this method are relatively expensive and should be cached if accessed frequently.
      *
      * @return the registered entity key
      * @throws IllegalStateException if this entity's {@link EntityInjection} was not yet injected
      */
     @ApiStatus.NonExtendable
-    default Key getBestiumKey() {
-        return getBestiumInjection().getKey();
+    default Key bestium_getKey() {
+        return bestium_getInjection().getKey();
     }
 
     /**
      * Returns the vanilla {@link EntityType} that backs this custom entity.
      * This is the type used for interaction with vanilla systems such as spawning or serialization.
      * <p>
-     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
+     * <strong>Note:</strong> Calls to this method are relatively expensive and should be cached if accessed frequently.
      *
      * @return the vanilla backing type
      * @throws IllegalStateException if this entity's {@link EntityInjection} was not yet injected
      * @see EntityInjection#getBackingType()
-     * @see #getBestiumRealType()
+     * @see #bestium_getRealType()
      */
     @ApiStatus.NonExtendable
-    default EntityType<?> getBestiumBackingType() {
-        return getBestiumInjection().getBackingType();
+    default EntityType<?> bestium_getBackingType() {
+        return bestium_getInjection().getBackingType();
     }
 
     /**
@@ -126,15 +124,15 @@ public interface Injectable {
      * <strong>Warning:</strong> This type is not safe to send to the client, as it is not recognized
      * by vanilla clients and may cause packet errors or disconnections.
      * <p>
-     * <strong>Calls to this method are relatively expensive and should be cached if accessed frequently.</strong>
+     * <strong>Note:</strong> Calls to this method are relatively expensive and should be cached if accessed frequently.
      *
      * @return the real entity type
      * @throws IllegalStateException if the entity was not properly registered
-     * @see #getBestiumBackingType()
+     * @see #bestium_getBackingType()
      */
     @ApiStatus.NonExtendable
-    default EntityType<?> getBestiumRealType() {
-        return getBestiumInjection().getRealType();
+    default EntityType<?> bestium_getRealType() {
+        return bestium_getInjection().getRealType();
     }
 
     /**
@@ -144,25 +142,17 @@ public interface Injectable {
      * @param output the save target to write to
      */
     @ApiStatus.NonExtendable
-    default void addBestiumAdditionalSaveData(final ValueOutput output) {
-        Bestium.getEntityManager().saveBestiumEntity(this, output);
+    default void bestium_addAdditionalSaveData(final ValueOutput output) {
+        output.putString(Entity.TAG_ID, bestium_getKey().asString());
     }
 
     /**
-     * Initializes the internals this Bestium entity.
-     * <p>
-     * <strong>This method should be called from the constructor of your entity.</strong>
-     * <p>
-     * This method sets up variant selection, persistent data, model rendering,
-     * and possible data migration.
-     *
-     * @param entityType the real entity type
-     * @param level      the level the entity is spawning or being loaded into
-     * @throws IllegalArgumentException if the provided {@code entityType} does not match the injected one
-     * @throws IllegalStateException    if the {@link VariantPicker} returns a variant for the wrong entity
+     * Initializes the internals of this Bestium entity.
      */
     @ApiStatus.NonExtendable
-    default void initBestium(final EntityType<?> entityType, final Level level) {
-        Bestium.getEntityManager().initializeBestiumEntity(this, entityType, level);
+    default void bestium_init() {
+        // no logic here yet, kept for future use
+        // for post init logic see:
+        // core/BestiumEntityManagerImpl#postInitializeBestiumEntity(Injectable)
     }
 }

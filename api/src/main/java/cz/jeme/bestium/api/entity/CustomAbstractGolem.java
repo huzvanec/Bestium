@@ -23,17 +23,17 @@ public abstract class CustomAbstractGolem extends AbstractGolem implements Injec
     protected CustomAbstractGolem(final EntityType<? extends CustomAbstractGolem> entityType,
                                   final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     public void addAdditionalSaveData(final ValueOutput output) {
         super.addAdditionalSaveData(output);
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }

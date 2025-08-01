@@ -1,18 +1,13 @@
 package cz.jeme.bestium.api;
 
-import cz.jeme.bestium.api.inject.Injectable;
-import cz.jeme.bestium.api.inject.variant.VariantPicker;
 import net.kyori.adventure.key.Key;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
 
 /**
- * Handles the initialization, lifecycle and other logic and helper methods for Bestium entities.
+ * Handles the post-initialization, lifecycle and other logic and helper methods for Bestium entities.
  *
  * @see #isInjectedEntity(Entity)
  * @see #getInjectedEntityKey(Entity)
@@ -20,38 +15,6 @@ import org.jspecify.annotations.Nullable;
  */
 @ApiStatus.NonExtendable
 public interface BestiumEntityManager {
-    /**
-     * Initializes the internals for a given Bestium entity.
-     * <p>
-     * This method is called from {@link Injectable#initBestium(EntityType, Level)}
-     * to set up variant selection, persistent data, model rendering,
-     * and possible data migration.
-     * <p>
-     * It is called exactly once during the construction of an entity
-     * that uses the Bestium injection system.
-     *
-     * @param injectable the entity implementing {@link Injectable}
-     * @param entityType the real entity type
-     * @param level      the level the entity is spawning or being loaded into
-     * @throws IllegalArgumentException if the provided {@code entityType} does not match the injected one
-     * @throws IllegalStateException    if the {@link VariantPicker} returns a variant for the wrong entity
-     */
-    @ApiStatus.Internal
-    void initializeBestiumEntity(
-            final Injectable injectable,
-            final EntityType<?> entityType,
-            final Level level
-    );
-
-    /**
-     * Writes additional entity data to persistent storage.
-     *
-     * @param injectable the entity being saved
-     * @param output     the save target to write to
-     */
-    @ApiStatus.Internal
-    void saveBestiumEntity(final Injectable injectable, final ValueOutput output);
-
     /**
      * Checks whether the given Bukkit {@link Entity} is an injected entity.
      *

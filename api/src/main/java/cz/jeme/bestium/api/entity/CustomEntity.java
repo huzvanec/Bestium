@@ -23,16 +23,16 @@ public abstract class CustomEntity extends Entity implements Injectable {
      */
     protected CustomEntity(final EntityType<? extends CustomEntity> entityType, final Level level) {
         super(entityType, level);
-        initBestium(entityType, level);
+        bestium_init();
     }
 
     @Override
     public final EntityType<?> getType() {
-        return getBestiumBackingType();
+        return bestium_getBackingType();
     }
 
     @Override
     protected void addAdditionalSaveData(final ValueOutput output) {
-        addBestiumAdditionalSaveData(output);
+        bestium_addAdditionalSaveData(output);
     }
 }
