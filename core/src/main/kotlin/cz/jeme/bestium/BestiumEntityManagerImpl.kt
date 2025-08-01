@@ -54,7 +54,7 @@ object BestiumEntityManagerImpl : BestiumEntityManager, Listener {
         val realType = injection.realType
 
         // true if this entity is spawning for the first time
-        val isFirstSpawn = !PersistentData.BESTIUM_ID.check(bukkitEntity)
+        val isFirstSpawn = !PersistentData.BESTIUM_ID.has(bukkitEntity)
 
         // save Bestium entity key
         // runs regardless of whether the entity already has the key stored
@@ -104,6 +104,8 @@ object BestiumEntityManagerImpl : BestiumEntityManager, Listener {
                 PersistentDataType.STRING,
                 modelName
             )
+            // remove pending model application (if any is present)
+            PersistentData.BESTIUM_PENDING_MODEL.remove(bukkitEntity)
         }
 
         if (isFirstSpawn) {
@@ -142,7 +144,7 @@ object BestiumEntityManagerImpl : BestiumEntityManager, Listener {
         postInitializeBestiumEntity(nms as? Injectable ?: return)
     }
 
-    override fun isInjectedEntity(entity: BukkitEntity) = PersistentData.BESTIUM_ID.check(entity)
+    override fun isInjectedEntity(entity: BukkitEntity) = PersistentData.BESTIUM_ID.has(entity)
 
     override fun getInjectedEntityKey(entity: BukkitEntity) = PersistentData.BESTIUM_ID[entity]
 }

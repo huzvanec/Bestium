@@ -31,7 +31,13 @@ class PersistentData<P : Any, C : Any> private constructor(
         set(holder.persistentDataContainer, value)
     }
 
-    fun check(container: PersistentDataContainerView): Boolean = container.has(key, type)
+    fun has(container: PersistentDataContainerView): Boolean = container.has(key, type)
 
-    fun check(holder: PersistentDataViewHolder) = check(holder.persistentDataContainer)
+    fun has(holder: PersistentDataViewHolder) = has(holder.persistentDataContainer)
+    
+    fun remove(container: PersistentDataContainer) {
+        return container.remove(key)
+    }
+    
+    fun remove(holder: PersistentDataHolder) = remove(holder.persistentDataContainer)
 }
