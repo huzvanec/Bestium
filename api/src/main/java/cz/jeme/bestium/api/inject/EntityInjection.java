@@ -1,5 +1,6 @@
 package cz.jeme.bestium.api.inject;
 
+import cz.jeme.bestium.api.inject.biome.SpawnRule;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
@@ -174,6 +175,8 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * @return the variant rule for this entity
      */
     VariantRule getVariantRule();
+
+    SpawnRule getSpawnRule();
 
     /**
      * Returns the synthetic {@link EntityType} created and used internally by Bestium.
@@ -531,5 +534,13 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @return the variant rule
          */
         VariantRule getVariantRule();
+
+        Builder<M, E> setSpawnRule(final SpawnRule spawnRule);
+
+        SpawnRule getSpawnRule();
+
+        default Builder<M, E> setComputedSpawnRule(final Supplier<SpawnRule> spawnRuleSupplier) {
+            return setSpawnRule(spawnRuleSupplier.get());
+        }
     }
 }

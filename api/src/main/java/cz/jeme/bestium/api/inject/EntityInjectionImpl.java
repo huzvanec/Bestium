@@ -1,6 +1,7 @@
 package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
+import cz.jeme.bestium.api.inject.biome.SpawnRule;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
@@ -31,6 +32,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     private final @Nullable AttributeSupplier attributes;
     private final Map<String, BoundEntityVariant> variants;
     private final VariantRule variantRule;
+    private final SpawnRule spawnRule;
 
     private @Nullable EntityType<T> lazyRealType;
 
@@ -56,6 +58,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
                         LinkedHashMap::new
                 ));
         variantRule = builder.variantRule;
+        spawnRule = builder.spawnRule;
     }
 
     @Override
@@ -109,11 +112,18 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     }
 
     @Override
+    public SpawnRule getSpawnRule() {
+        return spawnRule;
+    }
+
+    @Override
     public EntityType<T> getRealType() {
         if (lazyRealType == null) {
             @SuppressWarnings("unchecked")
             EntityType<T> type = (EntityType<T>) Bestium.getInjector().getTypes().get(entityClass);
-            if (type == null) throw new IllegalStateException("Not injected yet");
+            if (type == null) throw new IllegalStateException(
+                    "Cannot get real Bestium entity type, injection hasn't finished yet"
+            );
             lazyRealType = type;
         }
         return lazyRealType;
@@ -134,6 +144,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         private @Nullable AttributeSupplier attributes;
         private Set<UnboundEntityVariant> variants = new LinkedHashSet<>();
         private VariantRule variantRule = VariantRule.first();
+        private SpawnRule spawnRule = SpawnRule.none();
 
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,
@@ -248,6 +259,17 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         @Override
         public VariantRule getVariantRule() {
             return variantRule;
+        }
+
+        @Override
+        public Builder<T, B> setSpawnRule(final SpawnRule spawnRule) {
+            this.spawnRule = spawnRule;
+            return this;
+        }
+
+        @Override
+        public SpawnRule getSpawnRule() {
+            return spawnRule;
         }
 
         @Override

@@ -1,5 +1,6 @@
 package cz.jeme.bestium.api.inject.variant;
 
+import cz.jeme.bestium.api.inject.biome.BiomeFilter;
 import cz.jeme.bestium.api.util.BiomeTemperature;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.KeyPattern;
@@ -128,13 +129,13 @@ public interface VariantRule {
     }
 
     /**
-     * Returns a rule that returns the provided variant only if the provided biome key matches
-     * the one of the entity's spawn location. If the biome does not match,
+     * Returns a rule that returns the provided variant only if the provided biome filter tests
+     * positive on the biome of the entity's spawn location. If the biome does not match,
      * {@code null} is returned.
      * <p>
      * For example:
      * <pre>{@code
-     * VariantRule.ifBiome(Key.key("minecraft:plains"), "normal");
+     * VariantRule.ifBiome(BiomeFilter.key(Key.key("minecraft:plains")), "normal");
      * }</pre>
      * <p>
      * You may omit the {@code "minecraft:"} namespace for vanilla biomes.
@@ -144,42 +145,12 @@ public interface VariantRule {
      * <strong>Note:</strong> If the variant ID does not exist and this rule is applied,
      * an {@link IllegalArgumentException} is thrown.
      *
-     * @param biomeKey  the biome key to match
+     * @param filter    the biome filter to test
      * @param variantId the ID of the variant to apply
      * @return a biome based rule
-     * @see #ifBiomes(Set, String)
      */
-    static VariantRule ifBiome(final Key biomeKey, final @KeyPattern.Namespace String variantId) {
-        return ifBiomes(Set.of(biomeKey), variantId);
-    }
-
-    /**
-     * Returns a rule that returns the provided variant only if one of the provided biome
-     * keys matches the one of the entity's spawn location. If the biome does not match,
-     * {@code null} is returned.
-     * <p>
-     * For example:
-     * <pre>{@code
-     * VariantRule.ifBiomes(Set.of(
-     *    Key.key("minecraft:plains"),
-     *    Key.key("minecraft:forest")
-     * ), "normal");
-     * }</pre>
-     * <p>
-     * You may omit the {@code "minecraft:"} namespace for vanilla biomes.
-     * <p>
-     * This rule is designed to be chained using {@link #firstMatch(VariantRule...)}.
-     * <p>
-     * <strong>Note:</strong> If the variant ID does not exist and this rule is applied,
-     * an {@link IllegalArgumentException} is thrown.
-     *
-     * @param biomeKeys the biome keys to match
-     * @param variantId the ID of the variant to apply
-     * @return a biome based rule
-     * @see #ifBiome(Key, String)
-     */
-    static VariantRule ifBiomes(final Set<Key> biomeKeys, final @KeyPattern.Namespace String variantId) {
-        return VariantRules.ifBiomes(biomeKeys, variantId);
+    static VariantRule ifBiome(final BiomeFilter filter, final @KeyPattern.Namespace String variantId) {
+        return VariantRules.ifBiome(filter, variantId);
     }
 
     /**
@@ -272,7 +243,7 @@ public interface VariantRule {
      * <p>
      * Variant rules can be categorized into two types:
      * <ul>
-     *     <li>Nullable rules (allow fallthrough, e.g,{@link #ifBiome(Key, String)}, {@link #ifWorld(Key, String)}, {@link #ifTemperature(DoubleRange, String)})</li>
+     *     <li>Nullable rules (allow fallthrough, e.g,{@link #ifBiome(BiomeFilter, String)}, {@link #ifWorld(Key, String)}, {@link #ifTemperature(DoubleRange, String)})</li>
      *     <li>Non-null rules (always return a rule and stop evaluation, e.g., {@link #always(String)}, {@link #random()}, {@link #weighted(Map)})</li>
      * </ul>
      * <strong>Important:</strong> A rule that never returns {@code null} (like {@link #always(String)})

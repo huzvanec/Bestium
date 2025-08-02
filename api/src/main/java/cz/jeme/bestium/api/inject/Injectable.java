@@ -2,6 +2,7 @@ package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.Bestium;
 import net.kyori.adventure.key.Key;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -154,5 +155,10 @@ public interface Injectable {
         // no logic here yet, kept for future use
         // for post init logic see:
         // core/BestiumEntityManagerImpl#postInitializeBestiumEntity(Injectable)
+    }
+
+    @ApiStatus.NonExtendable
+    default boolean bestium_dismountsUnderwater() {
+        return bestium_getRealType().is(EntityTypeTags.DISMOUNTS_UNDERWATER);
     }
 }

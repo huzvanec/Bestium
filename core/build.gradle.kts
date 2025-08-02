@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     implementation(project(":api"))
+    implementation(libs.bytebase)
+    implementation(libs.bytebase.runtime)
 }
 
 tasks {

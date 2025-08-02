@@ -7,12 +7,17 @@ import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import net.bytebuddy.agent.ByteBuddyAgent
 
 @Suppress("UnstableApiUsage", "unused")
 internal class BestiumBootstrapper : PluginBootstrap {
     private var injectionHappened = false
 
     override fun bootstrap(context: BootstrapContext) {
+        println("Attaching agent...")
+        val agent = ByteBuddyAgent.install()
+        println("Agent attached: $agent")
+
         val logger = context.logger
         val requiredVersion = context.pluginMeta.apiVersion
         val actualVersion = ServerBuildInfo.buildInfo().minecraftVersionId()

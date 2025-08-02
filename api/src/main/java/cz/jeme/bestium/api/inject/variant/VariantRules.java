@@ -1,10 +1,13 @@
 package cz.jeme.bestium.api.inject.variant;
 
+import cz.jeme.bestium.api.inject.biome.BiomeFilter;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.KeyPattern;
+import net.minecraft.world.level.biome.Biome;
 import org.apache.commons.lang3.DoubleRange;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.entity.Entity;
 
 import java.util.*;
@@ -89,15 +92,16 @@ final class VariantRules {
         };
     }
 
-    public static VariantRule ifBiomes(
-            final Set<Key> biomeKeys,
+    public static VariantRule ifBiome(
+            final BiomeFilter filter,
             final @KeyPattern.Namespace String variantId
     ) {
         return (variants, ctx) -> {
             if (!variants.containsKey(variantId)) throw unknownVariant(variants, ctx, variantId);
             final Entity entity = ctx.getEntity();
-            final NamespacedKey currentBiomeKey = entity.getWorld().getBiome(entity.getLocation()).getKey();
-            return (biomeKeys.contains(currentBiomeKey)) ? variants.get(variantId) : null;
+            final var bukkitBiome = entity.getWorld().getBiome(entity.getLocation());
+            final Biome biome = ((CraftBiome) bukkitBiome).getHandle();
+            return filter.test(biome) ? variants.get(variantId) : null;
         };
     }
 
@@ -125,6 +129,9 @@ final class VariantRules {
                     location.getBlockY(),
                     location.getBlockZ()
             );
+            System.out.println(temperatureRange);
+            System.out.println(temperatureRange.contains(temperature));
+            System.out.println(variantId);
             return temperatureRange.contains(temperature) ? variants.get(variantId) : null;
         };
     }

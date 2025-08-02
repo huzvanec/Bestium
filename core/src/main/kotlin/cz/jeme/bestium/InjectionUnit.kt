@@ -12,13 +12,19 @@ import net.minecraft.SharedConstants
 import net.minecraft.core.Holder
 import net.minecraft.core.MappedRegistry
 import net.minecraft.core.Registry
+import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.util.datafix.DataFixers
 import net.minecraft.util.datafix.fixes.References
+import net.minecraft.util.random.Weighted
+import net.minecraft.util.random.WeightedList
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.MobCategory
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes
+import net.minecraft.world.level.biome.MobSpawnSettings
+import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.craftbukkit.CraftServer
 import org.bukkit.craftbukkit.entity.CraftEntityType
@@ -33,6 +39,8 @@ import org.bukkit.Registry as BukkitRegistry
 import org.bukkit.entity.Entity as BukkitEntity
 import org.bukkit.entity.EntityType as BukkitEntityType
 
+private const val PHASES = 3
+
 class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
     private val logger = ComponentLogger.logger("BestiumInjectionUnit")
     private val _types = mutableMapOf<Class<out Entity>, EntityType<*>>()
@@ -41,17 +49,80 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
     val types: Map<Class<out Entity>, EntityType<*>> = _types
     val keyedTypes: Map<Key, EntityType<*>> = _keyedTypes
 
-    fun minecraftInjection() {
-        logger.info("[Phase 1/2] Starting entity injection (bootstrap phase)")
+    private fun logPhase(phase: Int, msg: String) = logger.info("[Phase $phase/$PHASES] $msg")
 
-        logger.info("[Phase 1/2] Fetching DataFixer entity types")
+    private fun injectBiomes() {
+        fun logPhase2(msg: String) = logPhase(2, msg)
+
+        logPhase2("Starting entity injection (biome phase)")
+
+        logPhase2("Retrieving mob spawn settings")
+        val spawnersField = MobSpawnSettings::class.java.getDeclaredField("spawners")
+            .apply { isAccessible = true }
+
+        logPhase2("Retrieving mob spawn costs")
+        val mobSpawnCostsField = MobSpawnSettings::class.java.getDeclaredField("mobSpawnCosts")
+            .apply { isAccessible = true }
+
+        val biomes = (Bukkit.getServer() as CraftServer).server.registryAccess().lookupOrThrow(Registries.BIOME)
+        logPhase2("Found ${biomes.size()} biomes")
+
+        val newSpawnerDataMap = mutableMapOf<MobCategory, MutableList<Weighted<MobSpawnSettings.SpawnerData>>>()
+
+        logPhase2("Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
+        for (biome in biomes) {
+            newSpawnerDataMap.clear()
+            val mobSettings = biome.mobSettings
+
+            @Suppress("UNCHECKED_CAST")
+            val spawners = (
+                    spawnersField[mobSettings] as Map<MobCategory, WeightedList<MobSpawnSettings.SpawnerData>>
+                    ).toMutableMap()
+
+            @Suppress("UNCHECKED_CAST")
+            val mobSpawnCosts = (
+                    mobSpawnCostsField[mobSettings] as Map<EntityType<*>, MobSpawnSettings.MobSpawnCost>
+                    ).toMutableMap()
+
+            for (inj in injections) {
+                val spawnRule = inj.spawnRule
+                val spawnData = spawnRule.apply(biome) ?: continue
+                val type = _keyedTypes[inj.key]!!
+
+                newSpawnerDataMap
+                    .getOrPut(inj.mobCategory) { mutableListOf() }
+                    .add(Weighted(spawnData.toSpawnerData(type), spawnData.weight))
+
+                spawnData.cost?.let { mobSpawnCosts[type] = it.toMobSpawnCost() }
+            }
+
+            newSpawnerDataMap.forEach { (category, newSpawnerData) ->
+                // merge weighted lists
+                spawners[category] = WeightedList.of(
+                    spawners[category]!!.unwrap() + newSpawnerData
+                )
+            }
+
+            spawnersField.set(mobSettings, spawners)
+            mobSpawnCostsField.set(mobSettings, mobSpawnCosts)
+        }
+
+        logPhase2("Done")
+    }
+
+    fun injectBootstrap() {
+        fun logPhase1(msg: String) = logPhase(1, msg)
+
+        logPhase1("Starting entity injection (bootstrap phase)")
+
+        logPhase1("Fetching DataFixer entity types")
         @Suppress("UNCHECKED_CAST")
         val dataFixerTypes = DataFixers.getDataFixer()
             .getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion().version()))
             .findChoiceType(References.ENTITY)
             .types() as MutableMap<String, DataFixerType<*>>
 
-        logger.info("[Phase 1/2] Retrieving default attribute suppliers")
+        logPhase1("Retrieving default attribute suppliers")
         val attributeSuppliersField = DefaultAttributes::class.java.getDeclaredField("SUPPLIERS")
             .apply { isAccessible = true }
 
@@ -60,18 +131,18 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 attributeSuppliersField[null] as Map<EntityType<out Entity>, AttributeSupplier>
                 ).toMutableMap()
 
-        logger.info("[Phase 1/2] Resetting unregistered intrusive entity type holders")
+        logPhase1("Resetting unregistered intrusive entity type holders")
         MappedRegistry::class.java.getDeclaredField("unregisteredIntrusiveHolders")
             .apply { isAccessible = true }
             .set(ENTITY_TYPE_REGISTRY, IdentityHashMap<EntityType<*>, Holder.Reference<EntityType<*>>>())
 
-        logger.info("[Phase 1/2] Unfreezing entity type registry")
+        logPhase1("Unfreezing entity type registry")
         val frozenField = MappedRegistry::class.java.getDeclaredField("frozen")
             .apply { isAccessible = true }
 
         frozenField.set(ENTITY_TYPE_REGISTRY, false)
 
-        logger.info("[Phase 1/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
+        logPhase1("Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
         for (inj in injections) {
             val entityClass = inj.entityClass
             val key = inj.key
@@ -118,23 +189,27 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             _keyedTypes[key] = nmsType
         }
 
-        logger.info("[Phase 1/2] Overwriting default attribute suppliers")
+        logPhase1("Overwriting default attribute suppliers")
         // set default attributes
         attributeSuppliersField.setStaticFinal(attributeSuppliers)
 
-        logger.info("[Phase 1/2] Refreezing entity type registry")
+        logPhase1("Refreezing entity type registry")
         frozenField.set(ENTITY_TYPE_REGISTRY, true)
 
-        logger.info("[Phase 1/2] Bootstrap injection complete")
+        logPhase1("Done")
     }
 
-    fun bukkitInjection() {
-        logger.info("[Phase 2/2] Starting injection (load phase)")
+    fun injectLoad() {
+        injectBiomes()
+
+        fun logPhase3(msg: String) = logPhase(3, msg)
+
+        logPhase3("Starting injection (load phase)")
 
         // map of nms backing entity type -> list of entity injections
         val bukkitTypeDataContainer = mutableMapOf<EntityType<out Entity>, MutableList<EntityInjection<*, *>>>()
 
-        logger.info("[Phase 2/2] Fetching Bukkit entity type registry internals")
+        logPhase3("Fetching Bukkit entity type registry internals")
         @Suppress("UnstableApiUsage")
         val simpleRegistryMapField = BukkitRegistry.SimpleRegistry::class.java.getDeclaredField("map")
             .apply { isAccessible = true }
@@ -144,7 +219,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 simpleRegistryMapField[BukkitRegistry.ENTITY_TYPE] as Map<NamespacedKey, BukkitEntityType>
                 ).toMutableMap()
 
-        logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity registry")
+        logPhase3("Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity registry")
         for (inj in injections) {
             val backingType = inj.backingType
             val entityClass = inj.entityClass
@@ -160,7 +235,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             simpleRegistryMap[key.toNamespacedKey()] = CraftEntityType.minecraftToBukkit(backingType)
         }
 
-        logger.info("[Phase 2/2] Retrieving Bukkit entity type data")
+        logPhase3("Retrieving Bukkit entity type data")
         val bukkitEntityTypeDataField = CraftEntityTypes::class.java.getDeclaredField("ENTITY_TYPE_DATA")
             .apply { isAccessible = true }
 
@@ -169,7 +244,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 bukkitEntityTypeDataField[null] as Map<BukkitEntityType, EntityTypeData<*, *>>
                 ).toMutableMap()
 
-        logger.info("[Phase 2/2] Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity type data")
+        logPhase3("Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity type data")
         // inject into backing bukkit entity type data
         bukkitTypeDataContainer.forEach { (type, classes) ->
             val craftType = CraftEntityType.minecraftToBukkit(type)
@@ -195,12 +270,12 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             )
         }
 
-        logger.info("[Phase 2/2] Overwriting Bukkit entity type data")
+        logPhase3("Overwriting Bukkit entity type data")
         bukkitEntityTypeDataField.setStaticFinal(bukkitEntityTypeData)
 
-        logger.info("[Phase 2/2] Overwriting Bukkit entity type registry internals")
+        logPhase3("Overwriting Bukkit entity type registry internals")
         simpleRegistryMapField.set(BukkitRegistry.ENTITY_TYPE, simpleRegistryMap)
 
-        logger.info("[Phase 2/2] Load injection complete")
+        logPhase3("Done")
     }
 }

@@ -91,7 +91,7 @@ internal object EntityInjectorImpl : EntityInjector {
             return false
         }
 
-        return tryInject(unit::minecraftInjection)
+        return tryInject(unit::injectBootstrap)
     }
 
     fun injectBukkit(): Boolean {
@@ -102,7 +102,7 @@ internal object EntityInjectorImpl : EntityInjector {
         }
         phase = EntityInjector.Phase.INJECTION_PHASE_2
         return tryInject {
-            unit.bukkitInjection()
+            unit.injectLoad()
             phase = EntityInjector.Phase.INJECTED
         }
     }

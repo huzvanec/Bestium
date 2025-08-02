@@ -39,4 +39,11 @@ public abstract class CustomAbstractFish extends AbstractFish implements Injecta
         super.addAdditionalSaveData(output);
         bestium_addAdditionalSaveData(output);
     }
+
+    protected final EntityType<?> realType = bestium_getRealType();
+
+    @Override
+    public boolean dismountsUnderwater() {
+        return super.dismountsUnderwater();
+    }
 }

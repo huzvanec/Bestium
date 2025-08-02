@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = "cz.jeme"
-    version = "2.1.0"
+    version = "3.0.0"
 }
 
 dependencies {
@@ -25,6 +25,9 @@ tasks {
         fun shade(pattern: String) = relocate(pattern, "${project.group}.${project.name.lowercase()}.shaded.$pattern")
 
         shade("kotlin")
+        shade("net.bytebuddy")
+        shade("org.objectweb.asm")
+        shade("xyz.xenondevs.bytebase")
     }
 
     assemble {

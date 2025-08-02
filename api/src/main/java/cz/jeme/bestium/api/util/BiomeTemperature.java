@@ -23,7 +23,7 @@ public final class BiomeTemperature {
     /**
      * Cold biome temperatures.
      */
-    public static final DoubleRange COLD = DoubleRange.of(Double.MIN_VALUE, 0.5);
+    public static final DoubleRange COLD = DoubleRange.of(-999_999_999, 0.5);
 
     /**
      * Temperate biome temperatures.
@@ -33,5 +33,5 @@ public final class BiomeTemperature {
     /**
      * Warm biome temperatures.
      */
-    public static final DoubleRange WARM = DoubleRange.of(0.9, Double.MAX_VALUE);
+    public static final DoubleRange WARM = DoubleRange.of(0.9, 999_999_999);
 }
