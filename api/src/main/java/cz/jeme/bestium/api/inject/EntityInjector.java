@@ -79,7 +79,6 @@ public interface EntityInjector {
      * The returned map contains entity classes as keys and their corresponding
      * {@link EntityType} instances as values.
      *
-     * @param <T> the entity type
      * @return an unmodifiable map of entity classes to their generated entity types
      * @throws IllegalStateException if the injector is in any other than the {@link Phase#INJECTED} phase
      * @see #getPhase()
