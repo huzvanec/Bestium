@@ -82,33 +82,35 @@ internal object Patcher {
         PATCHES
             .filterIsInstance<ClassPatch>()
             .filter(ClassPatch::reversible)
-            .forEach { transformer ->
-                val clazz = transformer.clazz.java
+            .forEach { patch ->
+                val clazz = patch.clazz.java
                 logger.info("Reverting patch: ${clazz.name}")
                 instrumentation.redefineClasses(
                     ClassDefinition(
                         clazz,
-                        transformer.initialBytecode!!
+                        patch.initialBytecode!!
                     )
                 )
             }
     }
 
     private fun patch() {
-        logger.info("Collecting transformers")
+        logger.info("Collecting patches")
         val classes = Object2BooleanLinkedOpenHashMap<Class<*>>() // class -> computeFrames
-        PATCHES.forEach { transformer ->
-            transformer.classes
+        PATCHES.forEach { patch ->
+            patch.classes
                 .map { clazz -> clazz.java }
                 .forEach { clazz ->
-                    if (transformer.computeFrames) classes[clazz] = true
+                    if (patch.computeFrames) classes[clazz] = true
                     else classes.putIfAbsent(clazz, false)
                 }
         }
-        PATCHES.forEach(Patch::transform)
-        val toPatch = PATCHES.size
+        PATCHES.forEachIndexed { index, patch ->
+            logger.info("[${index + 1}/${PATCHES.size}] Loading patch: ${patch.javaClass.name}")
+            patch.transform()
+        }
         classes.object2BooleanEntrySet().mapIndexed { index, (clazz, computeFrames) ->
-            logger.info("[${index + 1}/${toPatch + 1}] Patching: ${clazz.name}")
+            logger.info("[${index + 1}/${classes.size}] Patching: ${clazz.name}")
             ClassDefinition(
                 clazz,
                 VirtualClassPath[clazz].assemble(computeFrames)
