@@ -13,6 +13,8 @@ bytebase = "0.4.8"
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 paperweight-userdev-plugin = { group = "io.papermc.paperweight", name = "paperweight-userdev", version.ref = "paperweight" }
 bettermodel = { group = "io.github.toxicity188", name = "BetterModel", version.ref = "bettermodel" }
+bytebase = { group = "xyz.xenondevs.bytebase", name = "ByteBase", version.ref = "bytebase" }
+bytebase-runtime = { group = "xyz.xenondevs.bytebase", name = "ByteBase-Runtime", version.ref = "bytebase" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
