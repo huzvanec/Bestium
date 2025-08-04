@@ -26,8 +26,9 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         val start = System.currentTimeMillis()
         saveDefaultConfig()
 
-        EntityInjectorImpl.injectBukkit() // phase 2 injection
-        if (PluginSupportImpl.isBetterModelLoaded()) {
+        EntityInjectorImpl.injectLoad() // phase 2 injection
+
+        if (PluginSupportImpl.isBetterModelLoaded) {
             logger.info("BetterModel detected, updating models...")
             EntityInjectorImpl.copyModels()
         }
@@ -39,11 +40,16 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
             SpawnEggCommand(this, commands)
         }
 
+        logger.info("Registering event listeners")
         fun Listener.register() = Bukkit.getPluginManager().registerEvents(this, this@BestiumPlugin)
 
         EntityManagerImpl.register()
 
-        logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
+        logger.info("Registering entity translations")
+        EntityInjectorImpl.injections.values.forEach(EntityTranslator::addInjection)
+        EntityTranslator.register()
+
+        logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start} ms)")
     }
 
     override fun createKey(@KeyPattern.Value key: String): NamespacedKey = NamespacedKey(this, key)

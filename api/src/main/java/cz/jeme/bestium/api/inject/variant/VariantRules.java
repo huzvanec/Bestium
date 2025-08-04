@@ -129,9 +129,6 @@ final class VariantRules {
                     location.getBlockY(),
                     location.getBlockZ()
             );
-            System.out.println(temperatureRange);
-            System.out.println(temperatureRange.contains(temperature));
-            System.out.println(variantId);
             return temperatureRange.contains(temperature) ? variants.get(variantId) : null;
         };
     }

@@ -14,6 +14,7 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.registry.RegistryKey
 import io.papermc.paper.registry.TypedKey
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.nbt.CompoundTag
@@ -102,11 +103,15 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
         val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toResourceLocation())
 
         val stack = CraftItemStack.asCraftMirror(nmsStack)
+
+        val entityNameMsg = entityType.get().value().description
+        val entityNameCpt = MessageComponentSerializer.message().deserialize(entityNameMsg)
+        val entityNameStr = PlainTextComponentSerializer.plainText().serialize(entityNameCpt)
+
         @Suppress("UnstableApiUsage")
         stack.setData(
             DataComponentTypes.ITEM_NAME,
-            MessageComponentSerializer.message().deserialize(entityType.get().value().description)
-                .append(Component.text(" Spawn Egg"))
+            Component.text("$entityNameStr Spawn Egg")
         )
 
         players.forEach { player ->

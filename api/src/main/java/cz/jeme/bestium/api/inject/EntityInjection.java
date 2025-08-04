@@ -6,6 +6,7 @@ import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.VariantRule;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -128,6 +130,26 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      */
     @Unmodifiable
     Map<String, BoundEntityVariant> getVariants();
+
+    /**
+     * Returns a map of display names, where each {@link Locale} corresponds
+     * to a {@link Component} that serves as the display name.
+     *
+     * @return an unmodifiable map of locales to display name components
+     */
+    @Unmodifiable
+    Map<Locale, Component> getDisplayNames();
+
+    /**
+     * Retrieves the display name of this entity for the specified locale.
+     *
+     * @param locale the locale for which the display name should be retrieved
+     * @return the display name entity, or {@code null} if no display name for provided locale was set
+     */
+    @Nullable
+    default Component getDisplayName(final Locale locale) {
+        return getDisplayNames().get(locale);
+    }
 
     /**
      * Returns the {@link VariantRule} responsible for choosing the variant for this
@@ -426,6 +448,74 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          */
         default Builder<M, E> setComputedVariantRule(final Supplier<VariantRule> variantRuleSupplier) {
             return setVariantRule(variantRuleSupplier.get());
+        }
+
+        /**
+         * Sets the display name {@link Component}s for the injected entity, mapped by {@link Locale}.
+         *
+         * @param displayNames a map of locales to display name components
+         * @return this builder
+         */
+        Builder<M, E> setDisplayNames(final Map<Locale, Component> displayNames);
+
+        /**
+         * Sets the display name {@link Component} for the injected entity for a specific {@link Locale}.
+         *
+         * @param locale      the locale for which the display name component is being set
+         * @param displayName the component to be used as the display name
+         * @return this builder
+         */
+        Builder<M, E> setDisplayName(final Locale locale, final Component displayName);
+
+        /**
+         * Sets the display name for the specified {@link Locale}.
+         *
+         * @param locale      the locale for which the display name is being set
+         * @param displayName the display name to set
+         * @return this builder
+         */
+        default Builder<M, E> setDisplayName(final Locale locale, final String displayName) {
+            return setDisplayName(locale, Component.text(displayName));
+        }
+
+        /**
+         * Sets the display name {@link Component} for the {@link Locale#US} locale.
+         *
+         * @param displayName the display name component to set
+         * @return this builder
+         */
+        default Builder<M, E> setDisplayName(final Component displayName) {
+            return setDisplayName(Locale.US, displayName);
+        }
+
+        /**
+         * Sets the display name for the {@link Locale#US} locale.
+         *
+         * @param displayName the display name to set
+         * @return this builder
+         */
+        default Builder<M, E> setDisplayName(final String displayName) {
+            return setDisplayName(Locale.US, displayName);
+        }
+
+        /**
+         * Returns a map of display names, where each {@link Locale} corresponds
+         * to a {@link Component} that serves as the display name.
+         *
+         * @return an unmodifiable map of locales to display name components
+         */
+        @Unmodifiable
+        Map<Locale, Component> getDisplayNames();
+
+        /**
+         * Retrieves the display name of this entity for the specified locale.
+         *
+         * @param locale the locale for which the display name should be retrieved
+         * @return the display name entity, or {@code null} if no display name for provided locale was set
+         */
+        @Nullable
+        default Component getDisplayName(final Locale locale) {
+            return getDisplayNames().get(locale);
         }
 
         /**

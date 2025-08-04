@@ -1,7 +1,7 @@
 package cz.jeme.bestium.inject.patch
 
-import cz.jeme.bestium.inject.patch.impl.EntityTypePatch
 import cz.jeme.bestium.inject.patch.impl.EntityDataPatch
+import cz.jeme.bestium.inject.patch.impl.EntityTypePatch
 import cz.jeme.bestium.inject.patch.impl.ReflectionPatch
 import cz.jeme.bestium.util.NOVA_LOADED
 import cz.jeme.bestium.util.PAPER_CLASS_LOADER

@@ -38,7 +38,7 @@ internal class BestiumBootstrapper : PluginBootstrap {
 
         val injectionHandler = LifecycleEvents.DATAPACK_DISCOVERY.newHandler {
             if (injectionHappened) return@newHandler; injectionHappened = true
-            EntityInjectorImpl.injectMinecraft() // phase 1 injection
+            EntityInjectorImpl.injectBootstrap() // phase 1 injection
         }.priority(-1) // prioritize
 
         context.lifecycleManager.registerEventHandler(injectionHandler)

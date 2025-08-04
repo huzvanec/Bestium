@@ -7,12 +7,12 @@ import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.VariantRule;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
@@ -31,6 +31,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     private final Consumer<EntityType.Builder<T>> typeBuilder;
     private final @Nullable AttributeSupplier attributes;
     private final Map<String, BoundEntityVariant> variants;
+    private final Map<Locale, Component> displayNames;
     private final VariantRule variantRule;
     private final SpawnRule spawnRule;
 
@@ -45,7 +46,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         category = builder.category;
         typeBuilder = builder.typeBuilder;
         attributes = builder.attributes;
-        variants = builder.variants.stream()
+        variants = Collections.unmodifiableMap(builder.variants.stream()
                 .map(variant -> variant.bind(this))
                 .collect(Collectors.toMap(
                         EntityVariant::getId,
@@ -56,7 +57,8 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
                             );
                         },
                         LinkedHashMap::new
-                ));
+                )));
+        displayNames = Collections.unmodifiableMap(builder.displayNames);
         variantRule = builder.variantRule;
         spawnRule = builder.spawnRule;
     }
@@ -103,7 +105,12 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
 
     @Override
     public @Unmodifiable Map<String, BoundEntityVariant> getVariants() {
-        return Collections.unmodifiableMap(variants);
+        return variants;
+    }
+
+    @Override
+    public @Unmodifiable Map<Locale, Component> getDisplayNames() {
+        return displayNames;
     }
 
     @Override
@@ -143,6 +150,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         };
         private @Nullable AttributeSupplier attributes;
         private Set<UnboundEntityVariant> variants = new LinkedHashSet<>();
+        private Map<Locale, Component> displayNames = new HashMap<>();
         private VariantRule variantRule = VariantRule.first();
         private SpawnRule spawnRule = SpawnRule.none();
 
@@ -248,6 +256,23 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         }
 
         @Override
+        public Builder<T, B> setDisplayNames(final Map<Locale, Component> displayNames) {
+            this.displayNames = new HashMap<>(displayNames);
+            return this;
+        }
+
+        @Override
+        public Builder<T, B> setDisplayName(final Locale locale, final Component displayName) {
+            displayNames.put(locale, displayName);
+            return this;
+        }
+
+        @Override
+        public @Unmodifiable Map<Locale, Component> getDisplayNames() {
+            return Collections.unmodifiableMap(displayNames);
+        }
+
+        @Override
         public VariantRule getVariantRule() {
             return variantRule;
         }
@@ -264,7 +289,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         }
 
         @Override
-        public @NotNull EntityInjection<T, B> build() {
+        public EntityInjection<T, B> build() {
             return new EntityInjectionImpl<>(this);
         }
     }

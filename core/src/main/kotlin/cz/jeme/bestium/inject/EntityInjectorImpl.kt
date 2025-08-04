@@ -79,7 +79,7 @@ internal object EntityInjectorImpl : EntityInjector {
         unit = InjectionUnit(injections.values)
     }
 
-    fun injectMinecraft(): Boolean {
+    fun injectBootstrap(): Boolean {
         if (phase != EntityInjector.Phase.REGISTRATION) throw IllegalStateException("Invalid phase for phase 1 injection: $phase")
 
         // load injections from suppliers
@@ -95,7 +95,7 @@ internal object EntityInjectorImpl : EntityInjector {
         return tryInject(unit::injectBootstrap)
     }
 
-    fun injectBukkit(): Boolean {
+    fun injectLoad(): Boolean {
         if (phase != EntityInjector.Phase.INJECTION_PHASE_1) throw IllegalStateException("Invalid phase for phase 2 injection: $phase")
         if (injections.isEmpty()) {
             phase = EntityInjector.Phase.INJECTED
@@ -134,7 +134,7 @@ internal object EntityInjectorImpl : EntityInjector {
     fun copyModels() {
         if (phase != EntityInjector.Phase.INJECTED)
             throw IllegalStateException("Models can be copied only after all entities are injected")
-        if (!PluginSupportImpl.isBetterModelLoaded())
+        if (!PluginSupportImpl.isBetterModelLoaded)
             throw IllegalStateException("Models can be copied only when BetterModel is loaded")
 
         val modelsDir = File((BetterModel.plugin() as JavaPlugin).dataFolder, "models/.bestium")
