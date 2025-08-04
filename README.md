@@ -14,22 +14,7 @@ Unlike traditional methods, Bestium injects your entity code directly into the M
 you to create custom entities without extending non-abstract vanilla entities, meaning you're not bound by their
 existing implementations.
 
-- [x] Inject custom entity code into the Minecraft and Bukkit runtimes
-- [x] Preserve entities over server restarts and chunk unloads
-- [x] Craft a nice API with full javadoc
-- [x] Integrate [BetterModel](https://github.com/toxicity188/BetterModel) (❤️
-  to [toxicity188](https://github.com/toxicity188)) to add custom models to entities
-- [x] Datapack biome support (entities can be added to biomes naturally)
-- [x] In-game summon command
-- [x] Mob spawn egg support
-- [ ] Mob spawner support
-- [ ] In-game GUI with spawn eggs
-- [ ] Config
-
-> [!WARNING]
-> Depending on what you desire, Bestium may be unstable.
-
-> [!CAUTION]
+> [!NOTE]
 > Due to frequent changes in Minecraft's internal codebase, Bestium only supports the latest Minecraft release.
 
 ## Usage
@@ -40,7 +25,8 @@ for more information.
 ## The Patching System
 
 The [patching system](core/src/main/kotlin/cz/jeme/bestium/inject/patch) is heavily inspired by and partially copied
-from the patching system of the [Nova plugin](https://github.com/xenondevs/Nova) (licensed under [LGPL](https://github.com/xenondevs/Nova/blob/db8a2fef8e0b1258ad0a0df940238a092614ecca/LICENSE)).
+from the patching system of the [Nova plugin](https://github.com/xenondevs/Nova) (licensed
+under [LGPL](https://github.com/xenondevs/Nova/blob/db8a2fef8e0b1258ad0a0df940238a092614ecca/LICENSE)).
 
 This work would not have been possible without the incredible effort [xenondevs](https://github.com/xenondevs) put into
 the Nova framework. Please check
