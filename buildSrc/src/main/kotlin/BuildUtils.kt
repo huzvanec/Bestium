@@ -1,1 +1,1 @@
-fun paperToMinecraftVersion(paperVersion: String) = paperVersion.substringBefore('-');
+fun paperToMinecraftVersion(paperVersion: String) = paperVersion.substringBefore('-')

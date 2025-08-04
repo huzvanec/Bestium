@@ -7,7 +7,6 @@ import cz.jeme.bestium.api.inject.variant.BoundEntityVariant
 import cz.jeme.bestium.api.inject.variant.EntitySpawnContext
 import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.persistence.PersistentData
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntitySpawnReason
@@ -138,10 +137,6 @@ object EntityManagerImpl : EntityManager, Listener {
     private val injectedTypes by lazy { EntityInjectorImpl.types.values.toHashSet() }
 
     override fun isInjected(type: EntityType<*>) = injectedTypes.contains(type)
-
-    private val injectedEntityIds = IntOpenHashSet()
-
-    fun isInjected(entityId: Int) = injectedEntityIds.contains(entityId)
 
     override fun getInjection(entity: Entity) = EntityInjectorImpl.injections[entity.javaClass]
 
