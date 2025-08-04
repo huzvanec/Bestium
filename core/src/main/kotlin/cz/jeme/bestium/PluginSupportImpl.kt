@@ -12,7 +12,7 @@ object PluginSupportImpl : PluginSupport {
         }
     }
 
-    override fun betterModel() = loaded("BetterModel")
+    override fun isBetterModelLoaded() = loaded("BetterModel")
 
-    override fun nova() = loaded("Nova")
+    override fun isNovaLoaded() = loaded("Nova")
 }

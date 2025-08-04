@@ -1,5 +1,7 @@
 package cz.jeme.bestium
 
+import cz.jeme.bestium.inject.EntityInjectorImpl
+import cz.jeme.bestium.inject.patch.Patcher
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.ServerBuildInfo
@@ -7,18 +9,19 @@ import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
-import net.bytebuddy.agent.ByteBuddyAgent
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 
 @Suppress("UnstableApiUsage", "unused")
 internal class BestiumBootstrapper : PluginBootstrap {
     private var injectionHappened = false
+    private val logger = ComponentLogger.logger("BestiumBootstrapper")
 
     override fun bootstrap(context: BootstrapContext) {
-        println("Attaching agent...")
-        val agent = ByteBuddyAgent.install()
-        println("Agent attached: $agent")
+        val start = System.currentTimeMillis()
+        logger.info("Starting bootstrap")
 
-        val logger = context.logger
+        Patcher.run()
+
         val requiredVersion = context.pluginMeta.apiVersion
         val actualVersion = ServerBuildInfo.buildInfo().minecraftVersionId()
 
@@ -31,6 +34,7 @@ internal class BestiumBootstrapper : PluginBootstrap {
         }
 
         storeApiInstance(EntityInjectorImpl)
+        storeApiInstance(EntityManagerImpl)
 
         val injectionHandler = LifecycleEvents.DATAPACK_DISCOVERY.newHandler {
             if (injectionHappened) return@newHandler; injectionHappened = true
@@ -38,6 +42,8 @@ internal class BestiumBootstrapper : PluginBootstrap {
         }.priority(-1) // prioritize
 
         context.lifecycleManager.registerEventHandler(injectionHandler)
+
+        logger.info("Bootstrap OK (took ${System.currentTimeMillis() - start} ms)")
     }
 
     override fun createPlugin(context: PluginProviderContext) = BestiumPlugin

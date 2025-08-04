@@ -1,23 +1,13 @@
 package cz.jeme.bestium.api;
 
 import cz.jeme.bestium.api.inject.EntityInjector;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.KeyPattern;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
-import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * The core system for managing custom Minecraft entities.
@@ -82,11 +72,10 @@ public interface Bestium {
      * of custom entities within Bestium.
      *
      * @return the injector instance
-     * @throws IllegalStateException if called before the Bestium bootstrap happens
      * @see EntityInjector
      */
     static EntityInjector getInjector() {
-        return (EntityInjector) InstanceHolder.getObject("cz.jeme.bestium.EntityInjectorImpl");
+        return (EntityInjector) InstanceHolder.getObject("cz.jeme.bestium.inject.EntityInjectorImpl");
     }
 
     /**
@@ -106,124 +95,10 @@ public interface Bestium {
      * lifecycle and other logic and helper methods for Bestium entities.
      *
      * @return the entity manager instance
-     * @see BestiumEntityManager
+     * @see EntityManager
      */
-    static BestiumEntityManager getEntityManager() {
-        return (BestiumEntityManager) InstanceHolder.getObject("cz.jeme.bestium.BestiumEntityManagerImpl");
-    }
-
-    /**
-     * Spawns a custom injected entity of the specified class at the given location.
-     *
-     * @param location            the location where the entity should spawn
-     * @param entityClass         the class of the injected entity to spawn
-     * @param entitySpawnReason   the Minecraft {@link EntitySpawnReason} to use when spawning
-     * @param creatureSpawnReason the Bukkit {@link CreatureSpawnEvent.SpawnReason} to use when triggering events
-     * @param consumer            a consumer that is called after the entity is created but before it is added to the world
-     * @param <T>                 the type of the entity
-     * @return the spawned entity instance, or {@code null} if spawning failed
-     * @throws IllegalArgumentException if the given class is not a registered injected entity
-     */
-    @Nullable
-    static <T extends Entity> T spawn(
-            final Location location,
-            final Class<T> entityClass,
-            final EntitySpawnReason entitySpawnReason,
-            final CreatureSpawnEvent.SpawnReason creatureSpawnReason,
-            final Consumer<T> consumer
-    ) {
-        final EntityType<Entity> type = getInjector().getTypes().get(entityClass);
-        if (type == null) throw new IllegalArgumentException(
-                "Entity '" + entityClass + "' is not an injected entity!"
-        );
-
-        @SuppressWarnings("unchecked") final T entity = (T) type.spawn(
-                ((CraftWorld) location.getWorld()).getHandle(),
-                e -> {
-                    // update location to be more precise
-                    e.snapTo(
-                            location.x(),
-                            location.y(),
-                            location.z(),
-                            e.getYRot(),
-                            e.getXRot()
-                    );
-                    consumer.accept((T) e);
-                },
-                CraftLocation.toBlockPosition(location),
-                entitySpawnReason,
-                false,
-                false,
-                creatureSpawnReason
-        );
-        return entity;
-    }
-
-    /**
-     * Spawns a custom injected entity with default initialization logic.
-     *
-     * @param location            the location where the entity should spawn
-     * @param entityClass         the class of the injected entity to spawn
-     * @param entitySpawnReason   the Minecraft {@link EntitySpawnReason} to use when spawning
-     * @param creatureSpawnReason the Bukkit {@link CreatureSpawnEvent.SpawnReason} to use when triggering events
-     * @param <T>                 the type of the entity
-     * @return the spawned entity instance, or {@code null} if spawning failed
-     * @throws IllegalArgumentException if the given class is not a registered injected entity
-     * @see #spawn(Location, Class, EntitySpawnReason, CreatureSpawnEvent.SpawnReason, Consumer)
-     */
-    @Nullable
-    static <T extends Entity> T spawn(
-            final Location location,
-            final Class<T> entityClass,
-            final EntitySpawnReason entitySpawnReason,
-            final CreatureSpawnEvent.SpawnReason creatureSpawnReason
-    ) {
-        return spawn(
-                location,
-                entityClass,
-                entitySpawnReason,
-                creatureSpawnReason,
-                e -> {
-                }
-        );
-    }
-
-    /**
-     * Retrieves the Bestium {@link Key} of the injected Bukkit {@link org.bukkit.entity.Entity}, or {@code null} if not injected.
-     * <p>
-     * This is the same key that was used when registering the entity injection.
-     *
-     * @param entity the Bukkit {@link org.bukkit.entity.Entity} to retrieve the key from
-     * @return the {@link Key} identifying the injected entity type, or {@code null} if the entity is not an injected entity
-     * @see #requireInjectedEntityKey(org.bukkit.entity.Entity)
-     */
-    static @Nullable Key getInjectedEntityKey(final org.bukkit.entity.Entity entity) {
-        return getEntityManager().getInjectedEntityKey(entity);
-    }
-
-    /**
-     * Retrieves the Bestium {@link Key} of the injected Bukkit {@link org.bukkit.entity.Entity}.
-     * <p>
-     * This is the same key that was used when registering the entity injection.
-     * Throws an exception if the entity is not injected.
-     *
-     * @param entity the Bukkit {@link org.bukkit.entity.Entity} to retrieve the key from
-     * @return the {@link Key} identifying the injected entity type
-     * @throws IllegalArgumentException if the entity is not an injected entity
-     * @see #getInjectedEntityKey(org.bukkit.entity.Entity)
-     */
-    static Key requireInjectedEntityKey(final org.bukkit.entity.Entity entity) {
-        return getEntityManager().requireInjectedEntityKey(entity);
-    }
-
-    /**
-     * Checks whether the given Bukkit {@link org.bukkit.entity.Entity} is an injected entity.
-     *
-     * @param entity the Bukkit {@link org.bukkit.entity.Entity} to check
-     * @return {@code true} if the entity was injected by Bestium, {@code false} otherwise
-     */
-    static boolean isInjectedEntity(final org.bukkit.entity.Entity entity) {
-        return getEntityManager().isInjectedEntity(entity);
+    static EntityManager getEntityManager() {
+        return (EntityManager) Bestium.InstanceHolder.getObject("cz.jeme.bestium.EntityManagerImpl");
     }
 
     /**

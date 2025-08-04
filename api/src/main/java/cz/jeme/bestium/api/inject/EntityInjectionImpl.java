@@ -135,9 +135,9 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         private final Class<T> entityClass;
         private final EntityType.EntityFactory<T> entityFactory;
         private final ConvertFunction<T, B> convertFunction;
+        private final EntityType<?> backingType;
         private final boolean isLivingEntity;
         // optional parameters
-        private EntityType<?> backingType = EntityType.SILVERFISH;
         private MobCategory category = MobCategory.MISC;
         private Consumer<EntityType.Builder<T>> typeBuilder = b -> {
         };
@@ -149,11 +149,13 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,
                            final EntityType.EntityFactory<T> entityFactory,
-                           final ConvertFunction<T, B> convertFunction) {
+                           final ConvertFunction<T, B> convertFunction,
+                           final EntityType<?> backingType) {
             this.key = key;
             this.entityClass = entityClass;
             this.entityFactory = entityFactory;
             this.convertFunction = convertFunction;
+            this.backingType = backingType;
 
             isLivingEntity = LivingEntity.class.isAssignableFrom(entityClass);
             attributes = isLivingEntity
@@ -180,17 +182,6 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         @Override
         public ConvertFunction<T, B> getConvertFunction() {
             return convertFunction;
-        }
-
-        @Override
-        public Builder<T, B> setBackingType(final EntityType<?> backingType) {
-            this.backingType = backingType;
-            return this;
-        }
-
-        @Override
-        public EntityType<?> getBackingType() {
-            return backingType;
         }
 
         @Override

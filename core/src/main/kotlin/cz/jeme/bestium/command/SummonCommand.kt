@@ -22,7 +22,6 @@ import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.util.CraftLocation
 import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.plugin.Plugin
-import kotlin.jvm.optionals.getOrNull
 import org.bukkit.entity.EntityType as BukkitEntityType
 
 @Suppress("UnstableApiUsage")
@@ -116,10 +115,8 @@ class SummonCommand(plugin: Plugin, commands: Commands) {
 
         EntityType.loadEntityRecursive(
             tag.copy().apply {
-                // prevent overwriting the Minecraft id
+                // prevent overwriting the id
                 putString("id", keyStr)
-                // prevent overwriting the Bestium id
-                getCompound("BukkitValues").getOrNull()?.remove("bestium:id")
             },
             level,
             EntitySpawnReason.COMMAND

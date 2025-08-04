@@ -2,10 +2,8 @@ package cz.jeme.bestium.api.inject;
 
 import cz.jeme.bestium.api.inject.biome.SpawnRule;
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant;
-import cz.jeme.bestium.api.inject.variant.EntityVariant;
 import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.VariantRule;
-import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
@@ -19,10 +17,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -31,7 +26,7 @@ import java.util.function.Supplier;
 /**
  * Represents all necessary metadata and configuration for injecting a custom {@link Entity} into the game.
  * <p>
- * Created using {@link #builder(Key, Class, EntityType.EntityFactory, ConvertFunction)}.
+ * Created using {@link #builder(Key, Class, EntityType.EntityFactory, ConvertFunction, EntityType)}.
  * <p>
  * After an instance is created, it can be injected into the server runtime using {@link EntityInjector#register(Supplier)} )}.
  *
@@ -100,19 +95,6 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
     AttributeSupplier getDefaultAttributes();
 
     /**
-     * Returns the URL of the model associated with this entity.
-     *
-     * @return the model URL, or {@code null} if none was set
-     * @deprecated Use {@link #getVariants()} and {@link EntityVariant#getModelUrl()}.
-     */
-    @Deprecated(since = "2.1.0")
-    @Nullable
-    default URL getModelUrl() {
-        final Iterator<BoundEntityVariant> it = getVariants().values().iterator();
-        return it.hasNext() ? it.next().getModelUrl() : null;
-    }
-
-    /**
      * Returns the model name prefix used for entity variants bound to this injection.
      * <p>
      * The returned string is based on the entity's Bestium {@link Key},
@@ -148,27 +130,6 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
     Map<String, BoundEntityVariant> getVariants();
 
     /**
-     * Returns the model name used to identify this entity's model.
-     * <p>
-     * The model name is automatically generated based on the entity's key,
-     * using the following format:
-     * {@code bestium.<namespace>.<value>}.
-     * <p>
-     * For example, an entity with the key {@code example_plugin:custom_entity}
-     * would have the model name {@code bestium.example_plugin.custom_entity}.
-     *
-     * @return the generated model name, or {@code null} if no model URL was set
-     * @see #getKey()
-     * @see #getModelUrl()
-     */
-    @Nullable
-    @Deprecated(since = "2.1.0")
-    default String getModelName() {
-        final Iterator<BoundEntityVariant> it = getVariants().values().iterator();
-        return it.hasNext() ? it.next().getModelName() : null;
-    }
-
-    /**
      * Returns the {@link VariantRule} responsible for choosing the variant for this
      * entity when in spawns into the world.
      *
@@ -192,25 +153,47 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
 
     /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
+     * <p>
+     * <strong>Choosing the correct {@code backingType} is critical.</strong> This is the entity type that will be sent to the client
+     * over the network protocol. If you choose an incompatible or distant type, it may lead to serious issues, including
+     * players being kicked with a "Network Protocol Error".
+     * <p>
+     * The {@code backingType} should be as hierarchically close as possible to your custom entity.
+     * For example:
+     * <ul>
+     *     <li>If your entity extends {@code Animal}, use a backing type like {@link EntityType#PIG} or {@link EntityType#PIG}.</li>
+     *     <li>If your entity extends {@code Monster}, use a type like {@link EntityType#ZOMBIE}.</li>
+     *     <li><strong>If your entity is non-living (e.g., a custom minecart), you MUST NOT use a living backing type, and vice versa.</strong></li>
+     * </ul>
+     * <strong>Incorrectly pairing a living and non-living type will disconnect clients.</strong>
+     * <p>
+     * The {@code backingType} can be changed after registration, and the change will automatically reflect on all currently
+     * spawned entities of this type — making this choice both critical and flexible.
+     * <p>
+     * For more guidance on choosing a convert function and backing type, visit
+     * <a href="https://docs.bestium.jeme.cz/code/injecting-entity/#entityinjection-interface">the documentation.</a>
      *
      * @param key             a namespaced key such as {@code my_plugin:my_custom_entity}
      * @param entityClass     the class representing your custom entity
      * @param entityFactory   the factory used to instantiate the entity (usually {@code CustomEntityClass::new})
      * @param convertFunction the factory used to create a Bukkit representation of this entity (e.g., {@code CraftAnimals::new})
+     * @param backingType     the backing vanilla {@link EntityType} used for network communication
      * @param <M>             the type of the Minecraft entity being injected
      * @param <E>             the type of the Bukkit entity the Minecraft entity can be converted to
      * @return a new builder instance
      * @see NamespacedKey#NamespacedKey(Plugin, String)
      */
-    static <M extends Entity & Injectable, E extends org.bukkit.entity.Entity> Builder<M, E> builder(final Key key,
-                                                                                                     final Class<M> entityClass,
-                                                                                                     final EntityType.EntityFactory<M> entityFactory,
-                                                                                                     final ConvertFunction<M, E> convertFunction) {
+    static <M extends Entity, E extends org.bukkit.entity.Entity> Builder<M, E> builder(final Key key,
+                                                                                        final Class<M> entityClass,
+                                                                                        final EntityType.EntityFactory<M> entityFactory,
+                                                                                        final ConvertFunction<M, E> convertFunction,
+                                                                                        final EntityType<?> backingType) {
         return new EntityInjectionImpl.BuilderImpl<>(
                 key,
                 entityClass,
                 entityFactory,
-                convertFunction
+                convertFunction,
+                backingType
         );
     }
 
@@ -249,23 +232,6 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * @return the factory
          */
         ConvertFunction<M, E> getConvertFunction();
-
-        /**
-         * Sets the backing type for rendering and size fallback.
-         * <p>
-         * Defaults to {@link EntityType#SILVERFISH}.
-         *
-         * @param backingType the fallback entity type
-         * @return this builder
-         */
-        Builder<M, E> setBackingType(final EntityType<?> backingType);
-
-        /**
-         * Gets the backing entity type.
-         *
-         * @return the fallback type
-         */
-        EntityType<?> getBackingType();
 
         /**
          * Sets the mob category of the entity.
@@ -341,59 +307,6 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          */
         @Nullable
         AttributeSupplier getDefaultAttributes();
-
-        /**
-         * Sets the model for this entity using a resource bundled in the plugin's JAR.
-         * <p>
-         * The resource path must be '{@code /}'-separated (e.g., {@code models/my_entity.bbmodel}).
-         * <p>
-         * This method attempts to load the resource using the bootstrapper's class loader.
-         * <p>
-         * This overwrites all variants with a single variant with the ID {@code 'default'}.
-         *
-         * @param bootstrapper the plugin bootstrapper whose class loader will be used to load the resource
-         * @param resource     the path to the resource inside the plugin's JAR
-         * @return this builder
-         * @throws IllegalArgumentException if the resource cannot be found in the JAR file
-         * @deprecated Use {@link #addVariant(UnboundEntityVariant)} , {@link #addVariants(Collection)}
-         * * and {@link #setVariants(Collection)}.
-         */
-        @SuppressWarnings("UnstableApiUsage")
-        @Deprecated(since = "2.1.0")
-        default Builder<M, E> setModel(final PluginBootstrap bootstrapper, final String resource) {
-            return setVariants(Set.of(EntityVariant.fromModelResource("default", bootstrapper, resource)));
-        }
-
-        /**
-         * Sets the model for this entity using a local file on the filesystem.
-         * <p>
-         * This overwrites all variants with a single variant with the ID {@code 'default'}.
-         *
-         * @param file the file containing the model
-         * @return this builder
-         * @throws IllegalArgumentException if the file's URL is invalid
-         * @deprecated Use {@link #addVariant(UnboundEntityVariant)} , {@link #addVariants(Collection)}
-         * and {@link #setVariants(Collection)}.
-         */
-        @Deprecated(since = "2.1.0")
-        default Builder<M, E> setModel(final File file) {
-            return setVariants(Set.of(EntityVariant.fromModelFile("default", file)));
-        }
-
-        /**
-         * Sets the model for this entity using the given URL.
-         * <p>
-         * This overwrites all variants with a single variant with the ID {@code 'default'}.
-         *
-         * @param url the URL pointing to the model file
-         * @return this builder
-         * @deprecated Use {@link #addVariant(UnboundEntityVariant)} , {@link #addVariants(Collection)}
-         * and {@link #setVariants(Collection)}.
-         */
-        @Deprecated(since = "2.1.0")
-        default Builder<M, E> setModel(final URL url) {
-            return setVariants(Set.of(EntityVariant.fromModelUrl("default", url)));
-        }
 
         /**
          * Replaces all entity variants providing models for this entity injection with the given collection.
@@ -488,19 +401,6 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          */
         @Unmodifiable
         Set<UnboundEntityVariant> getVariants();
-
-        /**
-         * Gets the URL of the first registered entity variant.
-         *
-         * @return the model URL of the first variant, or {@code null} if no variants are registered
-         * @deprecated Use {@link #getVariants()} and {@link EntityVariant#getModelUrl()} instead.
-         */
-        @Deprecated(since = "2.1.0")
-        @Nullable
-        default URL getModelUrl() {
-            Iterator<UnboundEntityVariant> it = getVariants().iterator();
-            return it.hasNext() ? it.next().getModelUrl() : null;
-        }
 
         /**
          * Sets the {@link VariantRule} responsible for picking the {@link BoundEntityVariant} when this

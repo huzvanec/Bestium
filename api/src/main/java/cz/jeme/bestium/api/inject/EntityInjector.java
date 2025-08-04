@@ -3,6 +3,7 @@ package cz.jeme.bestium.api.inject;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Map;
@@ -38,12 +39,26 @@ public interface EntityInjector {
      * The returned map contains entity classes as keys and their corresponding
      * {@link EntityInjection} instances as values.
      *
-     * @param <T> the entity type
      * @return an unmodifiable map of entity classes to their registered injections
      * @throws IllegalStateException if the injector is still in the {@link Phase#REGISTRATION} or {@link Phase#PRE_INJECTION} phase
+     * @see #getInjection(Class)
      * @see #getPhase()
      */
-    <T extends Entity> @Unmodifiable Map<Class<T>, EntityInjection<T, ?>> getInjections();
+    @Unmodifiable
+    Map<Class<? extends Entity>, EntityInjection<?, ?>> getInjections();
+
+    /**
+     * Retrieves the registered entity injection for the specified entity class.
+     *
+     * @param <T>         the type of the entity
+     * @param entityClass the class of the entity for which the injection is to be retrieved
+     * @return the {@link EntityInjection} associated with the specified entity class,
+     * or {@code null} if no injection is registered for the class
+     */
+    @SuppressWarnings("unchecked")
+    default <T extends Entity> @Nullable EntityInjection<T, ?> getInjection(final Class<T> entityClass) {
+        return (EntityInjection<T, ?>) getInjections().get(entityClass);
+    }
 
     /**
      * Returns an unmodifiable view of all registered entity injections.
@@ -56,7 +71,7 @@ public interface EntityInjector {
      * @see #getPhase()
      */
     @Unmodifiable
-    Map<Key, EntityInjection<? extends Entity, ?>> getKeyedInjections();
+    Map<Key, EntityInjection<?, ?>> getKeyedInjections();
 
     /**
      * Returns an unmodifiable view of all generated entity types.
@@ -69,7 +84,20 @@ public interface EntityInjector {
      * @throws IllegalStateException if the injector is in any other than the {@link Phase#INJECTED} phase
      * @see #getPhase()
      */
-    <T extends Entity> @Unmodifiable Map<Class<T>, EntityType<T>> getTypes();
+    @Unmodifiable
+    Map<Class<? extends Entity>, EntityType<?>> getTypes();
+
+    /**
+     * Retrieves the injected {@link EntityType} associated with the specified entity class.
+     *
+     * @param <T>         the type of the entity
+     * @param entityClass the class of the entity for which the type is to be retrieved
+     * @return the injected {@link EntityType} associated with the specified entity class, or {@code null} if no type is found
+     */
+    @SuppressWarnings("unchecked")
+    default <T extends Entity> @Nullable EntityType<T> getType(final Class<T> entityClass) {
+        return (EntityType<T>) getTypes().get(entityClass);
+    }
 
     /**
      * Returns an unmodifiable view of all generated entity types.
@@ -82,7 +110,7 @@ public interface EntityInjector {
      * @see #getPhase()
      */
     @Unmodifiable
-    Map<Key, EntityType<? extends Entity>> getKeyedTypes();
+    Map<Key, EntityType<?>> getKeyedTypes();
 
     /**
      * Returns the current phase of the entity injection lifecycle.

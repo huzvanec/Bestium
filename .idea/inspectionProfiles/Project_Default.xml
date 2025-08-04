@@ -1,6 +1,9 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+    <inspection_tool class="LoggingSimilarMessage" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="myMinTextLength" value="50" />
+    </inspection_tool>
     <inspection_tool class="MissingJavadoc" enabled="true" level="WEAK WARNING" enabled_by_default="false" editorAttributes="INFO_ATTRIBUTES">
       <scope name="Warn Missing Javadoc" level="WEAK WARNING" enabled="true" />
     </inspection_tool>

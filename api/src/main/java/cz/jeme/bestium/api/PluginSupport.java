@@ -13,12 +13,12 @@ public interface PluginSupport {
      *
      * @return {@code true} if BetterModel is loaded and enabled, {@code false} otherwise
      */
-    boolean betterModel();
+    boolean isBetterModelLoaded();
 
     /**
      * Checks if the Nova plugin is successfully loaded and enabled on the server.
      *
-     * @return {@code true} if BetterModel is loaded and enabled, {@code false} otherwise
+     * @return {@code true} if Nova is loaded and enabled, {@code false} otherwise
      */
-    boolean nova();
+    boolean isNovaLoaded();
 }

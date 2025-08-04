@@ -1,5 +1,6 @@
-package cz.jeme.bestium
+package cz.jeme.bestium.inject
 
+import cz.jeme.bestium.PluginSupportImpl
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
@@ -25,16 +26,16 @@ internal object EntityInjectorImpl : EntityInjector {
 
     override fun getPhase() = phase
 
-    override fun <T> getInjections(): Map<Class<T>, EntityInjection<T, *>> where T : Entity = when (phase) {
+    override fun getInjections(): Map<Class<out Entity>, EntityInjection<*, *>> = when (phase) {
         EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> throw IllegalStateException(
             "Injection registrations not resolved yet"
         )
 
         else -> @Suppress("UNCHECKED_CAST")
-        injections as Map<Class<T>, EntityInjection<T, *>>
+        injections
     }
 
-    override fun getKeyedInjections(): Map<Key, EntityInjection<out Entity, *>> = when (phase) {
+    override fun getKeyedInjections(): Map<Key, EntityInjection<*, *>> = when (phase) {
         EntityInjector.Phase.REGISTRATION, EntityInjector.Phase.PRE_INJECTION -> throw IllegalStateException(
             "Injection registrations not resolved yet"
         )
@@ -42,9 +43,9 @@ internal object EntityInjectorImpl : EntityInjector {
         else -> keyedInjections
     }
 
-    override fun <T> getTypes(): Map<Class<T>, EntityType<T>> where T : Entity = when (phase) {
+    override fun getTypes(): Map<Class<out Entity>, EntityType<*>> = when (phase) {
         EntityInjector.Phase.INJECTED -> @Suppress("UNCHECKED_CAST")
-        unit.types as Map<Class<T>, EntityType<T>>
+        unit.types
 
         else -> throw IllegalStateException("Injection is not complete yet")
     }
@@ -133,7 +134,7 @@ internal object EntityInjectorImpl : EntityInjector {
     fun copyModels() {
         if (phase != EntityInjector.Phase.INJECTED)
             throw IllegalStateException("Models can be copied only after all entities are injected")
-        if (!PluginSupportImpl.betterModel())
+        if (!PluginSupportImpl.isBetterModelLoaded())
             throw IllegalStateException("Models can be copied only when BetterModel is loaded")
 
         val modelsDir = File((BetterModel.plugin() as JavaPlugin).dataFolder, "models/.bestium")

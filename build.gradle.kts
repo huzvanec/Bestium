@@ -24,7 +24,6 @@ tasks {
 
         fun shade(pattern: String) = relocate(pattern, "${project.group}.${project.name.lowercase()}.shaded.$pattern")
 
-        shade("kotlin")
         shade("net.bytebuddy")
         shade("org.objectweb.asm")
         shade("xyz.xenondevs.bytebase")
@@ -37,6 +36,7 @@ tasks {
     runServer {
         downloadPlugins {
             modrinth("bettermodel", libs.versions.bettermodel.get())
+//            modrinth("nova-framework", "0.20-RC.1")
         }
         minecraftVersion(paperToMinecraftVersion(libs.versions.paper.get()))
     }

@@ -3,6 +3,7 @@ package cz.jeme.bestium
 import cz.jeme.bestium.api.Bestium
 import cz.jeme.bestium.command.SpawnEggCommand
 import cz.jeme.bestium.command.SummonCommand
+import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.kyori.adventure.key.KeyPattern
@@ -19,7 +20,6 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
     init {
         storeApiInstance(this)
         storeApiInstance(PluginSupportImpl)
-        storeApiInstance(BestiumEntityManagerImpl)
     }
 
     override fun onEnable() {
@@ -27,7 +27,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         saveDefaultConfig()
 
         EntityInjectorImpl.injectBukkit() // phase 2 injection
-        if (PluginSupportImpl.betterModel()) {
+        if (PluginSupportImpl.isBetterModelLoaded()) {
             logger.info("BetterModel detected, updating models...")
             EntityInjectorImpl.copyModels()
         }
@@ -41,7 +41,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
 
         fun Listener.register() = Bukkit.getPluginManager().registerEvents(this, this@BestiumPlugin)
 
-        BestiumEntityManagerImpl.register()
+        EntityManagerImpl.register()
 
         logger.info("Bestium enabled successfully (took ${System.currentTimeMillis() - start}ms)")
     }

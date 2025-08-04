@@ -1,10 +1,10 @@
 package cz.jeme.bestium.api.inject.variant;
 
+import cz.jeme.bestium.api.Bestium;
 import cz.jeme.bestium.api.inject.EntityInjection;
-import cz.jeme.bestium.api.inject.Injectable;
-import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -16,7 +16,6 @@ import java.util.Map;
  */
 public final class EntitySpawnContext {
     private final Entity entity;
-    private final Injectable injectable;
     private final EntityInjection<?, ?> injection;
 
     /**
@@ -29,12 +28,7 @@ public final class EntitySpawnContext {
     @ApiStatus.Internal
     public EntitySpawnContext(final Entity entity) {
         this.entity = entity;
-        final var nms = ((CraftEntity) entity).getHandle();
-        if (!(nms instanceof Injectable inj)) throw new IllegalArgumentException(
-                "The provided entity is not a Bestium injected entity: '" + nms.getClass().getName() + "'"
-        );
-        this.injectable = inj;
-        injection = injectable.bestium_getInjection();
+        injection = Bestium.getEntityManager().requireInjection(entity);
     }
 
     /**
@@ -47,24 +41,23 @@ public final class EntitySpawnContext {
     }
 
     /**
-     * Returns the {@link Injectable} entity being spawned.
-     * <p>
-     * The retured entity can be safely cast to {@link net.minecraft.world.entity.Entity}.
-     * <p>
-     * For most use cases, prefer using {@link #getEntity()} (Bukkit API).
-     *
-     * @return the spawning Minecraft injectable entity
-     */
-    public Injectable getInjectable() {
-        return injectable;
-    }
-
-    /**
      * Returns the {@link EntityInjection} used to register this Bestium entity.
      *
      * @return the entity's Bestium injection
      */
     public EntityInjection<?, ?> getInjection() {
         return injection;
+    }
+
+    @Override
+    public boolean equals(final @Nullable Object o) {
+        if (!(o instanceof final EntitySpawnContext that)) return false;
+
+        return entity.equals(that.entity);
+    }
+
+    @Override
+    public int hashCode() {
+        return entity.hashCode();
     }
 }

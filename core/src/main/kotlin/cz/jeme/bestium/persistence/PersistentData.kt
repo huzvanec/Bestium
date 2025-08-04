@@ -13,7 +13,6 @@ class PersistentData<P : Any, C : Any> private constructor(
     val type: PersistentDataType<P, C>
 ) {
     companion object {
-        val BESTIUM_ID = PersistentData(createKey("id"), KeyPersistentDataType)
         val BESTIUM_DATA_VERSION = PersistentData(createKey("data_version"), PersistentDataType.INTEGER)
         val BESTIUM_VARIANT = PersistentData(createKey("variant"), PersistentDataType.STRING)
         val BESTIUM_PENDING_MODEL = PersistentData(createKey("pending_model"), PersistentDataType.STRING)
@@ -34,10 +33,10 @@ class PersistentData<P : Any, C : Any> private constructor(
     fun has(container: PersistentDataContainerView): Boolean = container.has(key, type)
 
     fun has(holder: PersistentDataViewHolder) = has(holder.persistentDataContainer)
-    
+
     fun remove(container: PersistentDataContainer) {
         return container.remove(key)
     }
-    
+
     fun remove(holder: PersistentDataHolder) = remove(holder.persistentDataContainer)
 }
