@@ -40,7 +40,7 @@ for more information.
 ## The Patching System
 
 The [patching system](core/src/main/kotlin/cz/jeme/bestium/inject/patch) is heavily inspired by and partially copied
-from the patching system of the [Nova plugin](https://github.com/xenondevs/Nova) (licensed under GPLv3).
+from the patching system of the [Nova plugin](https://github.com/xenondevs/Nova) (licensed under [LGPL](https://github.com/xenondevs/Nova/blob/db8a2fef8e0b1258ad0a0df940238a092614ecca/LICENSE)).
 
 This work would not have been possible without the incredible effort [xenondevs](https://github.com/xenondevs) put into
 the Nova framework. Please check
