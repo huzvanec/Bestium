@@ -152,7 +152,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         private Set<UnboundEntityVariant> variants = new LinkedHashSet<>();
         private Map<Locale, Component> displayNames = new HashMap<>();
         private VariantRule variantRule = VariantRule.first();
-        private SpawnRule spawnRule = SpawnRule.none();
+        private SpawnRule spawnRule = SpawnRule.never();
 
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,

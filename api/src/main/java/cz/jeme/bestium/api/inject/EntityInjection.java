@@ -159,6 +159,12 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      */
     VariantRule getVariantRule();
 
+    /**
+     * Returns the {@link SpawnRule} responsible for choosing in which biomes,
+     * how often and in what group sizes this entity naturally spawns.
+     *
+     * @return the spawn rule for this entity
+     */
     SpawnRule getSpawnRule();
 
     /**
@@ -258,7 +264,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
         /**
          * Sets the mob category of the entity.
          * <p>
-         * Defaults to {@link MobCategory#MISC}.
+         * Defaults to: {@link MobCategory#MISC}.
          *
          * @param category the mob category
          * @return this builder
@@ -278,7 +284,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * For example, to define passenger attachments use:
          * {@link EntityType.Builder#passengerAttachments(Vec3...)}.
          * <p>
-         * Defaults to an empty {@link Consumer}.
+         * Defaults to: an empty {@link Consumer}.
          *
          * @param typeBuilder the builder customizer
          * @return this builder
@@ -296,7 +302,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * Sets the default attributes for this entity.
          * Only valid for entities extending {@link LivingEntity}.
          * <p>
-         * Defaults to {@link LivingEntity#createLivingAttributes()} if this entity is a {@link LivingEntity}
+         * Defaults to: {@link LivingEntity#createLivingAttributes()} if this entity is a {@link LivingEntity}
          * otherwise to {@code null}.
          *
          * @param attributes the attributes
@@ -310,7 +316,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * Sets the default attributes for this entity.
          * Only valid for entities extending {@link LivingEntity}.
          * <p>
-         * Defaults to {@link LivingEntity#createLivingAttributes()} if this entity is a {@link LivingEntity}
+         * Defaults to: {@link LivingEntity#createLivingAttributes()} if this entity is a {@link LivingEntity}
          * otherwise to {@code null}.
          *
          * @param builder the builder used to construct the attributes
@@ -339,6 +345,8 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * <p>
          * The collection must not contain variants with duplicate IDs. If duplicates exist, they will be
          * silently eliminated with undefined behavior.
+         * <p>
+         * Defaults to: no variants
          *
          * @param variants the collection of unbound entity variants to set
          * @return this builder
@@ -428,7 +436,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * Sets the {@link VariantRule} responsible for picking the {@link BoundEntityVariant} when this
          * entity spawns into the world.
          * <p>
-         * Defaults to {@link VariantRule#first()}
+         * Defaults to: {@link VariantRule#first()}
          *
          * @param variantRule the variant rule
          * @return this builder
@@ -441,7 +449,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * <p>
          * This method may be useful when additional logic needs to run before returning the variant rule.
          * <p>
-         * Defaults to {@link VariantRule#first()}
+         * Defaults to: {@link VariantRule#first()}
          *
          * @param variantRuleSupplier the supplier providing the variant rule
          * @return this builder
@@ -525,10 +533,36 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          */
         VariantRule getVariantRule();
 
+        /**
+         * Sets the {@link SpawnRule} responsible for choosing in which biomes,
+         * how often and in what group sizes this entity naturally spawns.
+         * <p>
+         * Defaults to: {@link SpawnRule#never()}
+         *
+         * @param spawnRule the spawn rule for this entity
+         * @return this builder
+         */
         Builder<M, E> setSpawnRule(final SpawnRule spawnRule);
 
+        /**
+         * Returns the {@link SpawnRule} responsible for choosing in which biomes,
+         * how often and in what group sizes this entity naturally spawns.
+         *
+         * @return the spawn rule for this entity
+         */
         SpawnRule getSpawnRule();
 
+        /**
+         * Computes and then sets the {@link SpawnRule} responsible for choosing in which biomes,
+         * how often and in what group sizes this entity naturally spawns.
+         * <p>
+         * This method may be useful when additional logic needs to run before returning the spawn rule.
+         * <p>
+         * Defaults to: {@link SpawnRule#never()}
+         *
+         * @param spawnRuleSupplier the supplier providing the spawn rule
+         * @return this builder
+         */
         default Builder<M, E> setComputedSpawnRule(final Supplier<SpawnRule> spawnRuleSupplier) {
             return setSpawnRule(spawnRuleSupplier.get());
         }

@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.papermc.paper.command.brigadier.MessageComponentSerializer
 import net.kyori.adventure.text.Component
 
-@Suppress("UnstableApiUsage")
 class ComponentCommandExceptionType(
     val component: Component
 ) : CommandExceptionType {

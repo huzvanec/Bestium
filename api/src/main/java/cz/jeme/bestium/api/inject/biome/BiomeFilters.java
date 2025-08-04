@@ -100,7 +100,7 @@ final class BiomeFilters {
         };
     }
 
-    public static BiomeFilter temperature(final DoubleRange temperatureRange) {
+    public static BiomeFilter baseTemperature(final DoubleRange temperatureRange) {
         return biome -> temperatureRange.contains((double) biome.getBaseTemperature());
     }
 }

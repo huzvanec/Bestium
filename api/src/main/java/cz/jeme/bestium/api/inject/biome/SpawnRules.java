@@ -5,7 +5,7 @@ final class SpawnRules {
         throw new AssertionError();
     }
 
-    public static final SpawnRule NONE = (biome) -> null;
+    public static final SpawnRule NEVER = (biome) -> null;
 
     public static SpawnRule ifBiome(final BiomeFilter filter, final SpawnData spawnData) {
         return biome -> filter.test(biome) ? spawnData : null;

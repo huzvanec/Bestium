@@ -278,7 +278,7 @@ public interface VariantRule {
      * )
      * }</pre>
      *
-     * @param rules rules the variant rules to evaluate in order
+     * @param rules the variant rules to evaluate in order
      * @return a {@link VariantRule} returning the first non-null variant
      */
     static VariantRule firstMatch(final VariantRule... rules) {
