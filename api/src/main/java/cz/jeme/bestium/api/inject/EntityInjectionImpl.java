@@ -292,6 +292,29 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         public EntityInjection<T, B> build() {
             return new EntityInjectionImpl<>(this);
         }
+
+        @Override
+        public boolean equals(final @Nullable Object o) {
+            if (!(o instanceof final BuilderImpl<?, ?> builder)) return false;
+
+            return key.equals(builder.key) && entityClass.equals(builder.entityClass);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = key.hashCode();
+            result = 31 * result + entityClass.hashCode();
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "EntityInjectionImpl.BuilderImpl{" +
+                   "key=" + key +
+                   ", entityClass=" + entityClass +
+                   ", backingType=" + backingType +
+                   '}';
+        }
     }
 
     @Override
@@ -300,7 +323,6 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
                "key=" + key +
                ", entityClass=" + entityClass.getName() +
                ", backingType=" + backingType +
-               ", category=" + category +
                '}';
     }
 
@@ -308,19 +330,13 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     public boolean equals(final @Nullable Object o) {
         if (!(o instanceof final EntityInjectionImpl<?, ?> that)) return false;
 
-        return key.equals(that.key) && entityClass.equals(that.entityClass) && entityFactory.equals(that.entityFactory) && convertFunction.equals(that.convertFunction) && backingType.equals(that.backingType) && category == that.category && typeBuilder.equals(that.typeBuilder) && Objects.equals(attributes, that.attributes);
+        return key.equals(that.key) && entityClass.equals(that.entityClass);
     }
 
     @Override
     public int hashCode() {
         int result = key.hashCode();
         result = 31 * result + entityClass.hashCode();
-        result = 31 * result + entityFactory.hashCode();
-        result = 31 * result + convertFunction.hashCode();
-        result = 31 * result + backingType.hashCode();
-        result = 31 * result + category.hashCode();
-        result = 31 * result + typeBuilder.hashCode();
-        result = 31 * result + Objects.hashCode(attributes);
         return result;
     }
 }

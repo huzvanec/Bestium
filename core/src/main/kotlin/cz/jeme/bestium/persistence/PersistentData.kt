@@ -39,4 +39,20 @@ class PersistentData<P : Any, C : Any> private constructor(
     }
 
     fun remove(holder: PersistentDataHolder) = remove(holder.persistentDataContainer)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PersistentData<*, *>) return false
+
+        if (key != other.key) return false
+        if (type != other.type) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = key.hashCode()
+        result = 31 * result + type.hashCode()
+        return result
+    }
 }

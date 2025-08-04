@@ -35,7 +35,7 @@ internal class PatchedClassLoader : ClassLoader(PLATFORM_CLASS_LOADER) {
             val className = stackTrace[i].className
 
             // check whether the stack trace element is PatchedClassLoader, i.e. this is a recursive call
-            if (className == javaClass.name)
+            if (className == /* Bestium: universal */ javaClass.name)
                 return false
 
             // does not indicate a recursive call, but is the most common class loading deadlock cause,

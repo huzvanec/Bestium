@@ -8,7 +8,7 @@ import org.apache.commons.lang3.DoubleRange;
  * These constants provide a loose approximation of Mojang's internal biome temperature distribution.
  * They can be used for rule-based logic, such as determining spawn behavior or applying variants.
  * <p>
- * <strong>Warning:</strong> These temperature bands <em>overlap at boundaries</em>, meaning a
+ * <strong>Warning:</strong> These temperature bands overlap at boundaries, meaning a
  * temperature value equal to a boundary (e.g., 0.5) will match multiple ranges. If you rely on exclusive
  * classification, you should implement custom logic or adjust the bounds accordingly.
  * <p>
@@ -19,6 +19,8 @@ public final class BiomeTemperature {
     private BiomeTemperature() {
         throw new AssertionError();
     }
+
+    // DoubleRange does not work correctly when used with Double.MIN_VALUE and Double.MAX_VALUE :|
 
     /**
      * Cold biome temperatures.
