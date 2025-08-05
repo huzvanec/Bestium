@@ -195,8 +195,7 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * </ul>
      * <strong>Incorrectly pairing a living and non-living type will disconnect clients.</strong>
      * <p>
-     * The {@code backingType} can be changed after registration, and the change will automatically reflect on all currently
-     * spawned entities of this type — making this choice both critical and flexible.
+     * The {@code backingType} can be changed after registration, changing all already spawned-in entities.
      * <p>
      * For more guidance on choosing a convert function and backing type, visit
      * <a href="https://docs.bestium.jeme.cz/code/injecting-entity/#entityinjection-interface">the documentation.</a>

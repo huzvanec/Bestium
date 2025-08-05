@@ -61,6 +61,9 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         displayNames = Collections.unmodifiableMap(builder.displayNames);
         variantRule = builder.variantRule;
         spawnRule = builder.spawnRule;
+
+        if (LivingEntity.class.isAssignableFrom(entityClass) && attributes == null)
+            throw new IllegalArgumentException("Living entities must have attributes");
     }
 
     @Override
