@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
@@ -565,5 +566,14 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
         default Builder<M, E> setComputedSpawnRule(final Supplier<SpawnRule> spawnRuleSupplier) {
             return setSpawnRule(spawnRuleSupplier.get());
         }
+
+        /**
+         * Builds the {@link EntityInjection} instance.
+         *
+         * @return the built entity injection instance
+         * @throws IllegalArgumentException if the entity is a living entity and no attributes were provided
+         */
+        @Override
+        EntityInjection<M, E> build();
     }
 }
