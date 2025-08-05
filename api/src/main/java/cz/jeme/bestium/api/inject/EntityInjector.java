@@ -1,8 +1,10 @@
 package cz.jeme.bestium.api.inject;
 
+import cz.jeme.bestium.api.Bestium;
 import net.kyori.adventure.key.Key;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -20,7 +22,18 @@ import java.util.function.Supplier;
  * @see #register(Supplier)
  * @see #canRegister()
  */
+@ApiStatus.NonExtendable
 public interface EntityInjector {
+    /**
+     * Returns the main entity injector instance, which handles the registration and management
+     * of custom entities within Bestium.
+     *
+     * @return the injector instance
+     */
+    static EntityInjector injector() {
+        return Bestium.getInjector();
+    }
+
     /**
      * Registers a prepared entity injection for later application.
      * <p>

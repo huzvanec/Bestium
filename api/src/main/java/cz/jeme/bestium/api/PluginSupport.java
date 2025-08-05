@@ -7,6 +7,16 @@ import org.jetbrains.annotations.ApiStatus;
  */
 @ApiStatus.NonExtendable
 public interface PluginSupport {
+    /**
+     * Returns the plugin support instance, providing access to functions
+     * for checking the status of external optional dependencies.
+     *
+     * @return the plugin support instance
+     * @throws IllegalStateException if called before Bestium plugin is loaded
+     */
+    static PluginSupport getSupport() {
+        return Bestium.getPluginSupport();
+    }
 
     /**
      * Checks if the BetterModel plugin is successfully loaded and enabled on the server.
