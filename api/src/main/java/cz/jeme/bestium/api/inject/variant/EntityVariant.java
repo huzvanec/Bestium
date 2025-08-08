@@ -2,6 +2,7 @@ package cz.jeme.bestium.api.inject.variant;
 
 import cz.jeme.bestium.api.inject.EntityInjection;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
+import io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader;
 import net.kyori.adventure.key.KeyPattern;
 
 import java.io.File;
@@ -62,7 +63,7 @@ public sealed interface EntityVariant permits AbstractEntityVariant, UnboundEnti
      * Constructs an unbound entity variant from a variant ID and a resource file bundled with a plugin.
      *
      * @param id           the ID of this variant, e.g., {@code "warm"} or {@code "cold"}
-     * @param bootstrapper the plugin bootstrapper whose classloader is used to locate the resource
+     * @param bootstrapper the plugin bootstrapper whose class loader is used to locate the resource
      * @param resourceName the name of the resource (e.g., {@code "models/capybara.bbmodel"})
      * @return the unbound entity variant
      * @throws IllegalArgumentException if the resource is not found
@@ -70,7 +71,27 @@ public sealed interface EntityVariant permits AbstractEntityVariant, UnboundEnti
     static UnboundEntityVariant fromModelResource(final @KeyPattern.Namespace String id,
                                                   final PluginBootstrap bootstrapper,
                                                   final String resourceName) {
-        final URL url = bootstrapper.getClass().getClassLoader().getResource(resourceName);
+        return fromModelResource(id, bootstrapper.getClass(), resourceName);
+    }
+
+    /**
+     * Constructs an unbound entity variant from a variant ID and a resource file bundled with a plugin.
+     *
+     * @param id           the ID of this variant, e.g., {@code "warm"} or {@code "cold"}
+     * @param clazz        a class from your plugin whose class loader is used to locate the resource
+     * @param resourceName the name of the resource (e.g., {@code "models/capybara.bbmodel"})
+     * @return the unbound entity variant
+     * @throws IllegalArgumentException if the resource is not found or
+     *                                  if the class loader is not a paper plugin class loader
+     */
+    static UnboundEntityVariant fromModelResource(final @KeyPattern.Namespace String id,
+                                                  final Class<?> clazz,
+                                                  final String resourceName) {
+        final ClassLoader classLoader = clazz.getClassLoader();
+        if (!(classLoader instanceof ConfiguredPluginClassLoader)) throw new IllegalArgumentException(
+                "The provided class was not loaded by a paper plugin class loader: '" + clazz.getName() + "'"
+        );
+        final URL url = classLoader.getResource(resourceName);
         if (url == null) throw new IllegalArgumentException(
                 "Entity model resource not found: '" + resourceName + "'"
         );
