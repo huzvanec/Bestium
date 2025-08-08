@@ -90,7 +90,12 @@ internal object EntityDataPatch : MultiPatch(Entity::class, ClientboundSetEntity
             else (dataFlags and (1 shl index).inv().toByte())
         }
 
-        setFlag(Entity.FLAG_INVISIBLE, PluginSupportImpl.isBetterModelLoaded)
+        setFlag(
+            Entity.FLAG_INVISIBLE,
+            // if better model loaded and the entity has a variant
+            PluginSupportImpl.isBetterModelLoaded &&
+                    entityId !in EntityManagerImpl.noVariantEntityIds
+        )
 
         val dataFlagsSynched = SynchedEntityData.DataValue.create(
             DATA_SHARED_FLAGS_ID,

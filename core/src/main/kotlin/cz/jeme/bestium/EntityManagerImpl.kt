@@ -7,6 +7,8 @@ import cz.jeme.bestium.api.inject.variant.BoundEntityVariant
 import cz.jeme.bestium.api.inject.variant.EntitySpawnContext
 import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.persistence.PersistentData
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import it.unimi.dsi.fastutil.ints.IntSet
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntitySpawnReason
@@ -24,11 +26,16 @@ import org.bukkit.entity.Entity as BukkitEntity
 
 const val CURRENT_DATA_VERSION = 1
 
+const val NO_VARIANT_ID = "NONE"
+
 fun fetchDataVersion(entity: BukkitEntity): Int {
     return PersistentData.BESTIUM_DATA_VERSION[entity] ?: -1
 }
 
 object EntityManagerImpl : EntityManager, Listener {
+    private val _noVariantEntityIds = IntOpenHashSet()
+    val noVariantEntityIds: IntSet = _noVariantEntityIds
+
     /**
      * Migrates an entity to the latest data version.
      * Returns `false` if no migration happened, `true` if migration was successful.
@@ -105,7 +112,10 @@ object EntityManagerImpl : EntityManager, Listener {
 
         if (isFirstSpawn) {
             val variant = pickVariant()
-            PersistentData.BESTIUM_VARIANT[entity] = (variant?.id ?: "NONE") // save variant data
+            PersistentData.BESTIUM_VARIANT[entity] = (variant?.id ?: run {
+                _noVariantEntityIds += entity.entityId
+                NO_VARIANT_ID
+            }) // save variant data
 
             variant?.let {
                 // a variant is present, try to apply it with better model
@@ -123,6 +133,10 @@ object EntityManagerImpl : EntityManager, Listener {
             PersistentData.BESTIUM_DATA_VERSION[entity] = CURRENT_DATA_VERSION
         } else { // the entity was already spawned and is just being loaded
             migrate(entity, realType)
+
+            if (PersistentData.BESTIUM_VARIANT[entity] == NO_VARIANT_ID) {
+                _noVariantEntityIds += entity.entityId
+            }
 
             if (PluginSupportImpl.isBetterModelLoaded()) {
                 // better model is loaded check for a pending model
