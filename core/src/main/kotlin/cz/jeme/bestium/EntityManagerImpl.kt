@@ -1,6 +1,7 @@
 package cz.jeme.bestium
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import cz.jeme.bestium.api.EntityManager
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.variant.BoundEntityVariant
@@ -158,6 +159,11 @@ object EntityManagerImpl : EntityManager, Listener {
     private fun EntityAddToWorldEvent.handle() {
         if (!isInjected(entity)) return
         postInitializeBestiumEntity(entity)
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private fun EntityRemoveFromWorldEvent.handle() {
+        noVariantEntityIds.remove(entity.entityId)
     }
 
     override fun <T : Entity> spawn(
