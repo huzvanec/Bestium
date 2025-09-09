@@ -5,7 +5,7 @@ shadow = "9.1.0"
 publish = "0.34.0"
 paperweight = "2.0.0-beta.18"
 paper = "1.21.8-R0.1-SNAPSHOT"
-run-paper = "2.3.1"
+run-paper = "3.0.0"
 bettermodel = "1.11.0"
 bytebase = "0.4.8"
 
