@@ -40,11 +40,7 @@ tasks {
             exclude(dependency("org.jetbrains:annotations:.*"))
         }
 
-        fun shade(pattern: String) = relocate(pattern, "${project.group}.${project.name.lowercase()}.shaded.$pattern")
-
-        shade("net.bytebuddy")
-        shade("org.objectweb.asm")
-        shade("xyz.xenondevs.bytebase")
+        // fun shade(pattern: String) = relocate(pattern, "${project.group}.${project.name.lowercase()}.shaded.$pattern")
     }
 
     assemble {
