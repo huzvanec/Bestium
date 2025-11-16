@@ -22,23 +22,6 @@ existing implementations.
 Check out the [Documentation](https://docs.bestium.jeme.cz) and [Javadoc](https://jd.bestium.jeme.cz)
 for more information.
 
-## The Patching System
-
-The [patching system](core/src/main/kotlin/cz/jeme/bestium/inject/patch) is heavily inspired by and partially copied
-from the patching system of the [Nova plugin](https://github.com/xenondevs/Nova) (licensed
-under [LGPL](https://github.com/xenondevs/Nova/blob/db8a2fef8e0b1258ad0a0df940238a092614ecca/LICENSE)).
-
-This work would not have been possible without the incredible effort [xenondevs](https://github.com/xenondevs) put into
-the Nova framework. Please check
-out:
-
-- [Nova Plugin](https://github.com/xenondevs/Nova)
-- [ByteBase (ASM library)](https://github.com/ByteZ1337/ByteBase)
-- [ByteZ's blog post on runtime patching](https://blog.xenondevs.xyz/2023/03/03/runtime-patching-in-nova/)
-- [Xenondevs GitHub profile](https://github.com/xenondevs)
-
-Bestium is built with full Nova compatibility in mind.
-
 ## Building
 
 Requirements:
@@ -46,9 +29,9 @@ Requirements:
 - [Git](https://git-scm.com/downloads)
 - [Java 21](https://www.oracle.com/java/technologies/downloads/#java21)
 
-```bash
+```shell
 git clone https://github.com/huzvanec/Bestium.git
-cd Bestium/
+cd Bestium
 ./gradlew build
 ```
 
