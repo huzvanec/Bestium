@@ -11,7 +11,7 @@ import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 
-@Suppress("unused", "UnstableApiUsage")
+@Suppress("UnstableApiUsage")
 internal class BestiumBootstrapper : PluginBootstrap {
     private var injectionHappened = false
     private val logger = ComponentLogger.logger("BestiumBootstrapper")
