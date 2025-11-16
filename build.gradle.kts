@@ -8,6 +8,7 @@ plugins {
 origami {
     paperDevBundle(libs.versions.paper.get())
     pluginId = rootProject.name.lowercase()
+    targetConfigurations = emptySet()
 }
 
 allprojects {
