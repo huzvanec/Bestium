@@ -14,6 +14,7 @@ dependencies {
 
 origami {
     paperDevBundle(libs.versions.paper.get())
+    pluginId = rootProject.name.lowercase()
 }
 
 // Include java mixin sources

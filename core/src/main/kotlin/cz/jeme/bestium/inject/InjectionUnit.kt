@@ -257,6 +257,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                     val inj = classes.firstOrNull { it.entityClass.isInstance(nms) }
 
                     inj?.let {
+                        @Suppress("UNCHECKED_CAST")
                         (inj.convertFunction as ConvertFunction<Entity, BukkitEntity>).apply(
                             server,
                             nms

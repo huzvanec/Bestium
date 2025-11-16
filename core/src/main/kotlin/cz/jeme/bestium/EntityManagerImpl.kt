@@ -9,11 +9,12 @@ import cz.jeme.bestium.api.inject.variant.EntitySpawnContext
 import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.persistence.PersistentData
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
-import it.unimi.dsi.fastutil.ints.IntSet
 import kr.toxicity.model.api.tracker.EntityTrackerRegistry
+import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
 import org.bukkit.Location
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.util.CraftLocation
@@ -23,6 +24,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.persistence.PersistentDataType
 import java.util.function.Consumer
+import kotlin.experimental.and
+import kotlin.experimental.or
 import org.bukkit.entity.Entity as BukkitEntity
 
 const val CURRENT_DATA_VERSION = 1
@@ -34,8 +37,74 @@ fun fetchDataVersion(entity: BukkitEntity): Int {
 }
 
 object EntityManagerImpl : EntityManager, Listener {
-    private val _noVariantEntityIds = IntOpenHashSet()
-    val noVariantEntityIds: IntSet = _noVariantEntityIds
+
+    // Mixins start
+
+    private val noVariantEntityIds = IntOpenHashSet()
+
+    private val injectedEntityIds = IntOpenHashSet()
+    private val injectedLivingEntityIds = IntOpenHashSet()
+
+    @JvmName("trackEntityIfInjected")
+    internal fun trackEntityIfInjected(entity: Entity) {
+        isInjected(entity) || return
+        injectedEntityIds.add(entity.id)
+        if (entity is LivingEntity) injectedLivingEntityIds.add(entity.id)
+    }
+
+    private val ENTITY_DATA_ID_FILTER = { data: SynchedEntityData.DataValue<*> ->
+        // https://minecraft.wiki/w/Java_Edition_protocol/Entity_metadata#Entity
+        data.id <= 7
+    }
+    private val LIVING_ENTITY_DATA_ID_FILTER = { data: SynchedEntityData.DataValue<*> ->
+        // https://minecraft.wiki/w/Java_Edition_protocol/Entity_metadata#Living_Entity
+        data.id <= 14
+    }
+
+    @JvmName("modifyEntityDataIfInjected")
+    internal fun modifyEntityDataIfInjected(
+        entityId: Int,
+        originalData: List<SynchedEntityData.DataValue<*>>
+    ): List<SynchedEntityData.DataValue<*>> {
+        isInjected(entityId) || return originalData
+
+        val isLiving = injectedLivingEntityIds.contains(entityId)
+        val dataFilter = if (isLiving) LIVING_ENTITY_DATA_ID_FILTER else ENTITY_DATA_ID_FILTER
+
+        val newEntityData = originalData
+            .filter(dataFilter)
+            .toMutableList()
+
+        // Find where the entity flags are
+        val flagsIndex = newEntityData.indexOfFirst { it.id == 0 }
+
+        // Get the existing flags or empty if none are set
+        var dataFlags: Byte = if (flagsIndex == -1) 0x0
+        else newEntityData[flagsIndex].value as Byte
+
+        fun setFlag(index: Int, value: Boolean) {
+            dataFlags = if (value) (dataFlags or (1 shl index).toByte())
+            else (dataFlags and (1 shl index).inv().toByte())
+        }
+
+        setFlag(
+            Entity.FLAG_INVISIBLE,
+            PluginSupportImpl.isBetterModelLoaded // if better model is loaded
+                    && entityId !in noVariantEntityIds // and the entity has a variant
+        )
+
+        val dataFlagsSynched = SynchedEntityData.DataValue.create(
+            Entity.DATA_SHARED_FLAGS_ID,
+            dataFlags
+        )
+
+        if (flagsIndex == -1) newEntityData += dataFlagsSynched
+        else newEntityData[flagsIndex] = dataFlagsSynched
+
+        return newEntityData
+    }
+
+    // Mixins end
 
     /**
      * Migrates an entity to the latest data version.
@@ -114,7 +183,7 @@ object EntityManagerImpl : EntityManager, Listener {
         if (isFirstSpawn) {
             val variant = pickVariant()
             PersistentData.BESTIUM_VARIANT[entity] = (variant?.id ?: run {
-                _noVariantEntityIds += entity.entityId
+                noVariantEntityIds += entity.entityId
                 NO_VARIANT_ID
             }) // save variant data
 
@@ -136,7 +205,7 @@ object EntityManagerImpl : EntityManager, Listener {
             migrate(entity, realType)
 
             if (PersistentData.BESTIUM_VARIANT[entity] == NO_VARIANT_ID) {
-                _noVariantEntityIds += entity.entityId
+                noVariantEntityIds += entity.entityId
             }
 
             if (PluginSupportImpl.isBetterModelLoaded()) {
@@ -151,6 +220,8 @@ object EntityManagerImpl : EntityManager, Listener {
     // optimized contains(EntityType)
     private val injectedTypes by lazy { EntityInjectorImpl.types.values.toHashSet() }
 
+    private fun isInjected(entityId: Int) = injectedEntityIds.contains(entityId)
+
     override fun isInjected(type: EntityType<*>) = injectedTypes.contains(type)
 
     override fun getInjection(entity: Entity) = EntityInjectorImpl.injections[entity.javaClass]
@@ -163,7 +234,10 @@ object EntityManagerImpl : EntityManager, Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private fun EntityRemoveFromWorldEvent.handle() {
-        noVariantEntityIds.remove(entity.entityId)
+        val id = entity.entityId
+        injectedEntityIds.remove(id)
+        injectedLivingEntityIds.remove(id)
+        noVariantEntityIds.remove(id)
     }
 
     override fun <T : Entity> spawn(
@@ -203,4 +277,6 @@ object EntityManagerImpl : EntityManager, Listener {
     }
 
     override fun getBackingType(type: EntityType<*>) = backingTypes[type]
+
+    fun remapType(type: EntityType<*>): EntityType<*> = getBackingType(type) ?: type
 }

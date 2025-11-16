@@ -1,7 +1,6 @@
 package cz.jeme.bestium
 
 import cz.jeme.bestium.inject.EntityInjectorImpl
-import cz.jeme.bestium.inject.patch.Patcher
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.ServerBuildInfo
@@ -19,8 +18,6 @@ internal class BestiumBootstrapper : PluginBootstrap {
     override fun bootstrap(context: BootstrapContext) {
         val start = System.currentTimeMillis()
         logger.info("Starting bootstrap")
-
-        Patcher.run()
 
         val requiredVersion = context.pluginMeta.apiVersion
         val actualVersion = ServerBuildInfo.buildInfo().minecraftVersionId()
