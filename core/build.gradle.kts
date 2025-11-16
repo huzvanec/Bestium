@@ -1,12 +1,19 @@
 plugins {
     id("kotlin-conventions")
     id("plugin-conventions")
+    alias(origamiLibs.plugins.origami)
 }
 
 dependencies {
     implementation(project(":api"))
     implementation(libs.bytebase)
     implementation(libs.bytebase.runtime)
+    compileOnly(origamiLibs.mixin)
+    compileOnly(origamiLibs.mixinextras)
+}
+
+origami {
+    paperDevBundle(libs.versions.paper.get())
 }
 
 tasks {
