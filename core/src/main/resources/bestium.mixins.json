@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "cz.jeme.bestium.mixin",
+  "mixins": [
+    "ZombieMixin"
+  ],
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
+}
