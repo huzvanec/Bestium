@@ -2,13 +2,6 @@ plugins {
     id("java-conventions")
     alias(libs.plugins.shadow)
     alias(libs.plugins.run.paper)
-    alias(origamiLibs.plugins.origami)
-}
-
-origami {
-    paperDevBundle(libs.versions.paper.get())
-    pluginId = rootProject.name.lowercase()
-    targetConfigurations = emptySet()
 }
 
 allprojects {
@@ -26,13 +19,10 @@ runPaper {
 }
 
 tasks {
-    origamiJar {
-        destinationDirectory = layout.buildDirectory.dir("tmp/origamiJar")
-    }
-
     shadowJar {
-        with(getByName<Jar>("origamiJar"))
-        manifest.from(getByName<Jar>("origamiJar").manifest)
+        val origamiJar = project(":core").tasks.getByName<Jar>("origamiJar")
+        with(origamiJar)
+        manifest.from(origamiJar.manifest)
 
         archiveClassifier = ""
 
