@@ -3,6 +3,7 @@ package cz.jeme.bestium.inject
 import cz.jeme.bestium.PluginSupportImpl
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
+import cz.jeme.bestium.config.logNormal
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import kr.toxicity.model.api.BetterModel
 import net.kyori.adventure.key.Key
@@ -88,7 +89,7 @@ internal object EntityInjectorImpl : EntityInjector {
         phase = EntityInjector.Phase.INJECTION_PHASE_1
 
         if (injections.isEmpty()) {
-            logger.info("There are no entities to inject")
+            if (logNormal) logger.info("There are no entities to inject")
             return false
         }
 
