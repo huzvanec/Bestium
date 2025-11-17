@@ -21,7 +21,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.SpawnEggItem
-import net.minecraft.world.item.component.CustomData
+import net.minecraft.world.item.component.TypedEntityData
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
@@ -91,20 +91,19 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
         egg: SpawnEggItem,
         count: Int = 1
     ): Int {
+        val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toResourceLocation())
+            .get().value()
+
         val nmsStack = ItemStack(egg, count).apply {
             set(
                 DataComponents.ENTITY_DATA,
-                CustomData.of(CompoundTag().apply {
-                    putString("id", spawning.asString())
-                })
+                TypedEntityData.of(entityType, CompoundTag())
             )
         }
 
-        val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toResourceLocation())
-
         val stack = CraftItemStack.asCraftMirror(nmsStack)
 
-        val entityNameMsg = entityType.get().value().description
+        val entityNameMsg = entityType.description
         val entityNameCpt = MessageComponentSerializer.message().deserialize(entityNameMsg)
         val entityNameStr = PlainTextComponentSerializer.plainText().serialize(entityNameCpt)
 

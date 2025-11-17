@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "cz.jeme.bestium.mixin",
+  "mixins": [
+    "ClientboundAddEntityPacketMixin",
+    "ClientboundSetEntityDataPacketMixin",
+    "EntityMixin",
+    "EntityTooltipInfoMixin"
+  ],
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
+}

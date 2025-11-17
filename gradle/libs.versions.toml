@@ -4,17 +4,14 @@ kotlin = "2.2.21"
 shadow = "9.2.2"
 publish = "0.35.0"
 paperweight = "2.0.0-beta.19"
-paper = "1.21.8-R0.1-SNAPSHOT"
+paper = "1.21.10-R0.1-SNAPSHOT"
 run-paper = "3.0.2"
-bettermodel = "1.11.0"
-bytebase = "0.4.8"
+bettermodel = "1.14.1"
 
 [libraries]
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 paperweight-userdev-plugin = { group = "io.papermc.paperweight", name = "paperweight-userdev", version.ref = "paperweight" }
-bettermodel = { group = "io.github.toxicity188", name = "BetterModel", version.ref = "bettermodel" }
-bytebase = { group = "xyz.xenondevs.bytebase", name = "ByteBase", version.ref = "bytebase" }
-bytebase-runtime = { group = "xyz.xenondevs.bytebase", name = "ByteBase-Runtime", version.ref = "bytebase" }
+bettermodel = { group = "io.github.toxicity188", name = "bettermodel", version.ref = "bettermodel" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

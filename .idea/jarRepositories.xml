@@ -46,5 +46,15 @@
       <option name="name" value="maven" />
       <option name="url" value="https://repo.xenondevs.xyz/releases/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven4" />
+      <option name="name" value="maven4" />
+      <option name="url" value="file:$PROJECT_DIR$/core/.gradle/caches/origami/local-repo/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven5" />
+      <option name="name" value="maven5" />
+      <option name="url" value="file:$PROJECT_DIR$/.gradle/caches/origami/local-repo/" />
+    </remote-repository>
   </component>
 </project>

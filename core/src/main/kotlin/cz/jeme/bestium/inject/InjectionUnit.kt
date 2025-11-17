@@ -3,6 +3,7 @@ package cz.jeme.bestium.inject
 import com.mojang.datafixers.DataFixUtils
 import cz.jeme.bestium.api.inject.ConvertFunction
 import cz.jeme.bestium.api.inject.EntityInjection
+import cz.jeme.bestium.config.logVerbose
 import cz.jeme.bestium.util.setStaticFinal
 import cz.jeme.bestium.util.toNamespacedKey
 import cz.jeme.bestium.util.toResourceLocation
@@ -49,7 +50,9 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
     val types: Map<Class<out Entity>, EntityType<*>> = _types
     val keyedTypes: Map<Key, EntityType<*>> = _keyedTypes
 
-    private fun logPhase(phase: Int, msg: String) = logger.info("[Phase $phase/$PHASES] $msg")
+    private fun logPhase(phase: Int, msg: String) {
+        if (logVerbose) logger.info("[Phase $phase/$PHASES] $msg")
+    }
 
     private fun injectBiomes() {
         fun logPhase2(msg: String) = logPhase(2, msg)
@@ -257,6 +260,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                     val inj = classes.firstOrNull { it.entityClass.isInstance(nms) }
 
                     inj?.let {
+                        @Suppress("UNCHECKED_CAST")
                         (inj.convertFunction as ConvertFunction<Entity, BukkitEntity>).apply(
                             server,
                             nms

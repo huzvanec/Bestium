@@ -1,6 +1,7 @@
 package cz.jeme.bestium.util
 
 import cz.jeme.bestium.api.Bestium
+import cz.jeme.bestium.config.logVerbose
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 
 @Suppress("UNCHECKED_CAST")
@@ -13,6 +14,6 @@ private val logger = ComponentLogger.logger("BestiumInstances")
 
 fun storeApiInstance(instance: Any) {
     val cpath = instance.javaClass.name
-    logger.info("Exposing: $cpath")
+    if (logVerbose) logger.info("Exposing: $cpath")
     instances[cpath] = instance
 }

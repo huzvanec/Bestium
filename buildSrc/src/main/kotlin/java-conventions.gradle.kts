@@ -10,6 +10,7 @@ val targetJavaVersion = libs.versions.java.get().toInt()
 repositories {
     mavenCentral()
     maven("https://repo.xenondevs.xyz/releases/")
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 java {

@@ -1,12 +1,27 @@
 plugins {
     id("kotlin-conventions")
     id("plugin-conventions")
+    alias(origamiLibs.plugins.origami)
 }
 
 dependencies {
     implementation(project(":api"))
-    implementation(libs.bytebase)
-    implementation(libs.bytebase.runtime)
+    compileOnly(origamiLibs.mixin)
+    compileOnly(origamiLibs.mixinextras)
+}
+
+origami {
+    paperDevBundle(libs.versions.paper.get())
+    pluginId = rootProject.name.lowercase()
+}
+
+// Include java mixin sources
+sourceSets {
+    main {
+        java {
+            setSrcDirs(listOf("src/main/kotlin"))
+        }
+    }
 }
 
 tasks {

@@ -13,7 +13,9 @@ object EntityTranslator : Translator {
         GlobalTranslator.translator().addSource(this)
     }
 
-    override fun name() = BestiumPlugin.createKey("entity_translator")
+    val name = BestiumPlugin.createKey("entity_translator")
+    
+    override fun name() = name
 
     override fun translate(key: String, locale: Locale): MessageFormat? = null
 

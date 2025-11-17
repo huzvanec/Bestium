@@ -4,7 +4,12 @@ import com.vanniktech.maven.publish.JavadocJar
 plugins {
     id("java-conventions")
     id("plugin-conventions")
+    id("io.papermc.paperweight.userdev")
     alias(libs.plugins.maven.publish)
+}
+
+dependencies {
+    paperweight.paperDevBundle(libs.versions.paper.get())
 }
 
 mavenPublishing {
