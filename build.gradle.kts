@@ -49,7 +49,6 @@ tasks {
         dependsOn("copyPlugin")
         downloadPlugins {
             modrinth("bettermodel", libs.versions.bettermodel.get())
-//            modrinth("nova-framework", "0.21.0-alpha.5")
         }
         jvmArgs("-javaagent:plugins/$jarName")
         minecraftVersion(paperToMinecraftVersion(libs.versions.paper.get()))
