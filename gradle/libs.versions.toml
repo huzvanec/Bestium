@@ -1,6 +1,6 @@
 [versions]
 java = "21"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 shadow = "9.3.0"
 publish = "0.35.0"
 paperweight = "2.0.0-SNAPSHOT"
