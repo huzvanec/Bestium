@@ -141,7 +141,7 @@ object EntityManagerImpl : EntityManager, Listener {
         fun pickVariant(): BoundEntityVariant? {
             val variant = injection.variantRule.apply(
                 injection.variants,
-                EntitySpawnContext(entity)
+                EntitySpawnContext(entity, injection)
             )
 
             variant?.let {

@@ -2,6 +2,7 @@ package cz.jeme.bestium.api.inject.variant;
 
 import cz.jeme.bestium.api.Bestium;
 import cz.jeme.bestium.api.inject.EntityInjection;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -24,11 +25,35 @@ public final class EntitySpawnContext {
      * This constructor is intended for internal use only.
      *
      * @param entity the entity to create context for
+     * @throws IllegalArgumentException if the given entity is not an injected entity
      */
     @ApiStatus.Internal
     public EntitySpawnContext(final Entity entity) {
+        this(entity, Bestium.getEntityManager().requireInjection(entity));
+    }
+
+    /**
+     * Creates an entity spawn context from the given entity and its injection.
+     * <p>
+     * This constructor is intended for internal use only.
+     *
+     * @param entity    the entity to create context for
+     * @param injection the entity's injection
+     * @throws IllegalArgumentException if the injection does not belong to the given entity
+     */
+    @ApiStatus.Internal
+    public EntitySpawnContext(final Entity entity, final EntityInjection<?, ?> injection) {
         this.entity = entity;
-        injection = Bestium.getEntityManager().requireInjection(entity);
+        this.injection = injection;
+
+        final var injEntityClass = injection.getEntityClass();
+        final var entityClass = ((CraftEntity) entity).getHandle().getClass();
+
+        if (injEntityClass != entityClass) throw new IllegalArgumentException(
+                "Illegal spawn context arguments: Injection for type '" +
+                injEntityClass.getName() + "', but entity is of type '" +
+                entityClass.getName() + "'"
+        );
     }
 
     /**
