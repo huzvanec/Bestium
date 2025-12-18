@@ -6,8 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/api/Bestium.api.test.iml" filepath="$PROJECT_DIR$/.idea/modules/api/Bestium.api.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Bestium.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Bestium.core.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Bestium.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Bestium.core.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Bestium.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Bestium.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Bestium.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Bestium.test.iml" />
     </modules>
   </component>
 </project>
