@@ -6,7 +6,7 @@ import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.config.logVerbose
 import cz.jeme.bestium.util.setStaticFinal
 import cz.jeme.bestium.util.toNamespacedKey
-import cz.jeme.bestium.util.toResourceLocation
+import cz.jeme.bestium.util.toIdentifier
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minecraft.SharedConstants
@@ -171,7 +171,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 .build(
                     ResourceKey.create(
                         ENTITY_TYPE_REGISTRY.key(),
-                        key.toResourceLocation()
+                        key.toIdentifier()
                     )
                 )
 

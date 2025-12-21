@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * <p>
  * Created using {@link #builder(Key, Class, EntityType.EntityFactory, ConvertFunction, EntityType)}.
  * <p>
- * After an instance is created, it can be injected into the server runtime using {@link EntityInjector#register(Supplier)} )}.
+ * After an instance is created, it can be injected into the server runtime using {@link EntityInjector#register(Supplier)})}.
  *
  * @param <M> the type of the Minecraft entity being injected
  * @param <E> the type of the Bukkit entity the Minecraft entity can be converted to

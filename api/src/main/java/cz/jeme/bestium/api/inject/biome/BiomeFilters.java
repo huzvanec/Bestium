@@ -5,7 +5,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import org.apache.commons.lang3.DoubleRange;
@@ -82,10 +82,10 @@ final class BiomeFilters {
 
     public static BiomeFilter tag(final Key tagKey) {
         return biome -> {
-            final ResourceLocation loc = biomeRegistry().getKey(biome);
-            assert loc != null;
+            final Identifier id = biomeRegistry().getKey(biome);
+            assert id != null;
             return biomeRegistry()
-                    .get(loc)
+                    .get(id)
                     .orElseThrow()
                     .is(biomeTags().get(tagKey));
         };
@@ -94,9 +94,9 @@ final class BiomeFilters {
     @SuppressWarnings("PatternValidation")
     public static BiomeFilter keys(final Set<Key> biomeKeys) {
         return biome -> {
-            final ResourceLocation loc = biomeRegistry().getKey(biome);
-            assert loc != null;
-            return biomeKeys.contains(Key.key(loc.toString()));
+            final Identifier id = biomeRegistry().getKey(biome);
+            assert id != null;
+            return biomeKeys.contains(Key.key(id.toString()));
         };
     }
 

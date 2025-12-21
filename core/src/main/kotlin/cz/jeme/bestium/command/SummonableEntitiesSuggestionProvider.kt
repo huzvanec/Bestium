@@ -5,7 +5,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import cz.jeme.bestium.BestiumPlugin
-import cz.jeme.bestium.util.toResourceLocation
+import cz.jeme.bestium.util.toIdentifier
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.commands.SharedSuggestionProvider.suggestResource
@@ -18,7 +18,7 @@ object SummonableEntitiesSuggestionProvider : SuggestionProvider<CommandSourceSt
     init {
         @Suppress("UNCHECKED_CAST")
         SuggestionProviders.register<SharedSuggestionProvider>(
-            BestiumPlugin.createKey("summonable_entities").toResourceLocation(),
+            BestiumPlugin.createKey("summonable_entities").toIdentifier(),
             this as SuggestionProvider<SharedSuggestionProvider>
         )
     }

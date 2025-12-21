@@ -27,7 +27,7 @@ public interface BiomeFilter {
     boolean test(final Biome biome);
 
     /**
-     * Creates a filter that matches only biomes which match all of the provided filters.
+     * Creates a filter that matches only biomes which match all the provided filters.
      *
      * @param filters the filters to combine with a logical AND
      * @return a filter that matches biomes satisfying all given filters
@@ -110,7 +110,7 @@ public interface BiomeFilter {
      * @param first  the first biome keys to match
      * @param second the second biome keys to match
      * @param rest   the rest of the  biome keys to match
-     * @return a filter that matches any biome in the given array of keys keys
+     * @return a filter that matches any biome in the given array of keys
      * @see <a href="https://minecraft.wiki/w/Biome#Java_Edition">Minecraft Wiki - Biome IDs</a>
      */
     static BiomeFilter keys(final Key first, final Key second, final Key... rest) {

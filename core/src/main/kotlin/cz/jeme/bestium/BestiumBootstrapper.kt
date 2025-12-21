@@ -14,7 +14,7 @@ import java.nio.file.Path
 
 lateinit var dataFolder: Path
 
-@Suppress("UnstableApiUsage")
+@Suppress("UnstableApiUsage", "unused")
 internal class BestiumBootstrapper : PluginBootstrap {
     private var injectionHappened = false
     private val logger = ComponentLogger.logger("BestiumBootstrapper")

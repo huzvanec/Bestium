@@ -157,7 +157,7 @@ public interface EntityManager {
     }
 
     /**
-     * Retrieves the backing type of a given injected entity type.
+     * Retrieves the backing type of given injected entity type.
      *
      * @param type the {@link EntityType} to retrieve the backing type for
      * @return the backing {@link EntityType}, or {@code null} if type is not injected

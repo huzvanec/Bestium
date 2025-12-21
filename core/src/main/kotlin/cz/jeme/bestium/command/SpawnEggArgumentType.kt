@@ -10,7 +10,7 @@ import io.papermc.paper.command.brigadier.argument.CustomArgumentType
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.SpawnEggItem
 import java.util.concurrent.CompletableFuture
 
@@ -27,8 +27,8 @@ object SpawnEggArgumentType : CustomArgumentType<SpawnEggItem, String> {
         }
 
         if (!Key.parseable(string)) throw unknownEntity
-        val loc = ResourceLocation.parse(string)
-        val entityType = BuiltInRegistries.ENTITY_TYPE.get(loc).get().value()
+        val id = Identifier.parse(string)
+        val entityType = BuiltInRegistries.ENTITY_TYPE.get(id).get().value()
         return SpawnEggItem.byId(entityType) ?: throw unknownEntity
     }
 

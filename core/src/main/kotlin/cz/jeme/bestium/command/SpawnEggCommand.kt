@@ -2,7 +2,7 @@ package cz.jeme.bestium.command
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import cz.jeme.bestium.util.toResourceLocation
+import cz.jeme.bestium.util.toIdentifier
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.Commands.argument
 import io.papermc.paper.command.brigadier.Commands.literal
@@ -91,7 +91,7 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
         egg: SpawnEggItem,
         count: Int = 1
     ): Int {
-        val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toResourceLocation())
+        val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toIdentifier())
             .get().value()
 
         val nmsStack = ItemStack(egg, count).apply {
