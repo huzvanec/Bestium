@@ -8,6 +8,7 @@ import cz.jeme.bestium.config.logVerbose
 import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.util.storeApiInstance
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.KeyPattern
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
@@ -28,6 +29,8 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         val start = System.currentTimeMillis()
 
         EntityInjectorImpl.injectLoad() // phase 2 injection
+        val injected = EntityInjectorImpl.keyedInjections.keys.map(Key::asString)
+        if (logNormal) logger.info("Injected ${injected.size} entit${if (injected.size == 1) "y" else "ies"}: ${injected.joinToString()}")
 
         if (PluginSupportImpl.isBetterModelLoaded) {
             if (logNormal) logger.info("BetterModel detected, updating models...")
