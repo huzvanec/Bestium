@@ -15,15 +15,6 @@ origami {
     pluginId = rootProject.name.lowercase()
 }
 
-// Include java mixin sources
-sourceSets {
-    main {
-        java {
-            setSrcDirs(listOf("src/main/kotlin"))
-        }
-    }
-}
-
 tasks {
     processResources {
         val props = mapOf(
