@@ -20,7 +20,7 @@ class BestiumCommand(plugin: Plugin, commands: Commands) {
         )
         .build()
 
-    fun reload(ctx: CommandContext<CommandSourceStack>): Int {
+    private fun reload(ctx: CommandContext<CommandSourceStack>): Int {
         Config.reload()
         val sender: CommandSender = ctx.source.executor ?: ctx.source.sender
         sender.sendMessage(
