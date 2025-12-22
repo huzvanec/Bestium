@@ -87,8 +87,7 @@ internal object EntityInjectorImpl : EntityInjector {
 
         phase = EntityInjector.Phase.INJECTION_PHASE_1
 
-        if (injections.isEmpty()) return false
-        return tryInject(unit::injectBootstrap)
+        return if (injections.isEmpty()) false else tryInject(unit::injectBootstrap)
     }
 
     fun injectLoad(): Boolean {
@@ -110,6 +109,7 @@ internal object EntityInjectorImpl : EntityInjector {
             return true
         } catch (t: Throwable) {
             logger.error("A fatal exception occurred during injection phase: ", t)
+            logger.error("This is likely a bug! Please report it at: https://github.com/huzvanec/Bestium/issues/new")
             logger.error("The server will now be terminated to prevent further data corruption")
 
             flushLoggingAndCrashJvm()

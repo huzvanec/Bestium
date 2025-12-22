@@ -1,5 +1,6 @@
 package cz.jeme.bestium
 
+import cz.jeme.bestium.config.Config
 import cz.jeme.bestium.config.logNormal
 import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
@@ -33,6 +34,7 @@ internal class BestiumBootstrapper : PluginBootstrap {
     private fun bootstrap0(context: BootstrapContext) {
         val start = System.currentTimeMillis()
         dataFolder = context.dataDirectory.apply { toFile().mkdirs() }
+        Config.reload()
         if (logNormal) logger.info("Starting bootstrap")
 
         try {

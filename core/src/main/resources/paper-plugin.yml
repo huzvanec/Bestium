@@ -28,3 +28,4 @@ permissions:
     children:
       bestium.command.summon: true
       bestium.command.spawnegg: true
+      bestium.command.bestium: true

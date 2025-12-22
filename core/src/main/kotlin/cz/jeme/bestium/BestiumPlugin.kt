@@ -1,6 +1,7 @@
 package cz.jeme.bestium
 
 import cz.jeme.bestium.api.Bestium
+import cz.jeme.bestium.command.BestiumCommand
 import cz.jeme.bestium.command.SpawnEggCommand
 import cz.jeme.bestium.command.SummonCommand
 import cz.jeme.bestium.config.logNormal
@@ -29,9 +30,9 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         val start = System.currentTimeMillis()
 
         EntityInjectorImpl.injectLoad() // phase 2 injection
-        val injected = EntityInjectorImpl.keyedInjections.keys.map(Key::asString)
-        if (logNormal) {
 
+        if (logNormal) {
+            val injected = EntityInjectorImpl.keyedInjections.keys.map(Key::asString)
             logger.info(
                 if (injected.isEmpty()) "No entities found to inject"
                 else "Injected ${injected.size} entit${if (injected.size == 1) "y" else "ies"}: ${injected.joinToString()}"
@@ -48,6 +49,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
             val commands = event.registrar()
             SummonCommand(this, commands)
             SpawnEggCommand(this, commands)
+            BestiumCommand(this, commands)
         }
 
         if (logVerbose) logger.info("Registering event listeners")
