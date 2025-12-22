@@ -4,15 +4,14 @@ import com.mojang.datafixers.DataFixUtils
 import cz.jeme.bestium.api.inject.ConvertFunction
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.config.logVerbose
-import cz.jeme.bestium.util.setStaticFinal
-import cz.jeme.bestium.util.toNamespacedKey
 import cz.jeme.bestium.util.toIdentifier
+import cz.jeme.bestium.util.toNamespacedKey
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minecraft.SharedConstants
-import net.minecraft.core.Holder
 import net.minecraft.core.MappedRegistry
 import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.util.datafix.DataFixers
@@ -21,8 +20,8 @@ import net.minecraft.util.random.Weighted
 import net.minecraft.util.random.WeightedList
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.MobCategory
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes
 import net.minecraft.world.level.biome.MobSpawnSettings
 import org.bukkit.Bukkit
@@ -35,7 +34,6 @@ import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import com.mojang.datafixers.types.Type as DataFixerType
-import net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE as ENTITY_TYPE_REGISTRY
 import org.bukkit.Registry as BukkitRegistry
 import org.bukkit.entity.Entity as BukkitEntity
 import org.bukkit.entity.EntityType as BukkitEntityType
@@ -59,55 +57,39 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
         logPhase2("Starting entity injection (biome phase)")
 
-        logPhase2("Fetching mob spawn settings")
-        val spawnersField = MobSpawnSettings::class.java.getDeclaredField("spawners")
-            .apply { isAccessible = true }
-
-        logPhase2("Fetching mob spawn costs")
-        val mobSpawnCostsField = MobSpawnSettings::class.java.getDeclaredField("mobSpawnCosts")
-            .apply { isAccessible = true }
-
         val biomes = (Bukkit.getServer() as CraftServer).server.registryAccess().lookupOrThrow(Registries.BIOME)
         logPhase2("Found ${biomes.size()} registered biomes")
 
-        val newSpawnerDataMap = mutableMapOf<MobCategory, MutableList<Weighted<MobSpawnSettings.SpawnerData>>>()
+        val spawnerDataMap = mutableMapOf<MobCategory, MutableList<Weighted<MobSpawnSettings.SpawnerData>>>()
 
         logPhase2("Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
         for (biome in biomes) {
-            newSpawnerDataMap.clear()
+            spawnerDataMap.clear() // reset for each biome
             val mobSettings = biome.mobSettings
 
-            @Suppress("UNCHECKED_CAST")
-            val spawners = (
-                    spawnersField[mobSettings] as Map<MobCategory, WeightedList<MobSpawnSettings.SpawnerData>>
-                    ).toMutableMap()
-
-            @Suppress("UNCHECKED_CAST")
-            val mobSpawnCosts = (
-                    mobSpawnCostsField[mobSettings] as Map<EntityType<*>, MobSpawnSettings.MobSpawnCost>
-                    ).toMutableMap()
+            val spawners = mobSettings.spawners.toMutableMap()
+            val mobSpawnCosts = mobSettings.mobSpawnCosts.toMutableMap()
 
             for (inj in injections) {
                 val spawnRule = inj.spawnRule
                 val spawnData = spawnRule.apply(biome) ?: continue
                 val type = _keyedTypes[inj.key]!!
 
-                newSpawnerDataMap
-                    .getOrPut(inj.mobCategory) { mutableListOf() }
+                spawnerDataMap
+                    .getOrPut(inj.mobCategory, ::mutableListOf)
                     .add(Weighted(spawnData.toSpawnerData(type), spawnData.weight))
 
-                spawnData.cost?.let { mobSpawnCosts[type] = it.toMobSpawnCost() }
+                spawnData.cost?.let { mobCost -> mobSpawnCosts[type] = mobCost.toMobSpawnCost() }
             }
 
-            newSpawnerDataMap.forEach { (category, newSpawnerData) ->
-                // merge weighted lists
-                spawners[category] = WeightedList.of(
-                    spawners[category]!!.unwrap() + newSpawnerData
-                )
+            spawnerDataMap.forEach { (category, newSpawnerData) ->
+                val oldSpawnerData = spawners[category]?.unwrap() ?: emptyList()
+                // merge (weighted) spawner data
+                spawners[category] = WeightedList.of(oldSpawnerData + newSpawnerData)
             }
 
-            spawnersField.set(mobSettings, spawners)
-            mobSpawnCostsField.set(mobSettings, mobSpawnCosts)
+            mobSettings.spawners = spawners
+            mobSettings.mobSpawnCosts = mobSpawnCosts
         }
 
         logPhase2("Done")
@@ -126,24 +108,16 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             .types() as MutableMap<String, DataFixerType<*>>
 
         logPhase1("Fetching default attribute suppliers")
-        val attributeSuppliersField = DefaultAttributes::class.java.getDeclaredField("SUPPLIERS")
-            .apply { isAccessible = true }
+        val attributeSuppliers = DefaultAttributes.SUPPLIERS.toMutableMap()
 
         @Suppress("UNCHECKED_CAST")
-        val attributeSuppliers: MutableMap<EntityType<out Entity>, AttributeSupplier> = (
-                attributeSuppliersField[null] as Map<EntityType<out Entity>, AttributeSupplier>
-                ).toMutableMap()
+        val entityTypeRegistry = BuiltInRegistries.ENTITY_TYPE as MappedRegistry<EntityType<*>>
 
         logPhase1("Resetting unregistered intrusive entity type holders")
-        MappedRegistry::class.java.getDeclaredField("unregisteredIntrusiveHolders")
-            .apply { isAccessible = true }
-            .set(ENTITY_TYPE_REGISTRY, IdentityHashMap<EntityType<*>, Holder.Reference<EntityType<*>>>())
+        entityTypeRegistry.unregisteredIntrusiveHolders = IdentityHashMap()
 
         logPhase1("Unfreezing entity type registry")
-        val frozenField = MappedRegistry::class.java.getDeclaredField("frozen")
-            .apply { isAccessible = true }
-
-        frozenField.set(ENTITY_TYPE_REGISTRY, false)
+        entityTypeRegistry.frozen = false
 
         logPhase1("Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
         for (inj in injections) {
@@ -153,7 +127,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
             val backingType = inj.backingType
 
             // copy data fixer from backing type
-            dataFixerTypes[keyStr] = dataFixerTypes[ENTITY_TYPE_REGISTRY.getKey(backingType).toString()]
+            dataFixerTypes[keyStr] = dataFixerTypes[entityTypeRegistry.getKey(backingType).toString()]
                 ?: throw IllegalStateException("No data fixer registered for backing type: '$backingType'")
 
             // create main entity type
@@ -170,22 +144,20 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 }
                 .build(
                     ResourceKey.create(
-                        ENTITY_TYPE_REGISTRY.key(),
+                        entityTypeRegistry.key(),
                         key.toIdentifier()
                     )
                 )
 
             // register entity type to registry
-            ENTITY_TYPE_REGISTRY.createIntrusiveHolder(nmsType)
-            Registry.register(ENTITY_TYPE_REGISTRY, keyStr, nmsType)
+            entityTypeRegistry.createIntrusiveHolder(nmsType)
+            Registry.register(entityTypeRegistry, keyStr, nmsType)
 
             // register default attributes
-            inj.defaultAttributes?.let { attributeSuppliers[nmsType] = it }
-
-            // copy registry holder from backing type 
-            val registryHolder = EntityType::class.java.getDeclaredField("builtInRegistryHolder")
-                .apply { isAccessible = true }
-            registryHolder[nmsType] = registryHolder[backingType]
+            inj.defaultAttributes?.let { attributes ->
+                @Suppress("UNCHECKED_CAST")
+                attributeSuppliers[nmsType as EntityType<out LivingEntity>] = attributes
+            }
 
             // store entity type for later use
             _types[entityClass] = nmsType
@@ -194,10 +166,10 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
 
         logPhase1("Overwriting default attribute suppliers")
         // set default attributes
-        attributeSuppliersField.setStaticFinal(attributeSuppliers)
+        DefaultAttributes.SUPPLIERS = attributeSuppliers
 
         logPhase1("Refreezing entity type registry")
-        frozenField.set(ENTITY_TYPE_REGISTRY, true)
+        entityTypeRegistry.frozen = true
 
         logPhase1("Done")
     }
@@ -239,13 +211,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
         }
 
         logPhase3("Fetching Bukkit entity type data")
-        val bukkitEntityTypeDataField = CraftEntityTypes::class.java.getDeclaredField("ENTITY_TYPE_DATA")
-            .apply { isAccessible = true }
-
-        @Suppress("UNCHECKED_CAST")
-        val bukkitEntityTypeData: MutableMap<BukkitEntityType, EntityTypeData<*, *>> = (
-                bukkitEntityTypeDataField[null] as Map<BukkitEntityType, EntityTypeData<*, *>>
-                ).toMutableMap()
+        val bukkitEntityTypeData = CraftEntityTypes.ENTITY_TYPE_DATA.toMutableMap()
 
         logPhase3("Injecting $toInject entit${if (toInject == 1) "y" else "ies"} into Bukkit entity type data")
         // inject into backing bukkit entity type data
@@ -275,7 +241,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
         }
 
         logPhase3("Overwriting Bukkit entity type data")
-        bukkitEntityTypeDataField.setStaticFinal(bukkitEntityTypeData)
+        CraftEntityTypes.ENTITY_TYPE_DATA = bukkitEntityTypeData
 
         logPhase3("Overwriting Bukkit entity type registry map")
         simpleRegistryMapField.set(BukkitRegistry.ENTITY_TYPE, simpleRegistryMap)

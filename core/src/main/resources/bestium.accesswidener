@@ -1,3 +1,17 @@
 accessWidener v2 named
 
 accessible field net/minecraft/world/entity/Entity DATA_SHARED_FLAGS_ID Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/ai/attributes/DefaultAttributes SUPPLIERS Ljava/util/Map;
+mutable field net/minecraft/world/entity/ai/attributes/DefaultAttributes SUPPLIERS Ljava/util/Map;
+accessible field net/minecraft/core/MappedRegistry unregisteredIntrusiveHolders Ljava/util/Map;
+mutable field net/minecraft/core/MappedRegistry unregisteredIntrusiveHolders Ljava/util/Map;
+accessible field net/minecraft/core/MappedRegistry frozen Z
+mutable field net/minecraft/core/MappedRegistry frozen Z
+accessible field net/minecraft/world/entity/EntityType builtInRegistryHolder Lnet/minecraft/core/Holder$Reference;
+mutable field net/minecraft/world/entity/EntityType builtInRegistryHolder Lnet/minecraft/core/Holder$Reference;
+accessible field org/bukkit/craftbukkit/entity/CraftEntityTypes ENTITY_TYPE_DATA Ljava/util/Map;
+mutable field org/bukkit/craftbukkit/entity/CraftEntityTypes ENTITY_TYPE_DATA Ljava/util/Map;
+accessible field net/minecraft/world/level/biome/MobSpawnSettings spawners Ljava/util/Map;
+mutable field net/minecraft/world/level/biome/MobSpawnSettings spawners Ljava/util/Map;
+accessible field net/minecraft/world/level/biome/MobSpawnSettings mobSpawnCosts Ljava/util/Map;
+mutable field net/minecraft/world/level/biome/MobSpawnSettings mobSpawnCosts Ljava/util/Map;
