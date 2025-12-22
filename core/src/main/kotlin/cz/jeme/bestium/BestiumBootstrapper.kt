@@ -9,6 +9,8 @@ import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import java.nio.file.Path
 
@@ -37,7 +39,17 @@ internal class BestiumBootstrapper : PluginBootstrap {
             Class.forName("org.spongepowered.asm.mixin.Mixin")
         } catch (_: ClassNotFoundException) {
             logger.error("SpongePowered MIXIN Subsystem is not loaded")
-            logger.error("Please make sure you start your Minecraft server with a '-javaagent:plugins/Bestium-VERSION.jar' argument")
+            logger.error("Please make sure you start your PaperMC server with a correct -javaagent argument")
+            logger.error(
+                Component.text("Example server start command: ")
+                    .append(
+                        Component.text(
+                            "java -javaagent:${context.pluginSource} -jar paper.jar nogui",
+                            NamedTextColor.AQUA
+                        )
+                    )
+            )
+            logger.error("See https://docs.bestium.jeme.cz/server/installation/ for more info")
             logger.error("The server will now be terminated")
 
             flushLoggingAndCrashJvm()
