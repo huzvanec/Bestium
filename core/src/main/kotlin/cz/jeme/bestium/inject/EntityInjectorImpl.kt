@@ -3,7 +3,6 @@ package cz.jeme.bestium.inject
 import cz.jeme.bestium.PluginSupportImpl
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
-import cz.jeme.bestium.config.logNormal
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import kr.toxicity.model.api.BetterModel
 import net.kyori.adventure.key.Key
@@ -17,7 +16,7 @@ import java.util.function.Supplier
 
 
 internal object EntityInjectorImpl : EntityInjector {
-    private val logger = ComponentLogger.logger(javaClass)
+    private val logger = ComponentLogger.logger("BestiumInjector")
 
     private val registrations = mutableSetOf<Supplier<EntityInjection<*, *>>>()
     private val injections = hashMapOf<Class<out Entity>, EntityInjection<*, *>>()
@@ -88,11 +87,7 @@ internal object EntityInjectorImpl : EntityInjector {
 
         phase = EntityInjector.Phase.INJECTION_PHASE_1
 
-        if (injections.isEmpty()) {
-            if (logNormal) logger.info("There are no entities to inject")
-            return false
-        }
-
+        if (injections.isEmpty()) return false
         return tryInject(unit::injectBootstrap)
     }
 

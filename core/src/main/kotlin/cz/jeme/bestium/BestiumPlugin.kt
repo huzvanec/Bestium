@@ -30,7 +30,13 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
 
         EntityInjectorImpl.injectLoad() // phase 2 injection
         val injected = EntityInjectorImpl.keyedInjections.keys.map(Key::asString)
-        if (logNormal) logger.info("Injected ${injected.size} entit${if (injected.size == 1) "y" else "ies"}: ${injected.joinToString()}")
+        if (logNormal) {
+
+            logger.info(
+                if (injected.isEmpty()) "No entities found to inject"
+                else "Injected ${injected.size} entit${if (injected.size == 1) "y" else "ies"}: ${injected.joinToString()}"
+            )
+        }
 
         if (PluginSupportImpl.isBetterModelLoaded) {
             if (logNormal) logger.info("BetterModel detected, updating models...")
