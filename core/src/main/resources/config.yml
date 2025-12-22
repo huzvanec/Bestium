@@ -1,2 +1,4 @@
-# QUIET | NORMAL | VERBOSE
+# Configures the verbosity of the plugin's logging
+# Values: QUIET | NORMAL | VERBOSE
+# Default: NORMAL
 log-level: NORMAL
