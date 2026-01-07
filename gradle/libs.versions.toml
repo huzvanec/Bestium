@@ -6,7 +6,7 @@ publish = "0.35.0"
 paperweight = "2.0.0-SNAPSHOT"
 paper = "1.21.11-R0.1-SNAPSHOT"
 run-paper = "3.0.2"
-bettermodel = "1.15.1"
+bettermodel = "1.15.2"
 
 [libraries]
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
