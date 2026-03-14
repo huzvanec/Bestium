@@ -9,7 +9,6 @@ import cz.jeme.bestium.api.inject.variant.EntitySpawnContext
 import cz.jeme.bestium.inject.EntityInjectorImpl
 import cz.jeme.bestium.persistence.PersistentData
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
-import kr.toxicity.model.api.tracker.EntityTrackerRegistry
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntitySpawnReason
@@ -22,7 +21,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.CreatureSpawnEvent
-import org.bukkit.persistence.PersistentDataType
 import java.util.function.Consumer
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -89,7 +87,7 @@ object EntityManagerImpl : EntityManager, Listener {
 
         setFlag(
             Entity.FLAG_INVISIBLE,
-            PluginSupportImpl.isBetterModelLoaded // if better model is loaded
+            PluginSupportImpl.betterModelLoaded // if better model is loaded
                     && entityId !in noVariantEntityIds // and the entity has a variant
         )
 
@@ -159,24 +157,8 @@ object EntityManagerImpl : EntityManager, Listener {
             return variant
         }
 
-        /**
-         * Attempts to apply a model to the entity, returns `true` if the
-         * model was applied, if BetterModel isn't loaded, returns `false`
-         *
-         * Will throw an exception if BetterModel is not loaded.
-         */
         fun applyModel(modelName: String) {
-            // default BM API cannot be used here, because in cases where the entity spawns naturally,
-            // it is not correctly loaded and BM cannot track it
-            // a workaround for this is to directly save the BM model data to this entity
-            // in legacy formatting and then wait for BM to pick the entity up and migrate it
-            // TODO can this issue be somehow reproduced without Bestium's injections?
-            entity.persistentDataContainer.set(
-                EntityTrackerRegistry.TRACKING_ID,
-                PersistentDataType.STRING,
-                modelName
-            )
-            // remove pending model application (if any is present)
+            PluginSupportImpl.betterModelHook?.applyModel(entity, modelName)
             PersistentData.BESTIUM_PENDING_MODEL.remove(entity)
         }
 

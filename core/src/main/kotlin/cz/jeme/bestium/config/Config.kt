@@ -1,6 +1,7 @@
 package cz.jeme.bestium.config
 
 import cz.jeme.bestium.dataFolder
+import cz.jeme.bestium.util.CachedFirst
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -12,12 +13,12 @@ object Config {
     private val logger = ComponentLogger.logger("BestiumConfig")
     private lateinit var config: ConfigurationSection
     private val configFile = dataFolder.resolve("config.yml").toFile()
-    private val entries = mutableSetOf<ConfigEntry<*>>()
+    private val entries = mutableSetOf<CachedFirst.Value<*>>()
 
     fun reload() {
         trySaveDefaultConfig()
         config = YamlConfiguration.loadConfiguration(configFile)
-        entries.forEach(ConfigEntry<*>::markDirty)
+        entries.forEach { it.reset() }
         if (logVerbose) logger.info("Reloaded configuration")
     }
 
@@ -30,8 +31,8 @@ object Config {
         } ?: throw IllegalStateException("Could not find default config.yml in plugin resources")
     }
 
-    private fun <T> entry(initialize: () -> T): ConfigEntry<T> {
-        val entry = ConfigEntry(initialize)
+    private fun <T> entry(init: () -> T): CachedFirst<T> {
+        val entry = CachedFirst.Value(init)
         entries += entry
         return entry
     }

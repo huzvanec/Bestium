@@ -1,17 +1,12 @@
 package cz.jeme.bestium.inject
 
-import cz.jeme.bestium.PluginSupportImpl
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
-import kr.toxicity.model.api.BetterModel
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
-import org.bukkit.plugin.java.JavaPlugin
-import java.io.File
-import java.io.IOException
 import java.util.function.Supplier
 
 
@@ -115,38 +110,5 @@ internal object EntityInjectorImpl : EntityInjector {
             flushLoggingAndCrashJvm()
             return false
         }
-    }
-
-    /**
-     * Copies the models from registered model URLs in entity injections to the BetterModel models folder.
-     *
-     * This method checks if the entities have been injected and the system is in a "frozen" state,
-     * and verifies that BetterModel is loaded. It then copies each registered model URL to the models
-     * directory within the BetterModel folder.
-     *
-     * @throws IllegalStateException if called before the injection is frozen or if BetterModel is not loaded
-     * @throws IOException if an I/O exception occurs during model file copying
-     */
-    fun copyModels() {
-        if (phase != EntityInjector.Phase.INJECTED)
-            throw IllegalStateException("Models can be copied only after all entities are injected")
-        if (!PluginSupportImpl.isBetterModelLoaded)
-            throw IllegalStateException("Models can be copied only when BetterModel is loaded")
-
-        val modelsDir = File((BetterModel.plugin() as JavaPlugin).dataFolder, "models/.bestium")
-        modelsDir.mkdirs()
-
-        injections.values
-            .flatMap { inj -> inj.variants.values }
-            .forEach { variant ->
-                variant.modelUrl.openStream().use { input ->
-                    File(
-                        modelsDir,
-                        variant.modelName + ".bbmodel"
-                    ).outputStream().use { output ->
-                        input.copyTo(output, bufferSize = 2 shl 13)
-                    }
-                }
-            }
     }
 }

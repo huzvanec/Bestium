@@ -48,7 +48,7 @@ tasks {
     runServer {
         dependsOn("copyPlugin")
         downloadPlugins {
-            modrinth("bettermodel", libs.versions.bettermodel.get())
+            modrinth("bettermodel", /*libs.versions.bettermodel.get()*/ "2.2.1-SNAPSHOT-481")
         }
         jvmArgs("-javaagent:plugins/$jarName")
         minecraftVersion(paperToMinecraftVersion(libs.versions.paper.get()))

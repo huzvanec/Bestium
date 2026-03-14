@@ -1,11 +1,11 @@
 plugins {
     id("kotlin-conventions")
-    id("plugin-conventions")
     alias(origamiLibs.plugins.origami)
 }
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":hooks:bettermodel"))
     compileOnly(origamiLibs.mixin)
     compileOnly(origamiLibs.mixinextras)
 }

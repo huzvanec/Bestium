@@ -1,9 +1,9 @@
 import com.vanniktech.maven.publish.JavaLibrary
 import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
 
 plugins {
     id("java-conventions")
-    id("plugin-conventions")
     id("io.papermc.paperweight.userdev")
     alias(libs.plugins.maven.publish)
 }
@@ -16,7 +16,7 @@ mavenPublishing {
     configure(
         JavaLibrary(
             javadocJar = JavadocJar.Javadoc(),
-            sourcesJar = true
+            sourcesJar = SourcesJar.Sources()
         )
     )
 

@@ -1,6 +1,6 @@
 rootProject.name = "Bestium"
 
-include("core", "api")
+include("core", "api", "hooks:bettermodel")
 
 dependencyResolutionManagement {
     repositories {

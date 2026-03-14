@@ -1,18 +1,40 @@
 package cz.jeme.bestium
 
 import cz.jeme.bestium.api.PluginSupport
+import cz.jeme.bestium.hooks.bettermodel.BetterModelHook
+import cz.jeme.bestium.util.CachedFirst
 import org.bukkit.Bukkit
 
 object PluginSupportImpl : PluginSupport {
-    private fun loaded(name: String): Boolean {
+    val betterModelHook by CachedFirst.NotNull { if (isBetterModelLoaded()) BetterModelHook() else null }
+
+    private fun loadedPlugin(name: String): Boolean {
         try {
-            return Bukkit.getPluginManager().getPlugin(name) != null
-        } catch (_: NullPointerException) {
-            throw IllegalStateException("Cannot check for plugin support, server is still in bootstrap phase")
+            Bukkit.getPluginManager().getPlugin(name)
+            return true
+        } catch (e: NullPointerException) {
+            throw IllegalStateException("Cannot check for plugin support, server is still in bootstrap phase", e)
         }
     }
 
-    override fun isBetterModelLoaded() = loaded("BetterModel")
+    private fun loadedClass(className: String): Boolean {
+        return try {
+            Class.forName(className)
+            true
+        } catch (_: ClassNotFoundException) {
+            false
+        }
+    }
 
-    override fun isNovaLoaded() = loaded("Nova")
+    val betterModelLoaded by CachedFirst.True {
+        loadedPlugin("BetterModel") &&
+                loadedClass("kr.toxicity.model.api.BetterModel") &&
+                loadedClass("kr.toxicity.model.api.bukkit.BetterModelBukkit")
+    }
+
+    override fun isBetterModelLoaded() = betterModelLoaded
+
+    val novaLoaded by CachedFirst.True { loadedPlugin("Nova") }
+
+    override fun isNovaLoaded() = novaLoaded
 }

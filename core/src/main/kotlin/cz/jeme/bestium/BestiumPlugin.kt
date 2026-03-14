@@ -39,10 +39,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
             )
         }
 
-        if (PluginSupportImpl.isBetterModelLoaded) {
-            if (logNormal) logger.info("BetterModel detected, updating models...")
-            EntityInjectorImpl.copyModels()
-        }
+        PluginSupportImpl.betterModelHook?.register()
 
         if (logVerbose) logger.info("Registering commands")
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
@@ -53,9 +50,9 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         }
 
         if (logVerbose) logger.info("Registering event listeners")
-        fun Listener.register() = Bukkit.getPluginManager().registerEvents(this, this@BestiumPlugin)
+        fun Listener.registerEvents() = Bukkit.getPluginManager().registerEvents(this, this@BestiumPlugin)
 
-        EntityManagerImpl.register()
+        EntityManagerImpl.registerEvents()
 
         if (logVerbose) logger.info("Registering entity translations")
         EntityInjectorImpl.injections.values.forEach(EntityTranslator::addInjection)

@@ -6,12 +6,16 @@ publish = "0.36.0"
 paperweight = "2.0.0-beta.19"
 paper = "1.21.11-R0.1-SNAPSHOT"
 run-paper = "3.0.2"
-bettermodel = "1.15.2"
+bettermodel = "2.2.0"
 
 [libraries]
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 paperweight-userdev-plugin = { group = "io.papermc.paperweight", name = "paperweight-userdev", version.ref = "paperweight" }
-bettermodel = { group = "io.github.toxicity188", name = "bettermodel", version.ref = "bettermodel" }
+bettermodel-api = { group = "io.github.toxicity188", name = "bettermodel-api", version.ref = "bettermodel" }
+bettermodel-bukkit = { group = "io.github.toxicity188", name = "bettermodel-bukkit-api", version.ref = "bettermodel" }
+
+[bundles]
+bettermodel = ["bettermodel-api", "bettermodel-bukkit"]
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
