@@ -144,11 +144,21 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * Retrieves the display name of this entity for the specified locale.
      *
      * @param locale the locale for which the display name should be retrieved
-     * @return the display name entity, or {@code null} if no display name for provided locale was set
+     * @return the display name of this entity, or {@code null} if no display name for provided locale was set
      */
     @Nullable
     default Component getDisplayName(final Locale locale) {
         return getDisplayNames().get(locale);
+    }
+
+    /**
+     * Retrieves the display name of this entity for the {@link Locale#US} locale.
+     *
+     * @return the display name of this entity, or {@code null} if no display name for US locale was set
+     */
+    @Nullable
+    default Component getDisplayName() {
+        return getDisplayName(Locale.US);
     }
 
     /**
@@ -518,11 +528,21 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          * Retrieves the display name of this entity for the specified locale.
          *
          * @param locale the locale for which the display name should be retrieved
-         * @return the display name entity, or {@code null} if no display name for provided locale was set
+         * @return the display name of this entity, or {@code null} if no display name for provided locale was set
          */
         @Nullable
         default Component getDisplayName(final Locale locale) {
             return getDisplayNames().get(locale);
+        }
+
+        /**
+         * Retrieves the display name of this entity for the {@link Locale#US} locale.
+         *
+         * @return the display name of this entity, or {@code null} if no display name for US locale was set
+         */
+        @Nullable
+        default Component getDisplayName() {
+            return getDisplayName(Locale.US);
         }
 
         /**
