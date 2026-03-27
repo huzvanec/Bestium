@@ -1,7 +1,7 @@
 [versions]
 java = "21"
 kotlin = "2.3.20"
-shadow = "9.4.0"
+shadow = "9.4.1"
 publish = "0.36.0"
 paperweight = "2.0.0-beta.19"
 paper = "1.21.11-R0.1-SNAPSHOT"
