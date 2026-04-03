@@ -11,6 +11,9 @@ on:
       - settings.gradle.kts
       - gradle.properties
       - gradle/**
+    branches:
+      - master
+      - renovate/**
 
 jobs:
   compile:
