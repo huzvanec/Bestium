@@ -1,9 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "schedule:automergeEarlyMondays"
   ],
+  "dependencyDashboard": true,
   "automergeType": "branch",
+  "minimumReleaseAge": "7 days",
   "packageRules": [
     {
       "matchUpdateTypes": [
