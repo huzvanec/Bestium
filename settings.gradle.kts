@@ -8,7 +8,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("origamiLibs") {
-            from("xyz.xenondevs.origami:origami-catalog:0.3.3")
+            from("xyz.xenondevs.origami:origami-catalog:0.4.0")
         }
     }
 }
