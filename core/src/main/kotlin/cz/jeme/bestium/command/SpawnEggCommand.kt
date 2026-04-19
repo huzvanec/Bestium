@@ -18,8 +18,9 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.world.entity.EntityType
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.SpawnEggItem
 import net.minecraft.world.item.component.TypedEntityData
 import org.bukkit.craftbukkit.inventory.CraftItemStack
@@ -27,7 +28,6 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import org.bukkit.entity.EntityType as BukkitEntityType
 
-private val PIG_SPAWN_EGG = SpawnEggItem.byId(EntityType.PIG)!!
 private const val MAX_GIVEN_SPAWN_EGGS = 64 * 100
 
 class SpawnEggCommand(plugin: Plugin, commands: Commands) {
@@ -48,7 +48,7 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
                                     RegistryKey.ENTITY_TYPE,
                                     "entity"
                                 ),
-                                PIG_SPAWN_EGG
+                                Items.PIG_SPAWN_EGG
                             )
                         }
                         .then(
@@ -88,7 +88,7 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
     private fun giveSpawnEgg(
         players: List<Player>,
         spawning: TypedKey<BukkitEntityType>,
-        egg: SpawnEggItem,
+        egg: Item,
         count: Int = 1
     ): Int {
         val entityType = BuiltInRegistries.ENTITY_TYPE.get(spawning.toIdentifier())
@@ -127,7 +127,7 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
             plugin.pluginMeta,
             command,
             "Gives customized spawn eggs to players",
-            emptyList<String>()
+            emptyList()
         )
     }
 }

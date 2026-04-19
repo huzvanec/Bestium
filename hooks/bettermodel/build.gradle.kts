@@ -6,5 +6,5 @@ plugins {
 dependencies {
     compileOnly(project(":api"))
     compileOnly(libs.bundles.bettermodel)
-    paperweight.paperDevBundle(libs.versions.paper.get())
+    paperweight.paperDevBundle("${libs.versions.minecraft.get()}.build.+")
 }

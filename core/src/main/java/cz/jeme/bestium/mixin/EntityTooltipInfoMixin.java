@@ -12,9 +12,10 @@ abstract class EntityTooltipInfoMixin {
     @ModifyVariable(
             method = "<init>(Lnet/minecraft/world/entity/EntityType;Ljava/util/UUID;Ljava/util/Optional;)V",
             at = @At("HEAD"),
-            argsOnly = true
+            argsOnly = true,
+            name = "type"
     )
-    private static EntityType<?> modifyEntityType(EntityType<?> original) {
-        return EntityManagerImpl.INSTANCE.remapType(original);
+    private static EntityType<?> modifyEntityType(final EntityType<?> type) {
+        return EntityManagerImpl.INSTANCE.remapType(type);
     }
 }

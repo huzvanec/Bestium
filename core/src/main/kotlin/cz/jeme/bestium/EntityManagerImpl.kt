@@ -243,7 +243,7 @@ object EntityManagerImpl : EntityManager, Listener {
                     location.pitch
                 )
             },
-            CraftLocation.toBlockPosition(location),
+            CraftLocation.toBlockPos(location),
             entitySpawnReason,
             false,
             false,

@@ -103,7 +103,7 @@ class SummonCommand(plugin: Plugin, commands: Commands) {
         val world = pos.world
         val level = (world as CraftWorld).handle
 
-        if (!Level.isInSpawnableBounds(CraftLocation.toBlockPosition(pos))) throw ComponentCommandExceptionType(
+        if (!Level.isInSpawnableBounds(CraftLocation.toBlockPos(pos))) throw ComponentCommandExceptionType(
             Component.translatable("commands.summon.invalidPosition")
         ).create()
 
@@ -160,7 +160,7 @@ class SummonCommand(plugin: Plugin, commands: Commands) {
             plugin.pluginMeta,
             command,
             "A replacement for /minecraft:summon that takes injected entities into account",
-            emptyList<String>()
+            emptyList()
         )
     }
 }

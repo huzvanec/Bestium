@@ -14,9 +14,10 @@ abstract class ClientboundSetEntityDataPacketMixin {
     @ModifyVariable(
             method = "<init>(ILjava/util/List;)V",
             at = @At("HEAD"),
-            argsOnly = true
+            argsOnly = true,
+            name = "packedItems"
     )
-    private static List<SynchedEntityData.DataValue<?>> modifyPackedItems(final List<SynchedEntityData.DataValue<?>> original, final int id) {
-        return EntityManagerImpl.INSTANCE.modifyEntityDataIfInjected(id, original);
+    private static List<SynchedEntityData.DataValue<?>> modifyPackedItems(final List<SynchedEntityData.DataValue<?>> packedItems, final int id) {
+        return EntityManagerImpl.INSTANCE.modifyEntityDataIfInjected(id, packedItems);
     }
 }

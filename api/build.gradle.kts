@@ -9,7 +9,7 @@ plugins {
 }
 
 dependencies {
-    paperweight.paperDevBundle(libs.versions.paper.get())
+    paperweight.paperDevBundle("${libs.versions.minecraft.get()}.build.+")
 }
 
 mavenPublishing {
@@ -63,7 +63,7 @@ tasks {
             windowTitle = docTitle
             links(
                 "https://docs.oracle.com/en/java/javase/${libs.versions.java.get()}/docs/api/",
-                "https://jd.papermc.io/paper/${paperToMinecraftVersion(libs.versions.paper.get())}/",
+                "https://jd.papermc.io/paper/${libs.versions.minecraft.get()}/",
                 "https://jspecify.dev/docs/api/",
                 "https://jd.advntr.dev/api/latest/",
                 "https://jd.advntr.dev/key/latest/",

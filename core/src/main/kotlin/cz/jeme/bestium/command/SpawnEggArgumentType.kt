@@ -11,11 +11,12 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.SpawnEggItem
 import java.util.concurrent.CompletableFuture
 
-object SpawnEggArgumentType : CustomArgumentType<SpawnEggItem, String> {
-    override fun parse(reader: StringReader): SpawnEggItem {
+object SpawnEggArgumentType : CustomArgumentType<Item, String> {
+    override fun parse(reader: StringReader): Item {
         val start = reader.cursor
         while (reader.canRead() && reader.peek() != ' ') reader.read()
         val string = reader.string.substring(start, reader.cursor)
@@ -29,13 +30,13 @@ object SpawnEggArgumentType : CustomArgumentType<SpawnEggItem, String> {
         if (!Key.parseable(string)) throw unknownEntity
         val id = Identifier.parse(string)
         val entityType = BuiltInRegistries.ENTITY_TYPE.get(id).get().value()
-        return SpawnEggItem.byId(entityType) ?: throw unknownEntity
+        return SpawnEggItem.byId(entityType).orElseThrow { unknownEntity }.value()
     }
 
     override fun getNativeType(): ArgumentType<String> = StringArgumentType.greedyString()
 
     private val suggestions = BuiltInRegistries.ENTITY_TYPE
-        .filter { SpawnEggItem.byId(it) != null }
+        .filter { SpawnEggItem.byId(it).isPresent }
         .map { BuiltInRegistries.ENTITY_TYPE.getKey(it).toString() }
 
 

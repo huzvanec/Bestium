@@ -11,7 +11,7 @@ dependencies {
 }
 
 origami {
-    paperDevBundle(libs.versions.paper.get())
+    paperDevBundle("${libs.versions.minecraft.get()}.build.+")
     pluginId = rootProject.name.lowercase()
 }
 
@@ -19,7 +19,7 @@ tasks {
     processResources {
         val props = mapOf(
             "version" to project.version,
-            "minecraftVersion" to paperToMinecraftVersion(libs.versions.paper.get()),
+            "minecraftVersion" to libs.versions.minecraft.get(),
         )
         inputs.properties(props)
         filteringCharset = "UTF-8"
