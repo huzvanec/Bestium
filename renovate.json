@@ -9,12 +9,12 @@
   "minimumReleaseAge": "7 days",
   "packageRules": [
     {
+      "groupName": "weekly minors",
       "matchUpdateTypes": [
         "minor",
-        "patch",
-        "pin",
-        "digest"
+        "patch"
       ],
+      "matchCurrentVersion": "!/^0/",
       "automerge": true
     }
   ]
