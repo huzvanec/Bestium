@@ -27,7 +27,7 @@ for more information.
 Requirements:
 
 - [Git](https://git-scm.com/downloads)
-- [Java 21](https://www.oracle.com/java/technologies/downloads/#java21)
+- [JDK 25](https://adoptium.net/temurin/releases?version=25&os=any&arch=any)
 
 ```shell
 git clone https://github.com/huzvanec/Bestium.git
