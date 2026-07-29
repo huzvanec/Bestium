@@ -1,12 +1,12 @@
 [versions]
 java = "25"
-kotlin = "2.4.0"
-shadow = "9.4.3"
+kotlin = "2.4.10"
+shadow = "9.6.1"
 publish = "0.37.0"
 paperweight = "2.0.0-SNAPSHOT"
 minecraft = "26.1.2"
 run-paper = "3.0.2"
-bettermodel = "3.2.0"
+bettermodel = "3.3.0"
 
 [libraries]
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
