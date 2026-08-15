@@ -5,7 +5,7 @@ shadow = "9.6.1"
 publish = "0.37.0"
 paperweight = "2.0.0-SNAPSHOT"
 minecraft = "26.1.2"
-run-paper = "3.0.2"
+run-paper = "3.1.0"
 bettermodel = "3.3.0"
 
 [libraries]
