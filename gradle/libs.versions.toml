@@ -6,7 +6,7 @@ publish = "0.37.0"
 paperweight = "2.0.0-SNAPSHOT"
 minecraft = "26.1.2"
 run-paper = "3.1.0"
-bettermodel = "3.3.0"
+bettermodel = "3.4.1"
 
 [libraries]
 kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
