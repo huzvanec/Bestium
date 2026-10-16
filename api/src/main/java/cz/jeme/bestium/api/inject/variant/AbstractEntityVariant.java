@@ -10,7 +10,7 @@ sealed abstract class AbstractEntityVariant implements EntityVariant permits Bou
     protected final @KeyPattern.Namespace String id;
     protected final URL modelUrl;
 
-    AbstractEntityVariant(final @KeyPattern.Namespace String id, URL modelUrl) {
+    AbstractEntityVariant(final @KeyPattern.Namespace String id, final URL modelUrl) {
         if (!Key.parseableNamespace(id))
             throw new IllegalArgumentException("Entity variant id can only contain [a-z0-9_.-]");
         this.id = id;

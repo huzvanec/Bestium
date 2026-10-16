@@ -71,7 +71,8 @@ tasks {
                 "https://jd.advntr.dev/text-serializer-gson/latest/",
                 "https://jd.advntr.dev/text-serializer-legacy/latest/",
                 "https://jd.advntr.dev/text-serializer-plain/latest/",
-                "https://jd.advntr.dev/text-logger-slf4j/latest/"
+                "https://jd.advntr.dev/text-logger-slf4j/latest/",
+                "https://javadoc.io/doc/org.jetbrains/annotations/latest/"
             )
         }
     }

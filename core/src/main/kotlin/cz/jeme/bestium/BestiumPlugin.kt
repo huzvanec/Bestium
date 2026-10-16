@@ -53,6 +53,7 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         fun Listener.registerEvents() = Bukkit.getPluginManager().registerEvents(this, this@BestiumPlugin)
 
         EntityManagerImpl.registerEvents()
+        LootManager.registerEvents()
 
         if (logVerbose) logger.info("Registering entity translations")
         EntityInjectorImpl.injections.values.forEach(EntityTranslator::addInjection)

@@ -1,7 +1,9 @@
 package cz.jeme.bestium.inject
 
+import cz.jeme.bestium.BestiumPlugin
 import cz.jeme.bestium.api.inject.EntityInjection
 import cz.jeme.bestium.api.inject.EntityInjector
+import cz.jeme.bestium.config.logNormal
 import cz.jeme.bestium.util.flushLoggingAndCrashJvm
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
@@ -94,6 +96,16 @@ internal object EntityInjectorImpl : EntityInjector {
         phase = EntityInjector.Phase.INJECTION_PHASE_2
         return tryInject {
             unit.injectLoad()
+
+            // resolve all loot tables for the first time
+            var tableCount = 0
+            for (inj in injections.values) {
+                tableCount += inj.lootTables.size // loot tables are initialized by this .lootTables call
+            }
+            if (logNormal && tableCount != 0) BestiumPlugin.componentLogger.info(
+                "Resolved $tableCount loot table${if (tableCount == 1) "" else "s"} for ${injections.size} injected entit${if (injections.size == 1) "y" else "ies"}"
+            )
+
             phase = EntityInjector.Phase.INJECTED
         }
     }

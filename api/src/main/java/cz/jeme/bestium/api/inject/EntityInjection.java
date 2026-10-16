@@ -12,16 +12,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -184,10 +182,21 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * by vanilla clients and may cause packet errors or disconnections.
      *
      * @return the real entity type
-     * @throws IllegalStateException if this {@link EntityInjection} was not yet injected into the runtime
+     * @throws IllegalStateException if this {@link EntityInjection} was not injected yet
      * @see #getBackingType()
      */
     EntityType<M> getRealType();
+
+
+    /**
+     * Returns the loot tables used for this entity's drops when it is killed.
+     *
+     * @return an unmodifiable list of loot tables for this entity's drops
+     * @throws IllegalStateException if called before {@link EntityInjector.Phase#INJECTION_PHASE_2}
+     * @see EntityInjector#getPhase()
+     */
+    @Unmodifiable
+    List<LootTable> getLootTables();
 
     /**
      * Creates a new {@link Builder} for constructing an {@link EntityInjection}.
@@ -584,6 +593,117 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
          */
         default Builder<M, E> setComputedSpawnRule(final Supplier<SpawnRule> spawnRuleSupplier) {
             return setSpawnRule(spawnRuleSupplier.get());
+        }
+
+        /**
+         * Replaces all loot tables used for this entity's drops with the given collection.
+         * <p>
+         * This operation discards any previously added loot tables, whether added via this or other methods.
+         * <p>
+         * Loot tables are provided as {@link Supplier suppliers} rather than resolved instances, since loot
+         * tables need to be resolved later in the injection lifecycle.
+         * <p>
+         * Defaults to: no loot tables
+         *
+         * @param lootTables the collection of loot table suppliers to set
+         * @return this builder
+         * @see #addLootTable(Supplier)
+         * @see #addLootTables(Supplier, Supplier, Supplier[])
+         * @see #addLootTablesByKey(Collection)
+         */
+        Builder<M, E> setLootTables(final Collection<Supplier<LootTable>> lootTables);
+
+        /**
+         * Adds a single loot table used for this entity's drops.
+         * <p>
+         * Loot tables are provided as {@link Supplier suppliers} rather than resolved instances, since loot
+         * tables need to be resolved later in the injection lifecycle.
+         *
+         * @param lootTable the loot table supplier to add
+         * @return this builder
+         * @see #addLootTables(Supplier, Supplier, Supplier[])
+         * @see #addLootTablesByKey(Collection)
+         * @see #setLootTables(Collection)
+         */
+        Builder<M, E> addLootTable(final Supplier<LootTable> lootTable);
+
+        /**
+         * Adds a collection of loot tables used for this entity's drops.
+         * <p>
+         * Loot tables are provided as {@link Supplier suppliers} rather than resolved instances, since loot
+         * tables need to be resolved later in the injection lifecycle.
+         *
+         * @param lootTables the collection of loot table suppliers to add
+         * @return this builder
+         * @see #addLootTable(Supplier)
+         * @see #addLootTables(Supplier, Supplier, Supplier[])
+         * @see #setLootTables(Collection)
+         */
+        default Builder<M, E> addLootTables(final Collection<Supplier<LootTable>> lootTables) {
+            lootTables.forEach(this::addLootTable);
+            return this;
+        }
+
+        /**
+         * Adds two or more loot tables used for this entity's drops.
+         * <p>
+         * Loot tables are provided as {@link Supplier suppliers} rather than resolved instances, since loot
+         * tables need to be resolved later in the injection lifecycle.
+         *
+         * @param first  the first loot table supplier to add
+         * @param second the second loot table supplier to add
+         * @param rest   additional loot table suppliers to add
+         * @return this builder
+         * @see #addLootTable(Supplier)
+         * @see #addLootTablesByKey(Collection)
+         * @see #setLootTables(Collection)
+         */
+        @SuppressWarnings("unchecked")
+        default Builder<M, E> addLootTables(final Supplier<LootTable> first, final Supplier<LootTable> second, final Supplier<LootTable>... rest) {
+            addLootTable(first);
+            addLootTable(second);
+            for (final Supplier<LootTable> lootTable : rest) addLootTable(lootTable);
+            return this;
+        }
+
+        /**
+         * Adds a registered loot table using its registration {@link Key} used for this entity's drops.
+         *
+         * @param lootTableKey the key that identifies the loot table to be added
+         * @return this builder
+         * @see #addLootTablesByKey(Collection)
+         * @see #addLootTablesByKey(Key, Key, Key...)
+         */
+        Builder<M, E> addLootTableByKey(final Key lootTableKey);
+
+        /**
+         * Adds a collection of registered loot tables using their registration {@link Key} used for this entity's drops.
+         *
+         * @param lootTableKeys the keys that identify the loot tables to be added
+         * @return this builder
+         * @see #addLootTableByKey(Key)
+         * @see #addLootTablesByKey(Key, Key, Key...)
+         */
+        default Builder<M, E> addLootTablesByKey(final Collection<Key> lootTableKeys) {
+            lootTableKeys.forEach(this::addLootTableByKey);
+            return this;
+        }
+
+        /**
+         * Adds two or more registered loot tables using their registration {@link Key} used for this entity's drops.
+         *
+         * @param first  the first key that identifies the loot table to be added
+         * @param second the second key that identifies the loot table to be added
+         * @param rest   optional additional keys that identify the loot tables to be added
+         * @return this builder
+         * @see #addLootTableByKey(Key)
+         * @see #addLootTablesByKey(Collection)
+         */
+        default Builder<M, E> addLootTablesByKey(final Key first, final Key second, final Key... rest) {
+            addLootTableByKey(first);
+            addLootTableByKey(second);
+            for (final Key lootTableKey : rest) addLootTableByKey(lootTableKey);
+            return this;
         }
 
         /**

@@ -8,17 +8,23 @@ import cz.jeme.bestium.api.inject.variant.UnboundEntityVariant;
 import cz.jeme.bestium.api.inject.variant.VariantRule;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements EntityInjection<T, B> {
@@ -30,12 +36,15 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     private final MobCategory category;
     private final Consumer<EntityType.Builder<T>> typeBuilder;
     private final @Nullable AttributeSupplier attributes;
-    private final Map<String, BoundEntityVariant> variants;
-    private final Map<Locale, Component> displayNames;
+    private final @Unmodifiable Map<String, BoundEntityVariant> variants;
+    private final @Unmodifiable Map<Locale, Component> displayNames;
     private final VariantRule variantRule;
     private final SpawnRule spawnRule;
+    private final @Unmodifiable List<Supplier<LootTable>> lootTableSuppliers;
 
     private @Nullable EntityType<T> lazyRealType;
+    @Unmodifiable
+    private @Nullable List<LootTable> lazyLootTables;
 
     private EntityInjectionImpl(final BuilderImpl<T, B> builder) {
         key = builder.key;
@@ -61,6 +70,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         displayNames = Collections.unmodifiableMap(builder.displayNames);
         variantRule = builder.variantRule;
         spawnRule = builder.spawnRule;
+        lootTableSuppliers = Collections.unmodifiableList(builder.lootTableSuppliers);
 
         if (LivingEntity.class.isAssignableFrom(entityClass) && attributes == null)
             throw new IllegalArgumentException("Living entities must have attributes");
@@ -129,14 +139,29 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
     @Override
     public EntityType<T> getRealType() {
         if (lazyRealType == null) {
-            @SuppressWarnings("unchecked")
-            EntityType<T> type = (EntityType<T>) Bestium.getInjector().getTypes().get(entityClass);
+            @SuppressWarnings("unchecked") final EntityType<T> type = (EntityType<T>) Bestium.getInjector().getTypes().get(entityClass);
             if (type == null) throw new IllegalStateException(
                     "Cannot get real Bestium entity type, injection hasn't finished yet"
             );
             lazyRealType = type;
         }
         return lazyRealType;
+    }
+
+    @Override
+    public @Unmodifiable List<LootTable> getLootTables() {
+        if (lazyLootTables == null) {
+            final EntityInjector.Phase currentPhase = Bestium.getInjector().getPhase();
+            if (currentPhase.earlierThan(EntityInjector.Phase.INJECTION_PHASE_2))
+                throw new IllegalStateException(
+                        "Cannot resolve loot tables before phase '" + EntityInjector.Phase.INJECTION_PHASE_2
+                        + "' (current phase: '" + currentPhase + "')"
+                );
+            lazyLootTables = lootTableSuppliers.stream()
+                    .map(Supplier::get)
+                    .toList();
+        }
+        return lazyLootTables;
     }
 
     static final class BuilderImpl<T extends Entity, B extends org.bukkit.entity.Entity> implements Builder<T, B> {
@@ -156,6 +181,7 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         private Map<Locale, Component> displayNames = new HashMap<>();
         private VariantRule variantRule = VariantRule.first();
         private SpawnRule spawnRule = SpawnRule.never();
+        private List<Supplier<LootTable>> lootTableSuppliers = new ArrayList<>();
 
         public BuilderImpl(final Key key,
                            final Class<T> entityClass,
@@ -289,6 +315,27 @@ final class EntityInjectionImpl<T extends Entity, B extends org.bukkit.entity.En
         @Override
         public SpawnRule getSpawnRule() {
             return spawnRule;
+        }
+
+        @Override
+        public Builder<T, B> setLootTables(final Collection<Supplier<LootTable>> lootTables) {
+            this.lootTableSuppliers = new ArrayList<>(lootTables);
+            return this;
+        }
+
+        @Override
+        public Builder<T, B> addLootTable(final Supplier<LootTable> lootTable) {
+            lootTableSuppliers.add(lootTable);
+            return this;
+        }
+
+        @Override
+        public Builder<T, B> addLootTableByKey(final Key lootTableKey) {
+            final ResourceKey<LootTable> resourceKey = ResourceKey.create(
+                    Registries.LOOT_TABLE,
+                    Identifier.parse(lootTableKey.asString())
+            );
+            return addLootTable(() -> MinecraftServer.getServer().reloadableRegistries().getLootTable(resourceKey));
         }
 
         @Override

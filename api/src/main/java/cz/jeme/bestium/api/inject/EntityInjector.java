@@ -167,6 +167,46 @@ public interface EntityInjector {
         /**
          * All phases complete, entities are fully injected.
          */
-        INJECTED
+        INJECTED;
+
+        /**
+         * Checks whether this phase comes strictly after the given phase in the injection lifecycle.
+         *
+         * @param other the phase to compare against
+         * @return {@code true} if this phase is later than {@code other}
+         */
+        public boolean laterThan(final Phase other) {
+            return this.compareTo(other) > 0;
+        }
+
+        /**
+         * Checks whether this phase comes after or is equal to the given phase in the injection lifecycle.
+         *
+         * @param other the phase to compare against
+         * @return {@code true} if this phase is later than or equal to {@code other}
+         */
+        public boolean laterThanOrEqual(final Phase other) {
+            return this.compareTo(other) >= 0;
+        }
+
+        /**
+         * Checks whether this phase comes strictly before the given phase in the injection lifecycle.
+         *
+         * @param other the phase to compare against
+         * @return {@code true} if this phase is earlier than {@code other}
+         */
+        public boolean earlierThan(final Phase other) {
+            return this.compareTo(other) < 0;
+        }
+
+        /**
+         * Checks whether this phase comes before or is equal to the given phase in the injection lifecycle.
+         *
+         * @param other the phase to compare against
+         * @return {@code true} if this phase is earlier than or equal to {@code other}
+         */
+        public boolean earlierThanOrEqual(final Phase other) {
+            return this.compareTo(other) <= 0;
+        }
     }
 }
