@@ -19,3 +19,7 @@ pluginManagement {
         maven("https://repo.xenondevs.xyz/releases/")
     }
 }
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
