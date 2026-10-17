@@ -12,7 +12,6 @@ dependencies {
 
 origami {
     paperDevBundle("${libs.versions.minecraft.get()}.build.+")
-    pluginId = rootProject.name.lowercase()
 }
 
 tasks {

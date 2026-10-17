@@ -8,7 +8,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("origamiLibs") {
-            from("xyz.xenondevs.origami:origami-catalog:0.4.1")
+            from("xyz.xenondevs.origami:origami-catalog:0.6.1")
         }
     }
 }
@@ -18,4 +18,8 @@ pluginManagement {
         gradlePluginPortal()
         maven("https://repo.xenondevs.xyz/releases/")
     }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }

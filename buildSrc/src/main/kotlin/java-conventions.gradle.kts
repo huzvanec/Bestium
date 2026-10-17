@@ -14,9 +14,8 @@ repositories {
 }
 
 java {
-    val version = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = version
-    targetCompatibility = version
-    if (JavaVersion.current() < version)
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
 }
