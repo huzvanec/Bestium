@@ -22,7 +22,7 @@ class BetterModelHook {
 
     @Suppress("ObjectLiteralToLambda")
     private val eventApp = object : ModelEventApplication {
-        override fun isEnabled(): Boolean = plugin.isEnabled
+        override fun isEnabled(): Boolean = true
     }
 
     fun applyModel(entity: Entity, modelName: String) {
