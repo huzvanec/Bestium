@@ -4,6 +4,7 @@ import cz.jeme.bestium.api.PluginSupport
 import cz.jeme.bestium.hooks.bettermodel.BetterModelHook
 import cz.jeme.bestium.util.CachedFirst
 import org.bukkit.Bukkit
+import java.util.*
 
 object PluginSupportImpl : PluginSupport {
     val betterModelHook by CachedFirst.NotNull { if (isBetterModelLoaded()) BetterModelHook() else null }
@@ -37,4 +38,16 @@ object PluginSupportImpl : PluginSupport {
     val novaLoaded by CachedFirst.True { loadedPlugin("Nova") }
 
     override fun isNovaLoaded() = novaLoaded
+
+    private val requiredVersions by lazy {
+        Properties().apply {
+            object {}.javaClass.classLoader.getResourceAsStream("versions.properties").use {
+                load(it)
+            }
+        }
+    }
+
+    val requiredMinecraftVersion: String = requiredVersions.getProperty("minecraft")
+
+    val requiredBettermodelVersion: String = requiredVersions.getProperty("bettermodel")
 }

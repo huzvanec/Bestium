@@ -37,6 +37,8 @@ internal class BestiumBootstrapper : PluginBootstrap {
         Config.reload()
         if (logNormal) logger.info("Starting bootstrap")
 
+        // Mixin checking
+
         try {
             Class.forName("org.spongepowered.asm.mixin.Mixin")
         } catch (_: ClassNotFoundException) {
@@ -57,11 +59,12 @@ internal class BestiumBootstrapper : PluginBootstrap {
             flushLoggingAndCrashJvm()
         }
 
-        val requiredVersion = context.pluginMeta.apiVersion?.replace(".0", "")
-        val actualVersion = ServerBuildInfo.buildInfo().minecraftVersionId()
+        // Version checking
+        val requiredMinecraftVersion = PluginSupportImpl.requiredMinecraftVersion
+        val actualMinecraftVersion = ServerBuildInfo.buildInfo().minecraftVersionId()
 
-        if (requiredVersion != actualVersion) {
-            logger.error("This version of Bestium requires Minecraft version '$requiredVersion', but the current version is '$actualVersion'")
+        if (requiredMinecraftVersion != actualMinecraftVersion) {
+            logger.error("This version of Bestium requires Minecraft version '$requiredMinecraftVersion', but the current version is '$actualMinecraftVersion'")
             logger.error("The server will now be terminated")
 
             flushLoggingAndCrashJvm()

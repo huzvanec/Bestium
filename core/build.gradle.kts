@@ -19,10 +19,11 @@ tasks {
         val props = mapOf(
             "version" to project.version,
             "minecraftVersion" to libs.versions.minecraft.get(),
+            "bettermodelVersion" to libs.versions.bettermodel.get(),
         )
         inputs.properties(props)
         filteringCharset = "UTF-8"
-        filesMatching("paper-plugin.yml") {
+        filesMatching(listOf("paper-plugin.yml", "versions.properties")) {
             expand(props)
         }
     }
