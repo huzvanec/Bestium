@@ -101,13 +101,12 @@ class SpawnEggCommand(plugin: Plugin, commands: Commands) {
             )
         }
 
-        val stack = CraftItemStack.asCraftMirror(nmsStack)
+        val stack = CraftItemStack.asBukkitMirror(nmsStack)
 
         val entityNameMsg = entityType.description
         val entityNameCpt = MessageComponentSerializer.message().deserialize(entityNameMsg)
         val entityNameStr = PlainTextComponentSerializer.plainText().serialize(entityNameCpt)
 
-        @Suppress("UnstableApiUsage")
         stack.setData(
             DataComponentTypes.ITEM_NAME,
             Component.text("$entityNameStr Spawn Egg")

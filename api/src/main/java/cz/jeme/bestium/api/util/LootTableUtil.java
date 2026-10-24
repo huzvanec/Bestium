@@ -3,7 +3,7 @@ package cz.jeme.bestium.api.util;
 import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
+import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
@@ -33,7 +33,7 @@ public final class LootTableUtil {
     }
 
     /**
-     * Creates a {@link LootPoolSingletonContainer.Builder} from a Bukkit {@link Material}.
+     * Creates a {@link UniformContainerBase.Builder} from a Bukkit {@link Material}.
      * <p>
      * Example usage:
      * <pre>{@code
@@ -54,12 +54,12 @@ public final class LootTableUtil {
      * @param material the Bukkit {@link Material} to create the loot table item for
      * @return a builder for a loot table item corresponding to the specified material
      */
-    public static LootPoolSingletonContainer.Builder<?> lootTableItem(final Material material) {
+    public static UniformContainerBase.Builder<?> lootTableItem(final Material material) {
         return LootItem.lootTableItem(CraftItemType.bukkitToMinecraft(material));
     }
 
     /**
-     * Creates a {@link LootPoolSingletonContainer.Builder} from a Bukkit {@link ItemType}.
+     * Creates a {@link UniformContainerBase.Builder} from a Bukkit {@link ItemType}.
      * <p>
      * This is primarily a helper for items registered by <a href="https://docs.xenondevs.xyz/nova/addon/items/overview/">Nova Addons</a>
      * <p>
@@ -82,7 +82,7 @@ public final class LootTableUtil {
      * @param itemType the Bukkit {@link ItemType} to create the loot table item for
      * @return a builder for a loot table item corresponding to the specified material
      */
-    public static LootPoolSingletonContainer.Builder<?> lootTableItem(final ItemType itemType) {
+    public static UniformContainerBase.Builder<?> lootTableItem(final ItemType itemType) {
         return LootItem.lootTableItem(CraftItemType.bukkitToMinecraftNew(itemType));
     }
 
@@ -115,7 +115,7 @@ public final class LootTableUtil {
      * @param itemStack the Bukkit item stack to copy the type and components from
      * @return a loot item builder representing the given item, with all of its components applied
      */
-    public static LootPoolSingletonContainer.Builder<?> lootTableItem(final ItemStack itemStack) {
+    public static UniformContainerBase.Builder<?> lootTableItem(final ItemStack itemStack) {
         final var mojangStack = CraftItemStack.unwrap(itemStack);
         final var builder = LootItem.lootTableItem(mojangStack.getItem());
 

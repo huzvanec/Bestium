@@ -7,10 +7,7 @@ import cz.jeme.bestium.api.inject.variant.VariantRule;
 import net.kyori.adventure.builder.AbstractBuilder;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
@@ -208,8 +205,8 @@ public sealed interface EntityInjection<M extends Entity, E extends org.bukkit.e
      * The {@code backingType} should be as hierarchically close as possible to your custom entity.
      * For example:
      * <ul>
-     *     <li>If your entity extends {@code Animal}, use a backing type like {@link EntityType#PIG} or {@link EntityType#PIG}.</li>
-     *     <li>If your entity extends {@code Monster}, use a type like {@link EntityType#ZOMBIE}.</li>
+     *     <li>If your entity extends {@code Animal}, use a backing type like {@link EntityTypes#PIG} or {@link EntityTypes#PIG}.</li>
+     *     <li>If your entity extends {@code Monster}, use a type like {@link EntityTypes#ZOMBIE}.</li>
      *     <li><strong>If your entity is non-living (e.g., a custom minecart), you MUST NOT use a living backing type, and vice versa.</strong></li>
      * </ul>
      * <strong>Incorrectly pairing a living and non-living type will disconnect clients.</strong>

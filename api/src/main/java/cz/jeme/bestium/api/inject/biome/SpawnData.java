@@ -1,5 +1,8 @@
 package cz.jeme.bestium.api.inject.biome;
 
+import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import org.jetbrains.annotations.ApiStatus;
@@ -8,21 +11,34 @@ import org.jspecify.annotations.Nullable;
 /**
  * Configuration for how often and in what group sizes a mob should spawn within a biome.
  *
- * @param weight       Relative spawn probability. Higher values increase spawn frequency compared to other entities in the same biome.
- *                     To configure this accurately, compare values of other mobs in the biome.
- *                     For vanilla biomes, refer to: <a href="https://minecraft.wiki/w/Plains">Minecraft Wiki - Plains</a>.
- * @param minGroupSize Minimum number of mobs that can spawn together in a group.
- * @param maxGroupSize Maximum number of mobs that can spawn together in a group.
- * @param cost         Optional spawn cost. See {@link MobCost} for details.
+ * @param weight    Relative spawn probability. Higher values increase spawn frequency compared to other entities in the same biome.
+ *                  To configure this accurately, compare values of other mobs in the biome.
+ *                  For vanilla biomes, refer to: <a href="https://minecraft.wiki/w/Plains">Minecraft Wiki - Plains</a>.
+ * @param groupSize an {@link IntProvider} used the amount of mobs in a spawned group
+ * @param cost      Optional spawn cost. See {@link MobCost} for details.
  */
 public record SpawnData(
         int weight,
-        int minGroupSize,
-        int maxGroupSize,
+        IntProvider groupSize,
         @Nullable MobCost cost
 ) {
     /**
-     * Creates spawn data without a mob cost.
+     * Creates spawn data with uniform group size between specified minimum and maximum.
+     *
+     * @param weight       spawn weight
+     * @param minGroupSize minimum group size
+     * @param maxGroupSize maximum group size
+     * @param cost         optional spawn cost
+     */
+    public SpawnData(final int weight,
+                     final int minGroupSize,
+                     final int maxGroupSize,
+                     @Nullable final MobCost cost) {
+        this(weight, new UniformInt(minGroupSize, maxGroupSize), cost);
+    }
+
+    /**
+     * Creates spawn data with uniform group size between specified minimum and maximum without a mob cost.
      *
      * @param weight       spawn weight
      * @param minGroupSize minimum group size
@@ -35,14 +51,14 @@ public record SpawnData(
     }
 
     /**
-     * Creates spawn data with an exact group size (min and max will be the same).
+     * Creates spawn data with a fixed group size and without a mob cost.
      *
      * @param weight    spawn weight
      * @param groupSize fixed group size
      */
     public SpawnData(final int weight,
                      final int groupSize) {
-        this(weight, groupSize, groupSize);
+        this(weight, new ConstantInt(groupSize), null);
     }
 
     /**
@@ -68,7 +84,7 @@ public record SpawnData(
          */
         @ApiStatus.Internal
         public MobSpawnSettings.MobSpawnCost toMobSpawnCost() {
-            return new MobSpawnSettings.MobSpawnCost(charge, energyBudget);
+            return new MobSpawnSettings.MobSpawnCost(energyBudget, charge);
         }
     }
 
@@ -80,6 +96,6 @@ public record SpawnData(
      */
     @ApiStatus.Internal
     public MobSpawnSettings.SpawnerData toSpawnerData(final EntityType<?> type) {
-        return new MobSpawnSettings.SpawnerData(type, minGroupSize, maxGroupSize);
+        return new MobSpawnSettings.SpawnerData(type, groupSize);
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.damage.CraftDamageSource
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -42,7 +43,7 @@ object LootManager : Listener {
 
         for (lootTable in inj.lootTables) {
             val loot = lootTable.getRandomItems(lootParams, mojangEntity.lootTableSeed)
-                .map { it.bukkitStack }
+                .map { CraftItemStack.asBukkitMirror(it) }
 
             drops.addAll(loot)
         }

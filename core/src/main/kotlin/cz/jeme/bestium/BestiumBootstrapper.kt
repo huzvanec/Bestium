@@ -57,7 +57,7 @@ internal class BestiumBootstrapper : PluginBootstrap {
             flushLoggingAndCrashJvm()
         }
 
-        val requiredVersion = context.pluginMeta.apiVersion
+        val requiredVersion = context.pluginMeta.apiVersion?.replace(".0", "")
         val actualVersion = ServerBuildInfo.buildInfo().minecraftVersionId()
 
         if (requiredVersion != actualVersion) {

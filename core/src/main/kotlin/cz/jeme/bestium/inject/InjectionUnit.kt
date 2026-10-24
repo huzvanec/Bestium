@@ -18,6 +18,7 @@ import net.minecraft.util.datafix.DataFixers
 import net.minecraft.util.datafix.fixes.References
 import net.minecraft.util.random.Weighted
 import net.minecraft.util.random.WeightedList
+import net.minecraft.world.attribute.EnvironmentAttributes
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
@@ -65,9 +66,9 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
         logPhase2("Injecting $toInject entit${if (toInject == 1) "y" else "ies"}")
         for (biome in biomes) {
             spawnerDataMap.clear() // reset for each biome
-            val mobSettings = biome.mobSettings
+            val mobSettings = biome.attributes[EnvironmentAttributes.NATURAL_MOB_SPAWNS]!!.argument as MobSpawnSettings
 
-            val spawners = mobSettings.spawners.toMutableMap()
+            val spawners = mobSettings.spawnsByCategory.toMutableMap()
             val mobSpawnCosts = mobSettings.mobSpawnCosts.toMutableMap()
 
             for (inj in injections) {
@@ -88,7 +89,7 @@ class InjectionUnit(val injections: Collection<EntityInjection<*, *>>) {
                 spawners[category] = WeightedList.of(oldSpawnerData + newSpawnerData)
             }
 
-            mobSettings.spawners = spawners
+            mobSettings.spawnsByCategory = spawners
             mobSettings.mobSpawnCosts = mobSpawnCosts
         }
 

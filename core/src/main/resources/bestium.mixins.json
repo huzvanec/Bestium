@@ -6,7 +6,8 @@
     "ClientboundAddEntityPacketMixin",
     "ClientboundSetEntityDataPacketMixin",
     "EntityMixin",
-    "EntityTooltipInfoMixin"
+    "EntityTooltipInfoMixin",
+    "SummonCommandMixin"
   ],
   "mixinextras": {
     "minVersion": "0.5.0"

@@ -3,7 +3,6 @@ package cz.jeme.bestium
 import cz.jeme.bestium.api.Bestium
 import cz.jeme.bestium.command.BestiumCommand
 import cz.jeme.bestium.command.SpawnEggCommand
-import cz.jeme.bestium.command.SummonCommand
 import cz.jeme.bestium.config.logNormal
 import cz.jeme.bestium.config.logVerbose
 import cz.jeme.bestium.inject.EntityInjectorImpl
@@ -44,7 +43,6 @@ internal object BestiumPlugin : JavaPlugin(), Bestium {
         if (logVerbose) logger.info("Registering commands")
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             val commands = event.registrar()
-            SummonCommand(this, commands)
             SpawnEggCommand(this, commands)
             BestiumCommand(this, commands)
         }
